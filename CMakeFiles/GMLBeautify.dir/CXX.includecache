@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/n/git/gml-beautify/tokenstream.cpp
+cctype
+-
+tokenstream.h
+/home/n/git/gml-beautify/tokenstream.h
+
+/home/n/git/gml-beautify/tokenstream.h
+iostream
+-
+string
+-
+istream
+-
+
