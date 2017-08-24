@@ -2,3 +2,5 @@
 CMakeFiles/
 CMakeCache.txt
 GMLBeautify
+Makefile
+*.cmake
