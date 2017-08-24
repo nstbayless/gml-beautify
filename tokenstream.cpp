@@ -96,8 +96,8 @@ Token TokenStream::read_comment_multiline() {
   c = is->get();
   val = "/*";
   while (true) {
+    if (is->eof()) break;
     c = is->get();
-    if (c == '\n' || is->eof()) break;
     if (c == '*') {
       char c2;
       c2 = is->get();
@@ -131,6 +131,7 @@ const char* op_multichar[] = {
   "&=",
   "|=",
   "*=",
+  "//",
 };
 
 Token TokenStream::read_operator() {
@@ -140,12 +141,12 @@ Token TokenStream::read_operator() {
     char c2;
     c2 = is->get();
     
-    string multi(&c1);
+    string multi(1, c1);
     multi += c2;
     
     for (int i=0;i < sizeof(op_multichar)/sizeof(char*);i++)
       if (multi == op_multichar[i])
-        return Token(OP,multi);
+        return Token(OP + (i <= 1),multi);
     
     is->putback(c2);
   }
@@ -161,7 +162,13 @@ const char* KEYWORDS[] = {
   "for",
   "var",
   "return",
-  "exit"
+  "exit",
+  "and",
+  "or",
+  "mod",
+  "div",
+  "switch",
+  "case",
 };
 
 Token TokenStream::read_ident() {
@@ -199,8 +206,10 @@ Token TokenStream::read_next() {
   // read whitespace:
   while (true) {
     in = is->get();
-    if (!isspace(in) || is->eof()) break;
+    if (!isspace(in) || in == '\n'|| is->eof()) break;
   }
+  if (in == '\n')
+    return Token(ENX,string(1, (char)in));
   if (is->eof())
     return Token(END,"");
   // parse token:
@@ -233,6 +242,8 @@ Token TokenStream::read_next() {
       return read_comment_multiline();
     }
   }
+  if (in == ';')
+    return Token(ENX,string(1, (char)in));
   if (is_punc_char(in))
     return Token(PUNC,string(1, (char)in));
   if (is_op_char(in)) {
@@ -258,7 +269,7 @@ bool TokenStream::eof() {
 }
 
 const char ops[] = "+-/*?<>=!%|&^";
-const char punc[] = "(){}.,;[]:";
+const char punc[] = "(){}.,[]:";
 
 bool TokenStream::is_op_char(const unsigned char c) {
   for (int i=0;i<sizeof(ops);i++) {
@@ -274,4 +285,36 @@ bool TokenStream::is_punc_char(const unsigned char c) {
       return true;
   }
   return false;
+}
+
+LLKTokenStream::LLKTokenStream(istream* is, int k): TokenStream(is), k(k) {
+  while (buffer.size() < k - 1 && !TokenStream::eof())
+    buffer.push_back(TokenStream::read());
+}
+
+Token LLKTokenStream::peek() {
+  return buffer.front();
+}
+
+Token LLKTokenStream::peek(unsigned int i) {
+  if (i == k - 1)
+    return TokenStream::peek();
+  else
+    return buffer[i];
+}
+
+Token LLKTokenStream::read() {
+  if (!TokenStream::eof())
+    buffer.push_back(TokenStream::read());
+  Token to_return = buffer.front();
+  buffer.pop_front();
+  return to_return;
+}
+
+bool LLKTokenStream::eof() {
+  return buffer.size() == 0;
+}
+
+bool LLKTokenStream::has(unsigned int k) {
+  return buffer.size() > k;
 }

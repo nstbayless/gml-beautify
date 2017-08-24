@@ -1,1 +1,0 @@
-/usr/bin/c++   -g    CMakeFiles/GMLBeautify.dir/main.o CMakeFiles/GMLBeautify.dir/tokenstream.o  -o GMLBeautify -rdynamic 

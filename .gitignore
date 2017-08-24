@@ -1,0 +1,4 @@
+*.o
+CMakeFiles/
+CMakeCache.txt
+GMLBeautify

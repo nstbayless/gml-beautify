@@ -2,6 +2,8 @@
 #include <cstdlib>
 
 #include "tokenstream.h"
+#include "parser.h"
+
 using namespace std;
 
 int main (int argn, char** argv) {
@@ -16,7 +18,8 @@ int main (int argn, char** argv) {
     cout << "Could not open file " << filename;
     exit(1);
   } else {
-    TokenStream token_stream(&inFile);
+    /*
+    LLKTokenStream token_stream(&inFile, 4);
     cout << "-- BEGIN --\n";
     while (!token_stream.eof())
       cout << token_stream.read() << endl;
@@ -24,6 +27,13 @@ int main (int argn, char** argv) {
       cout << "-- ERROR !! --\n";
     else
       cout << "-- END --\n";
+    */
+    Parser parser(&inFile);
+    Production* p;
+    cout << "-- BEGIN --";
+    while (p = parser.read())
+      cout << p->to_string();
+    cout << "-- END --";
   }
   
   inFile.close();

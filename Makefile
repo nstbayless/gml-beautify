@@ -127,6 +127,36 @@ main.s:
 .PHONY : main.s
 
 # target to build an object file
+parser.o:
+	$(MAKE) -f CMakeFiles/GMLBeautify.dir/build.make CMakeFiles/GMLBeautify.dir/parser.o
+.PHONY : parser.o
+
+# target to preprocess a source file
+parser.i:
+	$(MAKE) -f CMakeFiles/GMLBeautify.dir/build.make CMakeFiles/GMLBeautify.dir/parser.i
+.PHONY : parser.i
+
+# target to generate assembly for a file
+parser.s:
+	$(MAKE) -f CMakeFiles/GMLBeautify.dir/build.make CMakeFiles/GMLBeautify.dir/parser.s
+.PHONY : parser.s
+
+# target to build an object file
+production.o:
+	$(MAKE) -f CMakeFiles/GMLBeautify.dir/build.make CMakeFiles/GMLBeautify.dir/production.o
+.PHONY : production.o
+
+# target to preprocess a source file
+production.i:
+	$(MAKE) -f CMakeFiles/GMLBeautify.dir/build.make CMakeFiles/GMLBeautify.dir/production.i
+.PHONY : production.i
+
+# target to generate assembly for a file
+production.s:
+	$(MAKE) -f CMakeFiles/GMLBeautify.dir/build.make CMakeFiles/GMLBeautify.dir/production.s
+.PHONY : production.s
+
+# target to build an object file
 tokenstream.o:
 	$(MAKE) -f CMakeFiles/GMLBeautify.dir/build.make CMakeFiles/GMLBeautify.dir/tokenstream.o
 .PHONY : tokenstream.o
@@ -153,6 +183,12 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... parser.o"
+	@echo "... parser.i"
+	@echo "... parser.s"
+	@echo "... production.o"
+	@echo "... production.i"
+	@echo "... production.s"
 	@echo "... tokenstream.o"
 	@echo "... tokenstream.i"
 	@echo "... tokenstream.s"

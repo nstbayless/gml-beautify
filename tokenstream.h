@@ -1,16 +1,19 @@
 #include <iostream>
 #include <string>
 #include <istream>
+#include <queue>
 
 enum TokenType {
   PUNC,
   OP,
+  OPR,
   NUM,
   STR,
   KW,
   ID,
   COMMENT,
   WS,
+  ENX,
   END,
   ERR
 };
@@ -18,12 +21,14 @@ enum TokenType {
 static const char* TOKEN_NAME[] = {
   "PUNC",
   "OP",
+  "OPR",
   "NUM",
   "STR",
   "KW",
   "ID",
   "COMMENT",
   "WS",
+  "ENX",
   "END",
   "ERR"
 };
@@ -39,9 +44,9 @@ std::ostream &operator<<(std::ostream &,const Token &);
 class TokenStream {
 public:
   TokenStream(std::istream*);
-  Token read();
+  virtual Token read();
   Token peek();
-  bool eof();
+  virtual bool eof();
 private:
   Token next;
   std::istream* is;
@@ -56,4 +61,19 @@ private:
   
   bool is_op_char(const unsigned char);
   bool is_punc_char(const unsigned char);
+};
+
+class LLKTokenStream: TokenStream {
+public:
+  LLKTokenStream(std::istream*, const int k);
+  
+  Token peek();
+  Token peek(unsigned int skip);
+  Token read();
+  bool eof();
+  bool has(unsigned int k);
+
+private: 
+  const int k;
+  std::deque<Token> buffer;
 };
