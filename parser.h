@@ -2,85 +2,118 @@
 #include <vector>
 #include <string>
 
+#ifndef PARSER_H
+#define PARSER_H
+
 enum PrType {
-}
+  PROD
+};
 
 struct Production {
-  virtual string to_string();
+  virtual std::string to_string();
   virtual PrType get_type();
-}
+};
 
 struct PrDecor: Production {
-  virtual string to_string();
+  virtual std::string to_string();
   virtual PrType get_type();
   
+  PrDecor(Token rawToken);
+  
   Token rawToken;
-}
+};
 
 struct PrExpression: Production {
-}
+};
 
 // parentheses are important to remember for beautifier
-struct PrExprParen: Production {
-  virtual string to_string();
+struct PrExprParen: PrExpression {
+  virtual std::string to_string();
   virtual PrType get_type();
   
   PrExpression* content;
-}
+};
 
 struct PrExpressionFn: PrExpression{
-  virtual string to_string();
+  PrExpressionFn(Token identifier);
+  virtual std::string to_string();
   virtual PrType get_type();
   
-  Token fn;
-  vector<PrExpression*> args;
-}
+  Token identifier;
+  std::vector<PrExpression*> args;
+};
 
 struct PrExprArithmetic: PrExpression {
-  virtual string to_string();
+  PrExprArithmetic(PrExpression* lhs, Token op, PrExpression* rhs);
+  virtual std::string to_string();
   virtual PrType get_type();
   
   PrExpression* lhs;
   PrExpression *rhs;
   Token op;
-}
+};
 
 struct PrStatement: Production {
-}
+};
+
+struct PrEmptyStatement: PrStatement {
+  PrEmptyStatement(Token enx);
+  virtual std::string to_string();
+  virtual PrType get_type();
+  Token enx;
+};
+
+struct PrFinal: PrExpression {
+  virtual std::string to_string();
+  virtual PrType get_type();
+  
+  PrFinal(Token t);
+  Token final;
+};
+
+struct PrIdentifier: PrExpression {
+  virtual std::string to_string();
+  virtual PrType get_type();
+  PrIdentifier(Token t);
+  
+  Token identifier;
+};
 
 struct PrAssignable: Production {
-  virtual string to_string();
+  PrAssignable(Token idendtifier);
+  virtual std::string to_string();
   virtual PrType get_type();
   
   Token identifier;
-}
+};
 
 struct PrAssignment: PrStatement {
-  virtual string to_string();
+  PrAssignment(PrAssignable* lhs, Token op, PrExpression* rhs);
+  virtual std::string to_string();
   virtual PrType get_type();
   
   PrAssignable* lhs;
   PrExpression* rhs;
   Token op;
-}
+};
 
 struct PrStatementFn: PrStatement {
-  virtual string to_string();
+  virtual std::string to_string();
   virtual PrType get_type();
   
   PrExpressionFn* fn;
-}
+};
 
-struct prBody: Production {
-  virtual string to_string();
+struct PrBody: PrStatement {
+  virtual std::string to_string();
   virtual PrType get_type();
   
-  vector<Production*> productions;
-}
+  std::vector<Production*> productions;
+};
 
 class Parser {
 public:
-  Parser(istream* is);
+  Parser(std::istream* is);
   Production* read();
 private:
   Production* read_production();
@@ -93,6 +126,9 @@ private:
   PrExprArithmetic* read_arithmetic(PrExpression* lhs);
   PrExpressionFn* read_expression_function();
   PrStatementFn* read_statement_function();
+  PrBody* read_body();
   
-  LLKTokenStream* ts;
-}
+  LLKTokenStream ts;
+};
+
+#endif /*PARSER_H*/

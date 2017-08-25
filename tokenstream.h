@@ -3,6 +3,9 @@
 #include <istream>
 #include <queue>
 
+#ifndef TOKENSTREAM_H
+#define TOKENSTREAM_H
+
 enum TokenType {
   PUNC,
   OP,
@@ -37,6 +40,8 @@ struct Token {
   TokenType type;
   std::string value;
   Token(const TokenType type, const std::string valuet);
+  bool operator==(const Token& other) const;
+  bool operator!=(const Token& other) const;
 };
 
 std::ostream &operator<<(std::ostream &,const Token &);
@@ -77,3 +82,5 @@ private:
   const int k;
   std::deque<Token> buffer;
 };
+
+#endif /* TOKENSTREAM_H */

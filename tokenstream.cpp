@@ -7,6 +7,14 @@ using namespace std;
 Token::Token(const TokenType type, const std::string value): type(type), value(value) {
 }
 
+bool Token::operator==(const Token& other) const {
+  return type == other.type && value == other.value;
+}
+
+bool Token::operator!=(const Token& other) const {
+  return !(*this == other);
+}
+
 std::ostream &operator<<(std::ostream &os,const Token &token) {
   if (token.type == WS)
     return os << "--";
@@ -146,7 +154,7 @@ Token TokenStream::read_operator() {
     
     for (int i=0;i < sizeof(op_multichar)/sizeof(char*);i++)
       if (multi == op_multichar[i])
-        return Token(OP + (i <= 1),multi);
+        return Token((i <= 1)?OPR:OP,multi);
     
     is->putback(c2);
   }

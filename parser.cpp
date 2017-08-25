@@ -1,30 +1,33 @@
 #include "parser.h"
 
+using namespace std;
+
 Parser::Parser(istream* is): ts(is, 4) {
 
 }
 
 Production* Parser::read() {
-  if (ts->peek().type == END || ts->peek().type == ERR)
+  if (ts.peek().type == END || ts.peek().type == ERR)
     return nullptr;
   return read_production();
 }
 
 Production* Parser::read_production() {
-  TokenType t = ts->peek().type;
+  TokenType t = ts.peek().type;
   if (t == COMMENT || t == WS)
     return read_rawtoken();
   return read_statement();
 }
 
 PrDecor* Parser::read_rawtoken() {
-  PrDecor* p = new PrDecor();
-  p->rawToken = ts->read();
+  return new PrDecor(ts.read());
 }
 
 PrStatement* Parser::read_statement() {  
-  string val(ts->peek().value)
-  switch (ts->peek().type) {
+  string value(ts.peek().value);
+  switch (ts.peek().type) {
+  case ENX:
+    return new PrEmptyStatement(ts.read());
   case KW:
     //TODO:
     return nullptr;
@@ -38,7 +41,7 @@ PrStatement* Parser::read_statement() {
     return nullptr;
   case ID:
     {
-      Token t = ts->peek(1);
+      Token t = ts.peek(1);
       if (t == Token(PUNC,"("))
         return read_statement_function();
       return read_assignment();
@@ -48,32 +51,28 @@ PrStatement* Parser::read_statement() {
 
 PrAssignment* Parser::read_assignment() {
   PrAssignable* lhs = read_assignable();
-  Token op = ts->read();
+  Token op = ts.read();
   PrExpression* rhs = 0;
   if (op.type != OPR) {
     rhs = read_expression();
   }
-  PrAssignment* a = new PrAssignment();
-  a->lhs = lhs;
-  a->op = op;
-  a->rhs = rhs;
+  PrAssignment* a = new PrAssignment(lhs,op,rhs);
   
   // read ENX:
-  ts -> read();
+  ts.read();
   
   return a;
 }
 
 PrAssignable* Parser::read_assignable() {
-  Token t(ts->peek());
+  Token t(ts.peek());
   PrAssignable* a;
   if (t == Token(PUNC,"(")) {
     // TODO
     return 0;
   } else {
-    t = ts->read();
-    a = new PrAssignable();
-    a->identifier = t;
+    t = ts.read();
+    a = new PrAssignable(t);
   }
   // optional: . or []
   
@@ -83,44 +82,42 @@ PrAssignable* Parser::read_assignable() {
 PrExpression* Parser::read_expression() {
   PrExpression* to_return = 0;
 
-  Token t(ts->peek());
+  Token t(ts.peek());
   if (t == Token(PUNC,"("))
     to_return = read_expression_parentheses();
-  else {
-    t = ts->peek(1)
+  else if (t.type == ID) {
+    t = ts.peek(1);
     if (t == Token(PUNC,"("))
-      to_return read_expression_function();
+      to_return = read_expression_function();
+    else
+      to_return = new PrIdentifier(ts.read());
+  } else {
+    to_return = new PrFinal(ts.read());  
   }
-  t = ts->peek();
+  t = ts.peek();
   if (t.type == OP)
-    return read_arithmetic(to_return)
+    return read_arithmetic(to_return);
   else
     return to_return;
 } 
 
 PrExprArithmetic* Parser::read_arithmetic(PrExpression* lhs) {
-  PrExpressionArithemtic* a = new PrExpressionArithmetic();
-  a->lhs = lhs;
-  a->op = ts->read(); //TODO: assert is OP
-  a->rhs = read_expression();
-  //TODO: rebalance order-of-operations
-  return a;
+  //TODO assert ts.peek() is operator
+  return new PrExprArithmetic(lhs, ts.read(), read_expression());
 }
 
 PrExpressionFn* Parser::read_expression_function() {
-  PrExpressionFn* pfn = new PrExpressionFn();
-
-  pfn->fn = ts->read();
+  PrExpressionFn* pfn = new PrExpressionFn(ts.read());
   
   // read paren:
-  ts->read();  
+  ts.read();  
   
   while (true) {
-    Token next(ts->peek());
+    Token next(ts.peek());
     if (next == Token(PUNC,")"))
       break;
     pfn->args.push_back(read_expression());
-    next = ts->read();
+    next = ts.read();
     if (next == Token(PUNC,","))
       continue;
     // assert is end-parenthesis
@@ -130,15 +127,25 @@ PrExpressionFn* Parser::read_expression_function() {
 }
 
 PrStatementFn* Parser::read_statement_function() {
-  PrStatementFunction* fn = new PrStatementFunction();
+  PrStatementFn* fn = new PrStatementFn();
   fn->fn = read_expression_function();
   return fn;
 }
 
-PrExprParen* Praser::read_expression_parentheses() {
+PrExprParen* Parser::read_expression_parentheses() {
   PrExprParen* p = new PrExprParen();
-  ts->read();
+  ts.read();
   p->content = read_expression();
-  ts->read();
+  ts.read();
   return p;
 }
+
+PrBody* Parser::read_body() {
+  PrBody* p = new PrBody();
+  ts.read();
+  while (ts.peek() != Token(PUNC,"}"))
+    p->productions.push_back(read_production());
+  ts.read();
+  return p;
+}
+

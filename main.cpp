@@ -30,10 +30,10 @@ int main (int argn, char** argv) {
     */
     Parser parser(&inFile);
     Production* p;
-    cout << "-- BEGIN --";
+    cout << "-- BEGIN --\n";
     while (p = parser.read())
-      cout << p->to_string();
-    cout << "-- END --";
+      cout << p->to_string() + "\n";
+    cout << "-- END --\n";
   }
   
   inFile.close();
