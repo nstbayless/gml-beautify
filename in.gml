@@ -1,14 +1,15 @@
+b =(4-b) <3
+
 /// example(test) game maker file for parsing
 // doesn't do anything useful
 
+show_debug_message("Hello, world!")
 
 a = 4
 a++
 b = 3.3;
 c = a + b
-b = (-3) + (4-b) <3
 
-show_debug_message("Hello, world!")
 /*
 var x, y = 02, z = .5;
 x = 005.01;

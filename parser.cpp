@@ -83,6 +83,10 @@ PrExpression* Parser::read_expression() {
   PrExpression* to_return = 0;
 
   Token t(ts.peek());
+  if (t == Token(OP,"-") || t.type == OPR)
+    return new PrExprArithmetic(nullptr, ts.read(),read_expression());
+  if (t.type == NUM || t.type == STR)
+    to_return = new PrFinal(ts.read());
   if (t == Token(PUNC,"("))
     to_return = read_expression_parentheses();
   else if (t.type == ID) {
@@ -91,8 +95,6 @@ PrExpression* Parser::read_expression() {
       to_return = read_expression_function();
     else
       to_return = new PrIdentifier(ts.read());
-  } else {
-    to_return = new PrFinal(ts.read());  
   }
   t = ts.peek();
   if (t.type == OP)
@@ -103,6 +105,8 @@ PrExpression* Parser::read_expression() {
 
 PrExprArithmetic* Parser::read_arithmetic(PrExpression* lhs) {
   //TODO assert ts.peek() is operator
+  if (ts.peek().type == OPR)
+    return new PrExprArithmetic(lhs, ts.read(), nullptr);
   return new PrExprArithmetic(lhs, ts.read(), read_expression());
 }
 
@@ -120,8 +124,11 @@ PrExpressionFn* Parser::read_expression_function() {
     next = ts.read();
     if (next == Token(PUNC,","))
       continue;
-    // assert is end-parenthesis
+    else break;
   }
+  
+  // read paren
+  ts.read();
   
   return pfn;
 }

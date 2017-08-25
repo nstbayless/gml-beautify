@@ -32,7 +32,7 @@ PrType PrExprParen::get_type() {
 PrExprArithmetic::PrExprArithmetic(PrExpression* lhs, Token op, PrExpression* rhs): lhs(lhs), op(op), rhs(rhs) {}
 
 string PrExprArithmetic::to_string() {
-  return lhs->to_string() + " " + op.value + " " + rhs->to_string();
+  return ((lhs)?(lhs->to_string() + " "):"") + op.value + ((rhs)?(" " + rhs->to_string()):"");
 }
 
 PrType PrExprArithmetic::get_type() {
@@ -71,6 +71,7 @@ string PrExpressionFn::to_string() {
     str += arg->to_string() + ",";
   }
   str = str.substr(0, str.size() - 1) + ")";
+  return str;
 }
 
 PrType PrExpressionFn::get_type() {
@@ -112,6 +113,8 @@ PrType PrEmptyStatement::get_type() {
 PrFinal::PrFinal(Token t): final(t) {}
 
 string PrFinal::to_string() {
+  if (final.type == STR)
+    return "\"" + final.value + "\"";
   return "%" + final.value;
 }
 
