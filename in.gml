@@ -1,7 +1,7 @@
 b =(4-b) <3
 
 /// example(test) game maker file for parsing
-// doesn't do anything useful
+// does not do anything useful 
 
 show_debug_message("Hello, world!")
 
@@ -10,12 +10,13 @@ a++
 b = 3.3;
 c = a + b
 
-/*
+
 var x, y = 02, z = .5;
 x = 005.01;
 x += 4; y -= 2
 z ++
 
+/*
 switch z {
   case 0:
     break;

@@ -29,7 +29,8 @@ PrStatement* Parser::read_statement() {
   case ENX:
     return new PrEmptyStatement(ts.read());
   case KW:
-    //TODO:
+    if (value == "var")
+      return read_statement_var();
     return nullptr;
   case PUNC:
     if (value == "(") {
@@ -144,6 +145,31 @@ PrExprParen* Parser::read_expression_parentheses() {
   ts.read();
   p->content = read_expression();
   ts.read();
+  return p;
+}
+
+PrStatementVar* Parser::read_statement_var() {
+  PrStatementVar* p = new PrStatementVar();
+  ts.read(); // read "var"
+  
+  while (true) {
+    // read var declaration:
+    PrVarDeclaration* d = new PrVarDeclaration(ts.read());
+    if (ts.peek() == Token(OP,"=")) {
+      ts.read();
+      d->definition = read_expression();
+    }
+    p->declarations.push_back(d);
+    if (ts.peek() == Token(PUNC,",")) {
+      ts.read();
+      continue;
+    }
+    break;
+  }
+  
+  // read ENX
+  ts.read();
+  
   return p;
 }
 

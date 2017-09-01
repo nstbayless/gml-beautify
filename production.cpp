@@ -131,3 +131,31 @@ string PrIdentifier::to_string() {
 PrType PrIdentifier::get_type() {
   return PROD;
 }
+
+PrVarDeclaration::PrVarDeclaration(Token t, PrExpression* expr): identifier(t), definition(expr) {}
+
+string PrVarDeclaration::to_string() {
+  if (definition != 0)
+    return identifier.value + " = " + definition->to_string();
+  return identifier.value;
+}
+
+PrType PrVarDeclaration::get_type() {
+  return PROD;
+}
+
+string PrStatementVar::to_string() {
+  string s = "var ";
+  for (auto v: declarations) {
+    s += v->to_string();
+    s += ",";
+  }
+  s = s.substr(0,s.length() - 1);
+  return s;
+}
+
+PrType PrStatementVar::get_type() {
+  return PROD;
+}
+
+

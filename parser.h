@@ -104,6 +104,22 @@ struct PrStatementFn: PrStatement {
   PrExpressionFn* fn;
 };
 
+struct PrVarDeclaration: Production {
+  PrVarDeclaration(Token ident,  PrExpression* def = nullptr);
+  virtual std::string to_string();
+  virtual PrType get_type();
+  
+  Token identifier;
+  PrExpression* definition;
+};
+
+struct PrStatementVar: PrStatement {
+  virtual std::string to_string();
+  virtual PrType get_type();
+  
+  std::vector<PrVarDeclaration*> declarations;
+};
+
 struct PrBody: PrStatement {
   virtual std::string to_string();
   virtual PrType get_type();
@@ -126,6 +142,7 @@ private:
   PrExprArithmetic* read_arithmetic(PrExpression* lhs);
   PrExpressionFn* read_expression_function();
   PrStatementFn* read_statement_function();
+  PrStatementVar* read_statement_var();
   PrBody* read_body();
   
   LLKTokenStream ts;
