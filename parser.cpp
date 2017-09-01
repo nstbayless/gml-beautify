@@ -31,6 +31,12 @@ PrStatement* Parser::read_statement() {
   case KW:
     if (value == "var")
       return read_statement_var();
+    if (value == "if")
+      return read_statement_if();
+    if (value == "return")
+      return new PrControl(ts.read(),read_expression());
+    if (value == "exit" || value == "continue" || value == "break")
+      return new PrControl(ts.read());
     return nullptr;
   case PUNC:
     if (value == "(") {
@@ -154,12 +160,16 @@ PrStatementVar* Parser::read_statement_var() {
   
   while (true) {
     // read var declaration:
+    ignoreWS();
     PrVarDeclaration* d = new PrVarDeclaration(ts.read());
+    ignoreWS();
     if (ts.peek() == Token(OP,"=")) {
       ts.read();
+      ignoreWS();
       d->definition = read_expression();
     }
     p->declarations.push_back(d);
+    ignoreWS();
     if (ts.peek() == Token(PUNC,",")) {
       ts.read();
       continue;
@@ -173,6 +183,23 @@ PrStatementVar* Parser::read_statement_var() {
   return p;
 }
 
+PrStatementIf* Parser::read_statement_if() {
+  ts.read(); // read IF
+  ignoreWS();
+  PrStatementIf* p = new PrStatementIf();
+  ignoreWS();
+  p->condition = read_expression();
+  ignoreWS();
+  p->result = read_statement();
+  ignoreWS();
+  if (ts.peek() == Token(KW, "else")) {
+    ts.read();
+    ignoreWS();
+    p->otherwise = read_statement();
+  }
+  return p;
+}
+
 PrBody* Parser::read_body() {
   PrBody* p = new PrBody();
   ts.read();
@@ -182,3 +209,7 @@ PrBody* Parser::read_body() {
   return p;
 }
 
+void Parser::ignoreWS() {
+  while (ts.peek() == Token(ENX,"\n"))
+    ts.read();
+}

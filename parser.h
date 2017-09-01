@@ -120,11 +120,29 @@ struct PrStatementVar: PrStatement {
   std::vector<PrVarDeclaration*> declarations;
 };
 
+struct PrStatementIf: PrStatement {
+  virtual std::string to_string();
+  virtual PrType get_type();
+  
+  PrExpression* condition;
+  PrStatement* result;
+  PrStatement* otherwise=nullptr;
+};
+
 struct PrBody: PrStatement {
   virtual std::string to_string();
   virtual PrType get_type();
   
   std::vector<Production*> productions;
+};
+
+struct PrControl: PrStatement {
+  PrControl(Token,PrExpression* val = nullptr);
+  virtual std::string to_string();
+  virtual PrType get_type();
+  
+  Token kw;
+  PrExpression* val;
 };
 
 class Parser {
@@ -143,7 +161,10 @@ private:
   PrExpressionFn* read_expression_function();
   PrStatementFn* read_statement_function();
   PrStatementVar* read_statement_var();
+  PrStatementIf* read_statement_if();
   PrBody* read_body();
+  
+  void ignoreWS();
   
   LLKTokenStream ts;
 };

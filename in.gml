@@ -16,6 +16,11 @@ x = 005.01;
 x += 4; y -= 2
 z ++
 
+if (x >= 5) || (y == 2) && z {
+  return x
+}
+  else {x++;exit;}
+
 /*
 switch z {
   case 0:

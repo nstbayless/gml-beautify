@@ -158,4 +158,26 @@ PrType PrStatementVar::get_type() {
   return PROD;
 }
 
+string PrStatementIf::to_string() {
+  string s = "if " + condition->to_string();
+  s += "\n" + result->to_string();
+  if (otherwise)
+    s += "else\n" + otherwise->to_string();
+  return s;
+}
 
+PrType PrStatementIf::get_type() {
+  return PROD;
+}
+
+string PrControl::to_string() {
+  string s = kw.value;
+  if (val)
+    s += val->to_string();
+}
+
+PrType PrControl::get_type() {
+  return PROD;
+}
+
+PrControl::PrControl(Token t, PrExpression* val): kw(t), val(val) {}
