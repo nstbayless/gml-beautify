@@ -10,6 +10,7 @@ enum TokenType {
   PUNC,
   OP,
   OPR,
+  OPA,
   NUM,
   STR,
   KW,
@@ -22,9 +23,10 @@ enum TokenType {
 };
 
 static const char* TOKEN_NAME[] = {
-  "PUNC",
-  "OP",
-  "OPR",
+  "PUNC", // (),. etc.
+  "OP", // operator
+  "OPR", //++ or --
+  "OPA", //accessor operator
   "NUM",
   "STR",
   "KW",
@@ -42,6 +44,7 @@ struct Token {
   Token(const TokenType type, const std::string valuet);
   bool operator==(const Token& other) const;
   bool operator!=(const Token& other) const;
+  bool is_op_keyword();
 };
 
 std::ostream &operator<<(std::ostream &,const Token &);
@@ -65,6 +68,7 @@ private:
   Token read_ident();
   
   bool is_op_char(const unsigned char);
+  bool is_opa_char(const unsigned char);
   bool is_punc_char(const unsigned char);
 };
 

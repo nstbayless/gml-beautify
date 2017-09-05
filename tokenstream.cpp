@@ -15,6 +15,22 @@ bool Token::operator!=(const Token& other) const {
   return !(*this == other);
 }
 
+bool Token::is_op_keyword() {
+  if (type == KW) {
+    if (value == "not")
+      return true;
+    if (value == "and")
+      return true;
+    if (value == "or")
+      return true;
+    if (value == "mod")
+      return true;
+    if (value == "div")
+      return true;
+  }
+  return false;
+}
+
 std::ostream &operator<<(std::ostream &os,const Token &token) {
   if (token.type == WS)
     return os << "--";
@@ -141,11 +157,16 @@ const char* op_multichar[] = {
   "|=",
   "*=",
   "//",
+  "<<",
+  ">>"
 };
 
 Token TokenStream::read_operator() {
   char c1;
   c1 = is->get();
+  if (is_opa_char(c1)) {
+    return Token(OPA,string(1,(char)c1));
+  }
   if (!is->eof()) {
     char c2;
     c2 = is->get();
@@ -173,6 +194,7 @@ const char* KEYWORDS[] = {
   "var",
   "return",
   "exit",
+  "not",
   "and",
   "or",
   "mod",
@@ -256,7 +278,7 @@ Token TokenStream::read_next() {
     return Token(ENX,string(1, (char)in));
   if (is_punc_char(in))
     return Token(PUNC,string(1, (char)in));
-  if (is_op_char(in)) {
+  if (is_op_char(in) || is_opa_char(in)) {
     is->putback(in);
     return read_operator();
   }
@@ -278,7 +300,8 @@ bool TokenStream::eof() {
   return peek().type == END || peek().type == ERR;
 }
 
-const char ops[] = "+-/*?<>=!%|&^";
+const char ops[] = "+-*/<>=&|!%^";
+const char opas[] = "?#@";
 const char punc[] = "(){}.,[]:";
 
 bool TokenStream::is_op_char(const unsigned char c) {
@@ -289,7 +312,16 @@ bool TokenStream::is_op_char(const unsigned char c) {
   return false;
 }
 
-bool TokenStream::is_punc_char(const unsigned char c) {
+bool TokenStream::is_opa_char(const unsigned char c) {
+  for (int i=0;i<sizeof(opas);i++) {
+    if (opas[i] == c)
+      return true;
+  }
+  return false;
+}
+
+bool TokenStream::is_punc_char(const
+ unsigned char c) {
   for (int i=0;i<sizeof(ops);i++) {
     if (punc[i] == c)
       return true;

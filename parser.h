@@ -82,20 +82,12 @@ struct PrIdentifier: PrExpression {
   Token identifier;
 };
 
-struct PrAssignable: Production {
-  PrAssignable(Token idendtifier);
-  virtual std::string to_string();
-  virtual PrType get_type();
-  
-  Token identifier;
-};
-
 struct PrAssignment: PrStatement {
-  PrAssignment(PrAssignable* lhs, Token op, PrExpression* rhs);
+  PrAssignment(PrExpression* lhs, Token op, PrExpression* rhs);
   virtual std::string to_string();
   virtual PrType get_type();
   
-  PrAssignable* lhs;
+  PrExpression* lhs;
   PrExpression* rhs;
   Token op;
 };
@@ -174,6 +166,15 @@ struct PrWith: PrStatement {
   PrStatement* event;
 };
 
+struct PrAccessorExpression: PrExpression {
+  virtual std::string to_string();
+  virtual PrType get_type();
+  
+  std::string acc = "";
+  PrExpression* ds;
+  std::vector<PrExpression*> indices;
+};
+
 class Parser {
 public:
   Parser(std::istream* is);
@@ -182,10 +183,11 @@ private:
   Production* read_production();
   PrDecor* read_rawtoken();
   PrExpression* read_expression();
+  PrExpression* read_term();
   PrExprParen* read_expression_parentheses();
   PrStatement* read_statement();
   PrAssignment* read_assignment();
-  PrAssignable* read_assignable();
+  PrExpression* read_accessors(PrExpression* ds);
   PrExprArithmetic* read_arithmetic(PrExpression* lhs);
   PrExpressionFn* read_expression_function();
   PrStatementFn* read_statement_function();

@@ -1,15 +1,17 @@
-with noone {
-  test();
-}
-
-while true {
-  test();
-}
+x[0]++
+x[3]+=(f(x)[4, 2])[3][2]+1
   
 if z < z * 3
   z -= 4
 else
   z += 4
+
+with noone {
+  while true {
+    test();
+  }
+}
+
 
 b =(4-b) <3
 

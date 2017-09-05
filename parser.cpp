@@ -65,7 +65,8 @@ PrStatement* Parser::read_statement() {
 }
 
 PrAssignment* Parser::read_assignment() {
-  PrAssignable* lhs = read_assignable();
+  PrExpression* lhs = read_term();
+  // check op of correct format:
   Token op = ts.read();
   PrExpression* rhs = 0;
   if (op.type != OPR) {
@@ -76,26 +77,10 @@ PrAssignment* Parser::read_assignment() {
   return a;
 }
 
-PrAssignable* Parser::read_assignable() {
-  Token t(ts.peek());
-  PrAssignable* a;
-  if (t == Token(PUNC,"(")) {
-    // TODO
-    return 0;
-  } else {
-    t = ts.read();
-    a = new PrAssignable(t);
-  }
-  // optional: . or []
-  
-  return a;
-}
-
-PrExpression* Parser::read_expression() {
+PrExpression* Parser::read_term() {
   PrExpression* to_return = 0;
-
   Token t(ts.peek());
-  if (t == Token(OP,"-") || t.type == OPR)
+  if (t == Token(OP,"-") || t == Token(OP,"!") || t == Token(KW,"not") || t.type == OPR)
     return new PrExprArithmetic(nullptr, ts.read(),read_expression());
   if (t.type == NUM || t.type == STR)
     to_return = new PrFinal(ts.read());
@@ -108,15 +93,48 @@ PrExpression* Parser::read_expression() {
     else
       to_return = new PrIdentifier(ts.read());
   }
-  t = ts.peek();
-  if (t.type == OP)
-    return read_arithmetic(to_return);
-  else
-    return to_return;
+  
+  return read_accessors(to_return);
+}
+
+PrExpression* Parser::read_expression() {
+  PrExpression* to_return = read_term();
+  Token t(ts.peek());
+  if (t.type == OP || t.type == OPR || t.is_op_keyword())
+    to_return = read_arithmetic(to_return);
+  return to_return;
 } 
+
+PrExpression* Parser::read_accessors(PrExpression* ds) {
+  if (ts.peek() != Token(PUNC,"["))
+    return ds;
+
+  PrAccessorExpression* a = new PrAccessorExpression();
+  a->ds = ds;
+  ts.read(); // [
+  ignoreWS();
+  if (ts.peek().type == OPA || ts.peek() == Token(OP,"|"))
+    a->acc = ts.read().value;
+    
+READ_INDEX:
+  ignoreWS();
+  a->indices.push_back(read_expression());
+  ignoreWS();
+  if (ts.peek() == Token(PUNC,",")) {
+    ts.read();
+    goto READ_INDEX;
+  }
+  
+  ts.read(); // ]
+  
+  
+  return read_accessors(a);
+}
 
 PrExprArithmetic* Parser::read_arithmetic(PrExpression* lhs) {
   //TODO assert ts.peek() is operator
+  if (ts.peek() == Token(OP,"!") || ts.peek() == Token(KW,"not"))
+    return nullptr; // TODO: better error handling
   if (ts.peek().type == OPR)
     return new PrExprArithmetic(lhs, ts.read(), nullptr);
   return new PrExprArithmetic(lhs, ts.read(), read_expression());
@@ -138,9 +156,6 @@ PrExpressionFn* Parser::read_expression_function() {
       continue;
     else break;
   }
-  
-  // read paren
-  ts.read();
   
   return pfn;
 }

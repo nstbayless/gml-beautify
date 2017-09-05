@@ -39,17 +39,7 @@ PrType PrExprArithmetic::get_type() {
   return PROD;
 }
 
-PrAssignable::PrAssignable(Token t): identifier(t) {}
-
-string PrAssignable::to_string() {
-  return "$<" + identifier.value + ">";
-}
-
-PrType PrAssignable::get_type() {
-  return PROD;
-}
-
-PrAssignment::PrAssignment(PrAssignable* lhs, Token op, PrExpression* rhs): lhs(lhs), op(op), rhs(rhs) {}
+PrAssignment::PrAssignment(PrExpression* lhs, Token op, PrExpression* rhs): lhs(lhs), op(op), rhs(rhs) {}
 
 string PrAssignment::to_string() {
   if (op.type == OPR) {
@@ -220,5 +210,17 @@ string PrWith::to_string() {
 }
 
 PrType PrWith::get_type() {
+  return PROD;
+}
+
+string PrAccessorExpression::to_string() {
+  string s = ds->to_string() + "[" + acc;
+  for (auto index: indices) {
+    s += index->to_string() + ", ";
+  }
+  return s.substr(0,s.length()-2) + "]";
+}
+
+PrType PrAccessorExpression::get_type() {
   return PROD;
 }
