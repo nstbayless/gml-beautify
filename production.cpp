@@ -70,7 +70,9 @@ string PrExpressionFn::to_string() {
   for (auto arg: args) {
     str += arg->to_string() + ",";
   }
-  str = str.substr(0, str.size() - 1) + ")";
+  if (args.size() > 0)
+    str = str.substr(0, str.size() - 1);
+  str +=  ")";
   return str;
 }
 

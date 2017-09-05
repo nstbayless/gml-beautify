@@ -43,7 +43,7 @@ PrStatement* Parser::read_statement() {
       return read_assignment();
     }
     if (value == "{") {
-      return read_body();
+      return read_block();
     }
     return nullptr;
   case ID:
@@ -143,6 +143,7 @@ PrExpressionFn* Parser::read_expression_function() {
 PrStatementFn* Parser::read_statement_function() {
   PrStatementFn* fn = new PrStatementFn();
   fn->fn = read_expression_function();
+  ts.read(); //ENX
   return fn;
 }
 
@@ -200,7 +201,7 @@ PrStatementIf* Parser::read_statement_if() {
   return p;
 }
 
-PrBody* Parser::read_body() {
+PrBody* Parser::read_block() {
   PrBody* p = new PrBody();
   ts.read();
   while (ts.peek() != Token(PUNC,"}"))

@@ -1,5 +1,12 @@
-/*if x > 4
-  y += 1
+x();
+x();
+if a {
+  b();
+  c();
+} else {
+  d()
+  e();
+}
   
 if z < z * 3
   z -= 4
@@ -44,4 +51,4 @@ switch z {
 if x < y {
   return 5;
 } else return argument[0]
-*/
+*/x()

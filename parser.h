@@ -162,7 +162,7 @@ private:
   PrStatementFn* read_statement_function();
   PrStatementVar* read_statement_var();
   PrStatementIf* read_statement_if();
-  PrBody* read_body();
+  PrBody* read_block();
   
   void ignoreWS();
   
