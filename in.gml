@@ -1,3 +1,11 @@
+/*if x > 4
+  y += 1
+  
+if z < z * 3
+  z -= 4
+else
+  z += 4
+
 b =(4-b) <3
 
 /// example(test) game maker file for parsing

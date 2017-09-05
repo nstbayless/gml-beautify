@@ -162,7 +162,7 @@ string PrStatementIf::to_string() {
   string s = "if " + condition->to_string();
   s += "\n" + result->to_string();
   if (otherwise)
-    s += "else\n" + otherwise->to_string();
+    s += "\nelse\n" + otherwise->to_string();
   return s;
 }
 

@@ -302,6 +302,8 @@ LLKTokenStream::LLKTokenStream(istream* is, int k): TokenStream(is), k(k) {
 }
 
 Token LLKTokenStream::peek() {
+  if (buffer.size() == 0)
+    return TokenStream::peek();
   return buffer.front();
 }
 
