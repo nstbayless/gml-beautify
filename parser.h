@@ -145,6 +145,16 @@ struct PrControl: PrStatement {
   PrExpression* val;
 };
 
+struct PrFor: PrStatement {
+  virtual std::string to_string();
+  virtual PrType get_type();
+  
+  PrStatement* init;
+  PrExpression* condition;
+  PrStatement* second;
+  PrStatement* first;
+};
+
 class Parser {
 public:
   Parser(std::istream* is);
@@ -163,8 +173,10 @@ private:
   PrStatementVar* read_statement_var();
   PrStatementIf* read_statement_if();
   PrBody* read_block();
+  PrFor* read_for();
   
   void ignoreWS();
+  void read_statement_end();
   
   LLKTokenStream ts;
 };

@@ -16,7 +16,9 @@ Production* Parser::read_production() {
   TokenType t = ts.peek().type;
   if (t == COMMENT || t == WS)
     return read_rawtoken();
-  return read_statement();
+  PrStatement* p = read_statement();
+  read_statement_end();
+  return p;
 }
 
 PrDecor* Parser::read_rawtoken() {
@@ -33,6 +35,8 @@ PrStatement* Parser::read_statement() {
       return read_statement_var();
     if (value == "if")
       return read_statement_if();
+    if (value == "for")
+      return read_for();
     if (value == "return")
       return new PrControl(ts.read(),read_expression());
     if (value == "exit" || value == "continue" || value == "break")
@@ -64,9 +68,6 @@ PrAssignment* Parser::read_assignment() {
     rhs = read_expression();
   }
   PrAssignment* a = new PrAssignment(lhs,op,rhs);
-  
-  // read ENX:
-  ts.read();
   
   return a;
 }
@@ -143,15 +144,14 @@ PrExpressionFn* Parser::read_expression_function() {
 PrStatementFn* Parser::read_statement_function() {
   PrStatementFn* fn = new PrStatementFn();
   fn->fn = read_expression_function();
-  ts.read(); //ENX
   return fn;
 }
 
 PrExprParen* Parser::read_expression_parentheses() {
   PrExprParen* p = new PrExprParen();
-  ts.read();
+  ts.read(); //(
   p->content = read_expression();
-  ts.read();
+  ts.read(); //)
   return p;
 }
 
@@ -178,9 +178,6 @@ PrStatementVar* Parser::read_statement_var() {
     break;
   }
   
-  // read ENX
-  ts.read();
-  
   return p;
 }
 
@@ -192,25 +189,70 @@ PrStatementIf* Parser::read_statement_if() {
   p->condition = read_expression();
   ignoreWS();
   p->result = read_statement();
+  read_statement_end();
   ignoreWS();
   if (ts.peek() == Token(KW, "else")) {
     ts.read();
     ignoreWS();
     p->otherwise = read_statement();
+    read_statement_end();
   }
   return p;
 }
 
 PrBody* Parser::read_block() {
   PrBody* p = new PrBody();
-  ts.read();
+  ts.read(); // {
   while (ts.peek() != Token(PUNC,"}"))
     p->productions.push_back(read_production());
-  ts.read();
+  ts.read(); // }
   return p;
 }
 
 void Parser::ignoreWS() {
   while (ts.peek() == Token(ENX,"\n"))
     ts.read();
+}
+
+PrFor* Parser::read_for() {
+  PrFor* pfor = new PrFor();
+  ts.read(); // for
+  ignoreWS();
+  ts.read(); //(
+  
+  ignoreWS();
+  pfor->init = read_statement();
+  ignoreWS();
+  ts.read(); //;
+  
+  ignoreWS();
+  pfor->condition = read_expression();
+  ignoreWS();
+  ts.read(); //;
+  
+  ignoreWS();
+  if (ts.peek() != Token(PUNC,")")) {
+    pfor->second = read_statement();
+    ignoreWS();
+    ts.read(); //)
+  } else {
+    pfor->second = new PrEmptyStatement(Token(ENX," "));
+  }
+  
+  ignoreWS();
+  pfor->first = read_statement();
+  return pfor;
+}
+
+void Parser::read_statement_end() {
+  bool read = false;
+  if (ts.peek() == Token(ENX,";")) {
+    read = true;
+    ts.read();
+  }
+  if (ts.peek() == Token(ENX,"\n")) {
+    read = true;
+    ts.read();
+  }
+  // throw error if read is false
 }

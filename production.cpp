@@ -94,6 +94,7 @@ string PrBody::to_string() {
     str += p->to_string() + "\n";
   }
   str += "}";
+  return str;
 }
 
 PrType PrBody::get_type() {
@@ -176,6 +177,7 @@ string PrControl::to_string() {
   string s = kw.value;
   if (val)
     s += val->to_string();
+  return s;
 }
 
 PrType PrControl::get_type() {
@@ -183,3 +185,20 @@ PrType PrControl::get_type() {
 }
 
 PrControl::PrControl(Token t, PrExpression* val): kw(t), val(val) {}
+
+string PrFor::to_string() {
+  string s = "for (";
+  s += init->to_string();
+  s += "; ";
+  s += condition->to_string();
+  s += "; ";
+  s += second->to_string();
+  s += ")\n";
+  s += first->to_string();
+  return s;
+}
+
+PrType PrFor::get_type() {
+  return PROD;
+}
+
