@@ -8,6 +8,8 @@ switch z {
     break;
 }
 
+switch k {}
+
 x[0]++
 x[3]+=(f(x)[4, 2])[3][2]+1
   

@@ -7,27 +7,17 @@ string Production::to_string() {
   return "?";
 }
 
-PrType Production::get_type() {
-  return PROD;
-}
-
 PrDecor::PrDecor(Token t): rawToken(t) {}
 
 string PrDecor::to_string() {
   return rawToken.value;
 }
 
-PrType PrDecor::get_type() {
-  return PROD;
-}
 
 string PrExprParen::to_string() {
   return "(" + content->to_string() + ")";
 }
 
-PrType PrExprParen::get_type() {
-  return PROD;
-}
 
 PrExprArithmetic::PrExprArithmetic(PrExpression* lhs, Token op, PrExpression* rhs): lhs(lhs), op(op), rhs(rhs) {}
 
@@ -35,9 +25,6 @@ string PrExprArithmetic::to_string() {
   return ((lhs)?(lhs->to_string() + " "):"") + op.value + ((rhs)?(" " + rhs->to_string()):"");
 }
 
-PrType PrExprArithmetic::get_type() {
-  return PROD;
-}
 
 PrAssignment::PrAssignment(PrExpression* lhs, Token op, PrExpression* rhs): lhs(lhs), op(op), rhs(rhs) {}
 
@@ -47,10 +34,6 @@ string PrAssignment::to_string() {
   } else {
     return lhs->to_string() + " " + op.value + " " + rhs->to_string();
   }
-}
-
-PrType PrAssignment::get_type() {
-  return PROD;
 }
 
 PrExpressionFn::PrExpressionFn(Token id): identifier(id) {}
@@ -66,16 +49,8 @@ string PrExpressionFn::to_string() {
   return str;
 }
 
-PrType PrExpressionFn::get_type() {
-  return PROD;
-}
-
 string PrStatementFn::to_string() {
   return "@" + fn->to_string();
-}
-
-PrType PrStatementFn::get_type() {
-  return PROD;
 }
 
 string PrBody::to_string() {
@@ -85,10 +60,6 @@ string PrBody::to_string() {
   }
   str += "}";
   return str;
-}
-
-PrType PrBody::get_type() {
-  return PROD;
 }
 
 PrEmptyStatement::PrEmptyStatement(): enx(Token(ENX,"\n")), hastoken(false) {}
@@ -103,10 +74,6 @@ string PrEmptyStatement::to_string() {
   return "";
 }
 
-PrType PrEmptyStatement::get_type() {
-  return PROD;
-}
-
 PrFinal::PrFinal(Token t): final(t) {}
 
 string PrFinal::to_string() {
@@ -115,19 +82,12 @@ string PrFinal::to_string() {
   return "%" + final.value;
 }
 
-PrType PrFinal::get_type() {
-  return PROD;
-}
-
 PrIdentifier::PrIdentifier(Token t): identifier(t) {}
 
 string PrIdentifier::to_string() {
   return "$" + identifier.value;
 }
 
-PrType PrIdentifier::get_type() {
-  return PROD;
-}
 
 PrVarDeclaration::PrVarDeclaration(Token t, PrExpression* expr): identifier(t), definition(expr) {}
 
@@ -135,10 +95,6 @@ string PrVarDeclaration::to_string() {
   if (definition != 0)
     return identifier.value + " = " + definition->to_string();
   return identifier.value;
-}
-
-PrType PrVarDeclaration::get_type() {
-  return PROD;
 }
 
 string PrStatementVar::to_string() {
@@ -151,10 +107,6 @@ string PrStatementVar::to_string() {
   return s;
 }
 
-PrType PrStatementVar::get_type() {
-  return PROD;
-}
-
 string PrStatementIf::to_string() {
   string s = "if " + condition->to_string();
   s += "\n> " + result->to_string();
@@ -163,19 +115,11 @@ string PrStatementIf::to_string() {
   return s;
 }
 
-PrType PrStatementIf::get_type() {
-  return PROD;
-}
-
 string PrControl::to_string() {
   string s = kw.value;
   if (val)
     s += val->to_string();
   return s;
-}
-
-PrType PrControl::get_type() {
-  return PROD;
 }
 
 PrControl::PrControl(Token t, PrExpression* val): kw(t), val(val) {}
@@ -193,24 +137,12 @@ string PrFor::to_string() {
   return s;
 }
 
-PrType PrFor::get_type() {
-  return PROD;
-}
-
 string PrWhile::to_string() {
   return "while " + condition->to_string() + "\n" + event->to_string();
 }
 
-PrType PrWhile::get_type() {
-  return PROD;
-}
-
 string PrWith::to_string() {
   return "with " + objid->to_string() + "\n" + event->to_string();
-}
-
-PrType PrWith::get_type() {
-  return PROD;
 }
 
 string PrAccessorExpression::to_string() {
@@ -219,10 +151,6 @@ string PrAccessorExpression::to_string() {
     s += index->to_string() + ", ";
   }
   return s.substr(0,s.length()-2) + "]";
-}
-
-PrType PrAccessorExpression::get_type() {
-  return PROD;
 }
 
 string PrCase::to_string() {
@@ -238,10 +166,6 @@ string PrCase::to_string() {
   return s;
 }
 
-PrType PrCase::get_type() {
-  return PROD;
-}
-
 string PrSwitch::to_string() {
   string s = "switch " + condition->to_string() + " {\n";
   
@@ -253,6 +177,3 @@ string PrSwitch::to_string() {
   return s;
 }
 
-PrType PrSwitch::get_type() {
-  return PROD;
-}

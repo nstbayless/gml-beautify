@@ -1,6 +1,8 @@
-#include "tokenstream.h"
 #include <vector>
 #include <string>
+#include <typeinfo>
+
+#include "tokenstream.h"
 
 #ifndef PARSER_H
 #define PARSER_H
@@ -11,12 +13,11 @@ enum PrType {
 
 struct Production {
   virtual std::string to_string();
-  virtual PrType get_type();
 };
 
 struct PrDecor: Production {
   virtual std::string to_string();
-  virtual PrType get_type();
+  
   
   PrDecor(Token rawToken);
   
@@ -29,7 +30,7 @@ struct PrExpression: Production {
 // parentheses are important to remember for beautifier
 struct PrExprParen: PrExpression {
   virtual std::string to_string();
-  virtual PrType get_type();
+  
   
   PrExpression* content;
 };
@@ -37,7 +38,7 @@ struct PrExprParen: PrExpression {
 struct PrExpressionFn: PrExpression{
   PrExpressionFn(Token identifier);
   virtual std::string to_string();
-  virtual PrType get_type();
+  
   
   Token identifier;
   std::vector<PrExpression*> args;
@@ -46,7 +47,7 @@ struct PrExpressionFn: PrExpression{
 struct PrExprArithmetic: PrExpression {
   PrExprArithmetic(PrExpression* lhs, Token op, PrExpression* rhs);
   virtual std::string to_string();
-  virtual PrType get_type();
+  
   
   PrExpression* lhs;
   PrExpression *rhs;
@@ -60,7 +61,7 @@ struct PrEmptyStatement: PrStatement {
   PrEmptyStatement();
   PrEmptyStatement(Token enx);
   virtual std::string to_string();
-  virtual PrType get_type();
+  
   
   bool hastoken;
   Token enx;
@@ -68,7 +69,7 @@ struct PrEmptyStatement: PrStatement {
 
 struct PrFinal: PrExpression {
   virtual std::string to_string();
-  virtual PrType get_type();
+  
   
   PrFinal(Token t);
   Token final;
@@ -76,7 +77,7 @@ struct PrFinal: PrExpression {
 
 struct PrIdentifier: PrExpression {
   virtual std::string to_string();
-  virtual PrType get_type();
+  
   PrIdentifier(Token t);
   
   Token identifier;
@@ -85,7 +86,7 @@ struct PrIdentifier: PrExpression {
 struct PrAssignment: PrStatement {
   PrAssignment(PrExpression* lhs, Token op, PrExpression* rhs);
   virtual std::string to_string();
-  virtual PrType get_type();
+  
   
   PrExpression* lhs;
   PrExpression* rhs;
@@ -94,7 +95,7 @@ struct PrAssignment: PrStatement {
 
 struct PrStatementFn: PrStatement {
   virtual std::string to_string();
-  virtual PrType get_type();
+  
   
   PrExpressionFn* fn;
 };
@@ -102,7 +103,7 @@ struct PrStatementFn: PrStatement {
 struct PrVarDeclaration: Production {
   PrVarDeclaration(Token ident,  PrExpression* def = nullptr);
   virtual std::string to_string();
-  virtual PrType get_type();
+  
   
   Token identifier;
   PrExpression* definition;
@@ -110,14 +111,14 @@ struct PrVarDeclaration: Production {
 
 struct PrStatementVar: PrStatement {
   virtual std::string to_string();
-  virtual PrType get_type();
+  
   
   std::vector<PrVarDeclaration*> declarations;
 };
 
 struct PrStatementIf: PrStatement {
   virtual std::string to_string();
-  virtual PrType get_type();
+  
   
   PrExpression* condition;
   PrStatement* result;
@@ -126,7 +127,7 @@ struct PrStatementIf: PrStatement {
 
 struct PrBody: PrStatement {
   virtual std::string to_string();
-  virtual PrType get_type();
+  
   
   std::vector<Production*> productions;
 };
@@ -134,7 +135,7 @@ struct PrBody: PrStatement {
 struct PrControl: PrStatement {
   PrControl(Token,PrExpression* val = nullptr);
   virtual std::string to_string();
-  virtual PrType get_type();
+  
   
   Token kw;
   PrExpression* val;
@@ -142,7 +143,7 @@ struct PrControl: PrStatement {
 
 struct PrFor: PrStatement {
   virtual std::string to_string();
-  virtual PrType get_type();
+  
   
   PrStatement* init;
   PrExpression* condition;
@@ -152,7 +153,7 @@ struct PrFor: PrStatement {
 
 struct PrWhile: PrStatement {
   virtual std::string to_string();
-  virtual PrType get_type();
+  
   
   PrExpression* condition;
   PrStatement* event;
@@ -160,7 +161,7 @@ struct PrWhile: PrStatement {
 
 struct PrWith: PrStatement {
   virtual std::string to_string();
-  virtual PrType get_type();
+  
   
   PrExpression* objid;
   PrStatement* event;
@@ -168,7 +169,7 @@ struct PrWith: PrStatement {
 
 struct PrAccessorExpression: PrExpression {
   virtual std::string to_string();
-  virtual PrType get_type();
+  
   
   std::string acc = "";
   PrExpression* ds;
@@ -178,7 +179,7 @@ struct PrAccessorExpression: PrExpression {
 
 struct PrCase: PrStatement {
   virtual std::string to_string();
-  virtual PrType get_type();
+  
   
   PrExpression* value;
   std::vector<Production*> productions;
@@ -186,7 +187,7 @@ struct PrCase: PrStatement {
 
 struct PrSwitch: PrStatement {
   virtual std::string to_string();
-  virtual PrType get_type();
+  
   
   PrExpression* condition;
   std::vector<PrCase*> cases;

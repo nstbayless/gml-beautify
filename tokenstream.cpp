@@ -194,7 +194,7 @@ const char* KEYWORDS[] = {
   "for",
   "switch",
   "case",
-  "default"
+  "default",
   "break",
   "continue",
   "return",
