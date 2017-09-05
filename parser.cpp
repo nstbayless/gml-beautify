@@ -226,7 +226,10 @@ PrFor* Parser::read_for() {
   ts.read(); //;
   
   ignoreWS();
-  pfor->condition = read_expression();
+  if (ts.peek() != Token(ENX,";"))
+    pfor->condition = read_expression();
+  else
+    pfor->condition = nullptr;
   ignoreWS();
   ts.read(); //;
   
@@ -234,10 +237,10 @@ PrFor* Parser::read_for() {
   if (ts.peek() != Token(PUNC,")")) {
     pfor->second = read_statement();
     ignoreWS();
-    ts.read(); //)
   } else {
     pfor->second = new PrEmptyStatement();
   }
+  ts.read(); //)
   
   ignoreWS();
   pfor->first = read_statement();

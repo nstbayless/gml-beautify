@@ -1,8 +1,8 @@
-for (x=0;x<5;x++)
-  return 4;
-  
 for (;;)
-  return 3;
+  return 3;  
+  
+  
+
 
 {x();
 x();}

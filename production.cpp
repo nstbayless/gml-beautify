@@ -194,7 +194,8 @@ string PrFor::to_string() {
   string s = "for (";
   s += init->to_string();
   s += "; ";
-  s += condition->to_string();
+  if (condition)
+    s += condition->to_string();
   s += "; ";
   s += second->to_string();
   s += ")\n";
