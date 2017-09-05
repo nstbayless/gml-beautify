@@ -175,6 +175,23 @@ struct PrAccessorExpression: PrExpression {
   std::vector<PrExpression*> indices;
 };
 
+
+struct PrCase: PrStatement {
+  virtual std::string to_string();
+  virtual PrType get_type();
+  
+  PrExpression* value;
+  std::vector<Production*> productions;
+};
+
+struct PrSwitch: PrStatement {
+  virtual std::string to_string();
+  virtual PrType get_type();
+  
+  PrExpression* condition;
+  std::vector<PrCase*> cases;
+};
+
 class Parser {
 public:
   Parser(std::istream* is);
@@ -197,6 +214,7 @@ private:
   PrFor* read_for();
   PrWith* read_with();
   PrWhile* read_while();
+  PrSwitch* read_switch();
   
   void ignoreWS();
   void read_statement_end();

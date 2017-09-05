@@ -186,12 +186,17 @@ Token TokenStream::read_operator() {
 
 
 const char* KEYWORDS[] = {
+  "var",
   "if",
   "else",
   "while",
   "with",
   "for",
-  "var",
+  "switch",
+  "case",
+  "default"
+  "break",
+  "continue",
   "return",
   "exit",
   "not",
@@ -199,8 +204,6 @@ const char* KEYWORDS[] = {
   "or",
   "mod",
   "div",
-  "switch",
-  "case",
 };
 
 Token TokenStream::read_ident() {

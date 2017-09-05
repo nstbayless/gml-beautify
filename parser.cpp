@@ -41,6 +41,8 @@ PrStatement* Parser::read_statement() {
       return read_while();
     if (value == "with")
       return read_with();
+    if (value == "switch")
+      return read_switch();
     if (value == "return")
       return new PrControl(ts.read(),read_expression());
     if (value == "exit" || value == "continue" || value == "break")
@@ -297,5 +299,48 @@ PrWith* Parser::read_with() {
   p->objid = read_expression();
   ignoreWS();
   p->event = read_statement();
+  return p;
+}
+
+PrSwitch* Parser::read_switch() {
+  PrSwitch* p = new PrSwitch();
+  
+  ts.read(); // switch
+  ignoreWS();
+  
+  p->condition = read_expression();
+  ignoreWS();
+  
+  ts.read(); // {
+  ignoreWS();
+  
+  while (true) {
+    if (ts.peek() == Token(PUNC,"}"))
+        break;
+        
+    PrCase* c = new PrCase();
+    Token t(ts.read()); // case
+    ignoreWS();
+    
+    if (t==Token(KW,"case")) {
+      c->value = read_expression();
+      ignoreWS();
+    } else
+      c->value = nullptr;
+    
+    ts.read(); //:
+    ignoreWS();
+    
+    while (ts.peek()!=Token(KW,"case") &&
+           ts.peek()!=Token(KW,"default") &&
+           ts.peek()!=Token(PUNC,"}")) {
+      c->productions.push_back(read_production());
+    }
+    
+    p->cases.push_back(c);
+  }
+  
+  ts.read(); // }
+  
   return p;
 }

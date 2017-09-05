@@ -224,3 +224,35 @@ string PrAccessorExpression::to_string() {
 PrType PrAccessorExpression::get_type() {
   return PROD;
 }
+
+string PrCase::to_string() {
+  string s;
+  if (value)
+    s = "case " + value->to_string() + ":\n";
+  else
+    s = "default:\n";
+  
+  for (auto p: productions)
+    s += p->to_string() + "\n";
+    
+  return s;
+}
+
+PrType PrCase::get_type() {
+  return PROD;
+}
+
+string PrSwitch::to_string() {
+  string s = "switch " + condition->to_string() + " {\n";
+  
+  for (auto c: cases) {
+    s += c->to_string();
+  }
+  
+  s += "}";
+  return s;
+}
+
+PrType PrSwitch::get_type() {
+  return PROD;
+}

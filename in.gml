@@ -1,3 +1,13 @@
+switch z {
+  case 0:
+    break;
+  case 1:
+  case 3:
+    break;
+  default:
+    break;
+}
+
 x[0]++
 x[3]+=(f(x)[4, 2])[3][2]+1
   
@@ -38,7 +48,7 @@ if (x >= 5) || (y == 2) && z {
 }
   else {x++;exit;}
 
-/*
+
 switch z {
   case 0:
     break;
@@ -53,6 +63,8 @@ switch z {
 if x < y {
   return 5;
 } else greturn argument[0]
-*/x()
+x()
 
 for(;;);
+
+exit
