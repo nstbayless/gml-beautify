@@ -101,9 +101,13 @@ PrType PrBody::get_type() {
   return PROD;
 }
 
-PrEmptyStatement::PrEmptyStatement(Token t): enx(t) {}
+PrEmptyStatement::PrEmptyStatement(): enx(Token(ENX,"\n")), hastoken(false) {}
+
+PrEmptyStatement::PrEmptyStatement(Token t): enx(t), hastoken(true) {}
 
 string PrEmptyStatement::to_string() {
+  if (!hastoken)
+    return "";
   if (enx.value == ";")
     return "`";
   return "";

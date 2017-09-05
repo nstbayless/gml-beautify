@@ -57,9 +57,12 @@ struct PrStatement: Production {
 };
 
 struct PrEmptyStatement: PrStatement {
+  PrEmptyStatement();
   PrEmptyStatement(Token enx);
   virtual std::string to_string();
   virtual PrType get_type();
+  
+  bool hastoken;
   Token enx;
 };
 

@@ -29,7 +29,7 @@ PrStatement* Parser::read_statement() {
   string value(ts.peek().value);
   switch (ts.peek().type) {
   case ENX:
-    return new PrEmptyStatement(ts.read());
+    return new PrEmptyStatement();
   case KW:
     if (value == "var")
       return read_statement_var();
@@ -236,7 +236,7 @@ PrFor* Parser::read_for() {
     ignoreWS();
     ts.read(); //)
   } else {
-    pfor->second = new PrEmptyStatement(Token(ENX," "));
+    pfor->second = new PrEmptyStatement();
   }
   
   ignoreWS();
