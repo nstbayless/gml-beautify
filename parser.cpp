@@ -82,7 +82,8 @@ PrAssignment* Parser::read_assignment() {
 PrExpression* Parser::read_term() {
   PrExpression* to_return = 0;
   Token t(ts.peek());
-  if (t == Token(OP,"-") || t == Token(OP,"!") || t == Token(KW,"not") || t.type == OPR)
+  if (t == Token(OP,"-")   || t == Token(OP,"!") ||
+      t == Token(KW,"not") || t == Token(OP,"~") || t.type == OPR)
     return new PrExprArithmetic(nullptr, ts.read(),read_expression());
   if (t.type == NUM || t.type == STR)
     to_return = new PrFinal(ts.read());

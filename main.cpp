@@ -8,6 +8,9 @@ using namespace std;
 
 int main (int argn, char** argv) {
   const char* filename = "in.gml";
+  
+  BeautifulConfig config;
+  
   if (argn >= 2) {
     filename = argv[1];
   }
@@ -18,21 +21,11 @@ int main (int argn, char** argv) {
     cout << "Could not open file " << filename;
     exit(1);
   } else {
-    /*
-    LLKTokenStream token_stream(&inFile, 4);
-    cout << "-- BEGIN --\n";
-    while (!token_stream.eof())
-      cout << token_stream.read() << endl;
-    if (token_stream.peek().type == ERR)
-      cout << "-- ERROR !! --\n";
-    else
-      cout << "-- END --\n";
-    */
     Parser parser(&inFile);
     Production* p;
     cout << "-- BEGIN --\n";
     while (p = parser.read())
-      cout << p->to_string() + "\n";
+      cout << p->beautiful(config) + "\n";
     cout << "-- END --\n";
   }
   

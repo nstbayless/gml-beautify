@@ -1,14 +1,7 @@
-switch z {
-  case 0:
-    break;
-  case 1:
-  case 3:
-    break;
-  default:
-    break;
+while noone
+{
+  x++
 }
-
-switch k {}
 
 x[0]++
 x[3]+=(f(x)[4, 2])[3][2]+1
@@ -17,12 +10,8 @@ if z < z * 3
   z -= 4
 else
   z += 4
-
-with noone {
-  while true {
-    test();
-  }
-}
+  
+x++
 
 
 b =(4-b) <3

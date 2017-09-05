@@ -156,7 +156,7 @@ const char* op_multichar[] = {
   "&=",
   "|=",
   "*=",
-  "//",
+  "~="
   "<<",
   ">>"
 };
@@ -303,7 +303,7 @@ bool TokenStream::eof() {
   return peek().type == END || peek().type == ERR;
 }
 
-const char ops[] = "+-*/<>=&|!%^";
+const char ops[] = "+-*/<>=&|!%^~";
 const char opas[] = "?#@";
 const char punc[] = "(){}.,[]:";
 
