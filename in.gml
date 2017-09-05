@@ -1,17 +1,9 @@
-for (;;)
-  return 3;  
-  
-  
+with noone {
+  test();
+}
 
-
-{x();
-x();}
-if a {
-  b();
-  c();
-} else {
-  d()
-  e();
+while true {
+  test();
 }
   
 if z < z * 3
@@ -31,6 +23,8 @@ a++
 b = 3.3;
 c = a + b
 
+
+for (;;);
 
 var x, y = 02, z = .5;
 x = 005.01;
@@ -56,5 +50,7 @@ switch z {
 
 if x < y {
   return 5;
-} else return argument[0]
+} else greturn argument[0]
 */x()
+
+for(;;);

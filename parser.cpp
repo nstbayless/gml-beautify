@@ -37,6 +37,10 @@ PrStatement* Parser::read_statement() {
       return read_statement_if();
     if (value == "for")
       return read_for();
+    if (value == "while")
+      return read_while();
+    if (value == "with")
+      return read_with();
     if (value == "return")
       return new PrControl(ts.read(),read_expression());
     if (value == "exit" || value == "continue" || value == "break")
@@ -203,6 +207,7 @@ PrStatementIf* Parser::read_statement_if() {
 PrBody* Parser::read_block() {
   PrBody* p = new PrBody();
   ts.read(); // {
+  ignoreWS();
   while (ts.peek() != Token(PUNC,"}"))
     p->productions.push_back(read_production());
   ts.read(); // }
@@ -258,4 +263,24 @@ void Parser::read_statement_end() {
     ts.read();
   }
   // throw error if read is false
+}
+
+PrWhile* Parser::read_while() {
+  PrWhile* p = new PrWhile();
+  ts.read(); // while
+  ignoreWS();
+  p->condition = read_expression();
+  ignoreWS();
+  p->event = read_statement();
+  return p;
+}
+
+PrWith* Parser::read_with() {
+  PrWith* p = new PrWith();
+  ts.read(); // with
+  ignoreWS();
+  p->objid = read_expression();
+  ignoreWS();
+  p->event = read_statement();
+  return p;
 }

@@ -167,9 +167,9 @@ PrType PrStatementVar::get_type() {
 
 string PrStatementIf::to_string() {
   string s = "if " + condition->to_string();
-  s += "\n" + result->to_string();
+  s += "\n> " + result->to_string();
   if (otherwise)
-    s += "\nelse\n" + otherwise->to_string();
+    s += "\nelse\n> " + otherwise->to_string();
   return s;
 }
 
@@ -199,7 +199,7 @@ string PrFor::to_string() {
   s += "; ";
   s += second->to_string();
   s += ")\n";
-  s += first->to_string();
+  s += "> " + first->to_string();
   return s;
 }
 
@@ -207,3 +207,18 @@ PrType PrFor::get_type() {
   return PROD;
 }
 
+string PrWhile::to_string() {
+  return "while " + condition->to_string() + "\n" + event->to_string();
+}
+
+PrType PrWhile::get_type() {
+  return PROD;
+}
+
+string PrWith::to_string() {
+  return "with " + objid->to_string() + "\n" + event->to_string();
+}
+
+PrType PrWith::get_type() {
+  return PROD;
+}

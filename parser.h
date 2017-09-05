@@ -158,6 +158,22 @@ struct PrFor: PrStatement {
   PrStatement* first;
 };
 
+struct PrWhile: PrStatement {
+  virtual std::string to_string();
+  virtual PrType get_type();
+  
+  PrExpression* condition;
+  PrStatement* event;
+};
+
+struct PrWith: PrStatement {
+  virtual std::string to_string();
+  virtual PrType get_type();
+  
+  PrExpression* objid;
+  PrStatement* event;
+};
+
 class Parser {
 public:
   Parser(std::istream* is);
@@ -177,6 +193,8 @@ private:
   PrStatementIf* read_statement_if();
   PrBody* read_block();
   PrFor* read_for();
+  PrWith* read_with();
+  PrWhile* read_while();
   
   void ignoreWS();
   void read_statement_end();
