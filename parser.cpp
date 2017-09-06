@@ -2,9 +2,7 @@
 
 using namespace std;
 
-Parser::Parser(istream* is): ts(is, 4) {
-
-}
+Parser::Parser(istream* is): ts(is, 4) { }
 
 Production* Parser::read() {
   if (ts.peek().type == END || ts.peek().type == ERR)
@@ -146,7 +144,7 @@ PrExprArithmetic* Parser::read_arithmetic(PrExpression* lhs) {
 PrExpressionFn* Parser::read_expression_function() {
   PrExpressionFn* pfn = new PrExpressionFn(ts.read());
   
-  // read paren:
+  // )
   ts.read();  
   
   while (true) {
@@ -154,11 +152,15 @@ PrExpressionFn* Parser::read_expression_function() {
     if (next == Token(PUNC,")"))
       break;
     pfn->args.push_back(read_expression());
-    next = ts.read();
-    if (next == Token(PUNC,","))
+    next = ts.peek();
+    if (next == Token(PUNC,",")) {
+      ts.read();
       continue;
+    }
     else break;
   }
+  
+  ts.read(); // )
   
   return pfn;
 }
@@ -326,8 +328,10 @@ PrSwitch* Parser::read_switch() {
     if (t==Token(KW,"case")) {
       c->value = read_expression();
       ignoreWS();
-    } else
+    } else {
+      ts.read(); // default
       c->value = nullptr;
+    }
     
     ts.read(); //:
     ignoreWS();
@@ -336,8 +340,8 @@ PrSwitch* Parser::read_switch() {
            ts.peek()!=Token(KW,"default") &&
            ts.peek()!=Token(PUNC,"}")) {
       c->productions.push_back(read_production());
+      ignoreWS();
     }
-    
     p->cases.push_back(c);
   }
   

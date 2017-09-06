@@ -26,6 +26,15 @@ string join_productions(const std::vector<P*> productions, string joinder, const
   return s;
 }
 
+template<class Base, class Any>
+bool is_a(Any* ptr) {
+  return !! dynamic_cast<Base*>(ptr);
+}
+
+bool hangable(Production* p) {
+  return is_a<PrBody>(p) || is_a<PrEmptyStatement>(p);
+}
+
 BeautifulContext BeautifulContext::increment_depth() const {
   auto b(*this);
   b.depth++;
@@ -126,6 +135,8 @@ string PrExprArithmetic::beautiful(const BeautifulConfig& config, BeautifulConte
 }
 
 string PrEmptyStatement::beautiful(const BeautifulConfig& config, BeautifulContext context) const {
+  if (context.attached)
+    return ";";
   return "";
 }
 
@@ -175,6 +186,8 @@ string PrBody::beautiful(const BeautifulConfig& config, BeautifulContext context
   if (config.egyptian) {
     if (!context.attached)
       s = indent(config, context);
+    else
+      s = " ";
   } else {
     if (context.attached)
       s = "\n";
@@ -197,20 +210,22 @@ string PrBody::beautiful(const BeautifulConfig& config, BeautifulContext context
 
 string PrStatementIf::beautiful(const BeautifulConfig& config, BeautifulContext context) const {
   string s = "if " + condition->beautiful(config,context.as_inline());
-  if (typeid(result) == typeid(PrBody))
+  if (hangable(result))
     context = context.attach();
   else
     s += "\n";
   s += result->beautiful(config, context.not_inline().increment_depth());
   context = context.detach();
   if (otherwise) {
-    if (typeid(result) == typeid(PrBody))
+    if (hangable(result) && config.egyptian)
       s += " ";
     else
       s += "\n";
-    s += "else ";
-    if (typeid(otherwise) == typeid(PrBody))
+    s += "else";
+    if (hangable(otherwise))
       context = context.attach();
+    else if (config.egyptian)
+      s += " ";  
     else
       s += "\n";
     s += otherwise->beautiful(config, context.not_inline().increment_depth());
@@ -222,13 +237,18 @@ string PrFor::beautiful(const BeautifulConfig& config, BeautifulContext context)
   string s = indent(config, context) + "for (" + init->beautiful(config, context.as_inline());
   s += ";";
   if (condition)
-    s += " " + condition->beautiful(config, context.as_inline());
+    if (init)
+      if (!is_a<PrEmptyStatement>(init))
+        s += " ";
+  if (condition)
+    s += condition->beautiful(config, context.as_inline());
   s += ";";
-  if (typeid(second) != typeid(PrEmptyStatement))
-    s += " ";
+  if (second)
+    if (!is_a<PrEmptyStatement>(second))
+      s += " ";
   s += second->beautiful(config, context.as_inline());
   s += ")";
-  if (typeid(first) == typeid(PrBody))
+  if (hangable(first))
     context = context.attach();
   else
     s += "\n";
@@ -238,6 +258,7 @@ string PrFor::beautiful(const BeautifulConfig& config, BeautifulContext context)
 
 string PrControl::beautiful(const BeautifulConfig& config, BeautifulContext context) const {
   string s = indent(config, context) + kw.value;
+  if (val) s += " " + val->beautiful(config, context.as_inline());
   if (!context.is_inline && config.semicolons)
     s += ";";
   return s;
@@ -245,8 +266,10 @@ string PrControl::beautiful(const BeautifulConfig& config, BeautifulContext cont
 
 string PrWhile::beautiful(const BeautifulConfig& config, BeautifulContext context) const {
   string s = indent(config, context) + "while (" + condition->beautiful(config, context.as_inline()) + ")";
-  if (typeid(event) == typeid(PrBody))
+  if (hangable(event))
     context = context.attach();
+  else
+    s += "\n";
   s += event->beautiful(config, context.increment_depth());
   return s;
 }
@@ -254,7 +277,7 @@ string PrWhile::beautiful(const BeautifulConfig& config, BeautifulContext contex
 string PrWith::beautiful(const BeautifulConfig& config, BeautifulContext context) const {
   string s = indent(config, context) +"with (" + objid->beautiful(config, context.as_inline());
   s += ")";
-  if (typeid(event) == typeid(PrBody))
+  if (hangable(event))
     context = context.attach();
   else
     s += "\n";
@@ -281,9 +304,9 @@ string PrSwitch::beautiful(const BeautifulConfig& config, BeautifulContext conte
   context = context.not_inline();
   
   if (config.egyptian)
-    s += " {";
+    s += " {\n";
   else
-    s += "\n" + indent(config, context) + "}";
+    s += "\n" + indent(config, context) + "{\n";
   
   for (auto c: cases)
     s += c->beautiful(config, context);

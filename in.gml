@@ -1,6 +1,41 @@
+if x y()
+
+for (;;) y()
+
+for (;;);
+
+if x < y {
+  return 5;
+} else return argument[0]
+x()
+exit;
+
+for(;x<5;);
+
+
+    for (var i  = 1; i < 8; i ++)
+      argument[0][? 4] -= 3;
+    break
+
+switch c{
+case 2:
+case 1: return
+default b: exit
+}
+
+switch s {
+}
+
+switch b {
+default:
+break
+}
+
+
 while noone
 {
-  x++
+  while noone
+   x++
 }
 
 x[0]++
@@ -12,7 +47,6 @@ else
   z += 4
   
 x++
-
 
 b =(4-b) <3
 
@@ -46,16 +80,17 @@ switch z {
   case 1:
   case 2:
   case 3:
-    while (var i  = 1; i < 8; i ++)
+    for (var i  = 1; i < 8; i ++)
       argument[0][? 4] -= 3;
     break
 }
 
 if x < y {
   return 5;
-} else greturn argument[0]
+} else return argument[0]
 x()
+exit;
 
-for(;;);
+for(;x<5;);
 
 exit

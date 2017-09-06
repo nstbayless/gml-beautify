@@ -18,7 +18,7 @@ struct BeautifulConfig {
   bool indent_spaces = true;
   
   //! number of spaces to indent with
-  int indent_spaces_per_tab = 2;
+  int indent_spaces_per_tab = 4;
   
   //! put spacing around ++/-- operator
   bool opr_space = false;
