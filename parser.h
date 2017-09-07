@@ -67,10 +67,32 @@ struct BeautifulContext {
 
 const BeautifulContext DEFAULT_CONTEXT;
 
+struct PrInfixWS;
+
+enum InfixStyle {
+  //! single line; convert comments to /* comment */
+  SL_CONVERT_SML,
+  
+  //! single line; convert comments to /* comment */, leave /* */ untouched even if multi-line
+  SL_CONVERT_ML,
+  
+  //! one or two line; convert comments to /* comment */ except last comment; add newline if // comment
+  TWO_LINES,
+  
+  //! leave as-is but if newline, adjust indenting to match line's indent
+  ML_INDENT,
+  
+  //! leave as-is
+  AS_IS
+}
+
 struct Production {
   virtual std::string to_string();
   virtual std::string beautiful(const BeautifulConfig&,
     BeautifulContext bc = DEFAULT_CONTEXT) const;
+    
+protected:
+  retrieveWS()
 };
 
 struct PrDecor: Production {
@@ -252,6 +274,13 @@ struct PrControl: PrStatement {
   PrExpression* val;
 };
 
+struct PrInfixWS: Production {
+  PrInfixWS(Token);
+  virtual std::string to_string();
+  virtual std::string beautiful(const BeautifulConfig& ,BeautifulContext) const;
+  
+  Token val;
+}
 
 class Parser {
 public:
@@ -278,7 +307,7 @@ private:
   PrWhile* read_while();
   PrSwitch* read_switch();
   
-  void ignoreWS();
+  void ignoreWS(Production* p);
   void read_statement_end();
   
   LLKTokenStream ts;

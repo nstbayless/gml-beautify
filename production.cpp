@@ -177,3 +177,4 @@ string PrSwitch::to_string() {
   return s;
 }
 
+PrInfixWS(Token, )
