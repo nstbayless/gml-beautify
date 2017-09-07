@@ -108,6 +108,9 @@ string PrExprArithmetic::beautiful(const BeautifulConfig& config, BeautifulConte
   if (!config.not_space && op == Token(OP,"!"))
     l_space = r_space = false;
   
+  if (op == Token(PUNC,"."))
+    l_space = r_space = false;
+  
   // (keywords absolutely need spaces to be parsed)
   if (op.type == KW) {
     l_space = true;
@@ -203,8 +206,11 @@ string PrBody::beautiful(const BeautifulConfig& config, BeautifulContext context
     s += "\n";
     s += p->beautiful(config, subcontext);
   }
- 
-  s += "\n" + indent(config, context) + "}";
+  if (productions.size() > 0)
+    s += "\n" + indent(config, context);
+  else
+    s += " ";
+  s += "}";
   return s;
 }
 
@@ -223,11 +229,12 @@ string PrStatementIf::beautiful(const BeautifulConfig& config, BeautifulContext 
       s += "\n";
     s += "else";
     if (hangable(otherwise))
-      context = context.attach();
-    else if (config.egyptian)
-      s += " ";  
-    else
+        context = context.attach();
+    if (hangable(otherwise)) {
+      s += " ";
+    } else {
       s += "\n";
+    }
     s += otherwise->beautiful(config, context.not_inline().increment_depth());
   }
   return s;
@@ -301,6 +308,11 @@ string PrAccessorExpression::beautiful(const BeautifulConfig& config, BeautifulC
 string PrSwitch::beautiful(const BeautifulConfig& config, BeautifulContext context) const {
   string s = indent(config, context) + "switch ";
   s += condition->beautiful(config, context.as_inline());
+  
+  if (cases.size() == 0 && !config.egyptian) {
+    return s + "\n{ }\n";
+  }
+  
   context = context.not_inline();
   
   if (config.egyptian)

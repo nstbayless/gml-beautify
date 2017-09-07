@@ -12,7 +12,7 @@ struct BeautifulConfig {
   bool egyptian = false;
   
   //! put semicolons at the end of each line
-  bool semicolons = false;
+  bool semicolons = true;
   
   //! indent using spaces
   bool indent_spaces = true;
@@ -29,7 +29,7 @@ struct BeautifulConfig {
   //! put spacing after accessor symbol, e.g. array[@ index]
   bool accessor_space = true;
   
-// these options can modify the AST tree:
+// these options can modify the tokens:
 
   //! parens for if statement condition (-1: leave untouched)
   int if_parens = -1;
@@ -266,6 +266,7 @@ private:
   PrStatement* read_statement();
   PrAssignment* read_assignment();
   PrExpression* read_accessors(PrExpression* ds);
+  PrExpression* read_possessive(PrExpression* owner);
   PrExprArithmetic* read_arithmetic(PrExpression* lhs);
   PrExpressionFn* read_expression_function();
   PrStatementFn* read_statement_function();

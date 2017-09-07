@@ -1,3 +1,14 @@
+blah.x++;
+blah.  y = true;
+if (blah)
+  blah -= 1;
+else {
+  bleueurugh();
+}
+if z {
+}
+  else {x++;exit;}
+
 if x y()
 
 for (;;) y()
@@ -25,13 +36,10 @@ default b: exit
 
 switch s {
 }
-
 switch b {
 default:
 break
 }
-
-
 while noone
 {
   while noone
@@ -94,3 +102,6 @@ exit;
 for(;x<5;);
 
 exit
+
+i++
+obj.test = obj.test2

@@ -95,7 +95,14 @@ PrExpression* Parser::read_term() {
       to_return = new PrIdentifier(ts.read());
   }
   
-  return read_accessors(to_return);
+  return read_possessive(read_accessors(to_return));
+}
+
+PrExpression* Parser::read_possessive(PrExpression* owner) {
+  if (ts.peek() == Token(PUNC, ".")) {
+    return new PrExprArithmetic(owner,ts.read(),read_term());
+  } else
+    return owner;
 }
 
 PrExpression* Parser::read_expression() {
