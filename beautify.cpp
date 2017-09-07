@@ -218,7 +218,12 @@ string PrBody::beautiful(const BeautifulConfig& config, BeautifulContext context
 }
 
 string PrStatementIf::beautiful(const BeautifulConfig& config, BeautifulContext context) const {
-  string s = "if " + condition->beautiful(config,context.as_inline());
+  string s = "";
+  if (!context.attached)
+    s += indent(config, context);
+  else
+    context = context.decrement_depth();
+  s += "if " + condition->beautiful(config,context.as_inline());
   if (hangable(result))
     context = context.attach();
   else
@@ -229,11 +234,10 @@ string PrStatementIf::beautiful(const BeautifulConfig& config, BeautifulContext 
     if (hangable(result) && config.egyptian)
       s += " ";
     else
-      s += "\n";
+      s += "\n" + indent(config, context);
     s += "else";
-    if (hangable(otherwise))
-        context = context.attach();
-    if (hangable(otherwise)) {
+    if (hangable(otherwise) || is_a<PrStatementIf>(otherwise)) {
+      context = context.attach();
       s += " ";
     } else {
       s += "\n";
