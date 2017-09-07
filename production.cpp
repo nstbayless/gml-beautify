@@ -7,24 +7,27 @@ string Production::to_string() {
   return "?";
 }
 
+PrInfixWS Production::retrieveWS(InfixStyle style) {
+  PrInfixWS ws = infixes.pop_front();
+  ws.style = style;
+  return ws;
+}
+
 PrDecor::PrDecor(Token t): rawToken(t) {}
 
 string PrDecor::to_string() {
   return rawToken.value;
 }
 
-
 string PrExprParen::to_string() {
   return "(" + content->to_string() + ")";
 }
-
 
 PrExprArithmetic::PrExprArithmetic(PrExpression* lhs, Token op, PrExpression* rhs): lhs(lhs), op(op), rhs(rhs) {}
 
 string PrExprArithmetic::to_string() {
   return ((lhs)?(lhs->to_string() + " "):"") + op.value + ((rhs)?(" " + rhs->to_string()):"");
 }
-
 
 PrAssignment::PrAssignment(PrExpression* lhs, Token op, PrExpression* rhs): lhs(lhs), op(op), rhs(rhs) {}
 

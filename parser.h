@@ -1,6 +1,7 @@
 #include <vector>
 #include <string>
 #include <typeinfo>
+#include <queue>
 
 #include "tokenstream.h"
 
@@ -67,6 +68,7 @@ struct BeautifulContext {
 
 const BeautifulContext DEFAULT_CONTEXT;
 
+class Parser;
 struct PrInfixWS;
 
 enum InfixStyle {
@@ -87,12 +89,15 @@ enum InfixStyle {
 }
 
 struct Production {
+  friend class Parser;
+  
   virtual std::string to_string();
   virtual std::string beautiful(const BeautifulConfig&,
-    BeautifulContext bc = DEFAULT_CONTEXT) const;
+    BeautifulContext bc = DEFAULT_CONTEXT);
     
 protected:
-  retrieveWS()
+  PrInfixWs retrieveWS(InfixStyle);
+  std::queue<PrInfixWS> infixes;
 };
 
 struct PrDecor: Production {
@@ -118,7 +123,7 @@ struct PrExprParen: PrExpression {
 struct PrExpressionFn: PrExpression{
   PrExpressionFn(Token identifier);
   virtual std::string to_string();
-  virtual std::string beautiful(const BeautifulConfig& ,BeautifulContext) const;
+  virtual std::string beautiful(const BeautifulConfig&, BeautifulContext) const;
   
   Token identifier;
   std::vector<PrExpression*> args;
@@ -127,7 +132,7 @@ struct PrExpressionFn: PrExpression{
 struct PrExprArithmetic: PrExpression {
   PrExprArithmetic(PrExpression* lhs, Token op, PrExpression* rhs);
   virtual std::string to_string();
-  virtual std::string beautiful(const BeautifulConfig& ,BeautifulContext) const;
+  virtual std::string beautiful(const BeautifulConfig&, BeautifulContext) const;
   
   PrExpression* lhs;
   PrExpression *rhs;
@@ -141,7 +146,7 @@ struct PrEmptyStatement: PrStatement {
   PrEmptyStatement();
   PrEmptyStatement(Token enx);
   virtual std::string to_string();
-  virtual std::string beautiful(const BeautifulConfig& ,BeautifulContext) const;
+  virtual std::string beautiful(const BeautifulConfig&, BeautifulContext) const;
   
   bool hastoken;
   Token enx;
@@ -149,7 +154,7 @@ struct PrEmptyStatement: PrStatement {
 
 struct PrFinal: PrExpression {
   virtual std::string to_string();
-  virtual std::string beautiful(const BeautifulConfig& ,BeautifulContext) const;
+  virtual std::string beautiful(const BeautifulConfig&, BeautifulContext) const;
   PrFinal(Token t);
   
   Token final;
@@ -157,7 +162,7 @@ struct PrFinal: PrExpression {
 
 struct PrIdentifier: PrExpression {
   virtual std::string to_string();
-  virtual std::string beautiful(const BeautifulConfig& ,BeautifulContext) const;
+  virtual std::string beautiful(const BeautifulConfig&, BeautifulContext) const;
   
   PrIdentifier(Token t);
   
@@ -167,7 +172,7 @@ struct PrIdentifier: PrExpression {
 struct PrAssignment: PrStatement {
   PrAssignment(PrExpression* lhs, Token op, PrExpression* rhs);
   virtual std::string to_string();
-  virtual std::string beautiful(const BeautifulConfig& ,BeautifulContext) const;
+  virtual std::string beautiful(const BeautifulConfig&, BeautifulContext) const;
   
   PrExpression* lhs;
   PrExpression* rhs;
@@ -176,7 +181,7 @@ struct PrAssignment: PrStatement {
 
 struct PrStatementFn: PrStatement {
   virtual std::string to_string();
-  virtual std::string beautiful(const BeautifulConfig& ,BeautifulContext) const;
+  virtual std::string beautiful(const BeautifulConfig&, BeautifulContext) const;
   
   PrExpressionFn* fn;
 };
@@ -184,7 +189,7 @@ struct PrStatementFn: PrStatement {
 struct PrVarDeclaration: Production {
   PrVarDeclaration(Token ident,  PrExpression* def = nullptr);
   virtual std::string to_string();
-  virtual std::string beautiful(const BeautifulConfig& ,BeautifulContext) const;
+  virtual std::string beautiful(const BeautifulConfig&, BeautifulContext) const;
   
   Token identifier;
   PrExpression* definition;
@@ -192,21 +197,21 @@ struct PrVarDeclaration: Production {
 
 struct PrStatementVar: PrStatement {
   virtual std::string to_string();
-  virtual std::string beautiful(const BeautifulConfig& ,BeautifulContext) const;
+  virtual std::string beautiful(const BeautifulConfig&, BeautifulContext) const;
   
   std::vector<PrVarDeclaration*> declarations;
 };
 
 struct PrBody: PrStatement {
   virtual std::string to_string();
-  virtual std::string beautiful(const BeautifulConfig& ,BeautifulContext) const;
+  virtual std::string beautiful(const BeautifulConfig&, BeautifulContext) const;
   
   std::vector<Production*> productions;
 };
 
 struct PrStatementIf: PrStatement {
   virtual std::string to_string();
-  virtual std::string beautiful(const BeautifulConfig& ,BeautifulContext) const;
+  virtual std::string beautiful(const BeautifulConfig&, BeautifulContext) const;
   
   PrExpression* condition;
   PrStatement* result;
@@ -215,7 +220,7 @@ struct PrStatementIf: PrStatement {
 
 struct PrFor: PrStatement {
   virtual std::string to_string();
-  virtual std::string beautiful(const BeautifulConfig& ,BeautifulContext) const;
+  virtual std::string beautiful(const BeautifulConfig&, BeautifulContext) const;
   
   PrStatement* init;
   PrExpression* condition;
@@ -225,7 +230,7 @@ struct PrFor: PrStatement {
 
 struct PrWhile: PrStatement {
   virtual std::string to_string();
-  virtual std::string beautiful(const BeautifulConfig& ,BeautifulContext) const;
+  virtual std::string beautiful(const BeautifulConfig&, BeautifulContext) const;
   
   PrExpression* condition;
   PrStatement* event;
@@ -233,7 +238,7 @@ struct PrWhile: PrStatement {
 
 struct PrWith: PrStatement {
   virtual std::string to_string();
-  virtual std::string beautiful(const BeautifulConfig& ,BeautifulContext) const;
+  virtual std::string beautiful(const BeautifulConfig&, BeautifulContext) const;
   
   PrExpression* objid;
   PrStatement* event;
@@ -241,7 +246,7 @@ struct PrWith: PrStatement {
 
 struct PrAccessorExpression: PrExpression {
   virtual std::string to_string();
-  virtual std::string beautiful(const BeautifulConfig& ,BeautifulContext) const;
+  virtual std::string beautiful(const BeautifulConfig&, BeautifulContext) const;
   
   std::string acc = "";
   PrExpression* ds;
@@ -251,7 +256,7 @@ struct PrAccessorExpression: PrExpression {
 
 struct PrCase: PrStatement {
   virtual std::string to_string();
-  virtual std::string beautiful(const BeautifulConfig& ,BeautifulContext) const;
+  virtual std::string beautiful(const BeautifulConfig&, BeautifulContext) const;
   
   PrExpression* value;
   std::vector<Production*> productions;
@@ -259,7 +264,7 @@ struct PrCase: PrStatement {
 
 struct PrSwitch: PrStatement {
   virtual std::string to_string();
-  virtual std::string beautiful(const BeautifulConfig& ,BeautifulContext) const;
+  virtual std::string beautiful(const BeautifulConfig&, BeautifulContext) const;
   
   PrExpression* condition;
   std::vector<PrCase*> cases;
@@ -268,7 +273,7 @@ struct PrSwitch: PrStatement {
 struct PrControl: PrStatement {
   PrControl(Token,PrExpression* val = nullptr);
   virtual std::string to_string();
-  virtual std::string beautiful(const BeautifulConfig& ,BeautifulContext) const;
+  virtual std::string beautiful(const BeautifulConfig&, BeautifulContext) const;
   
   Token kw;
   PrExpression* val;
@@ -277,9 +282,10 @@ struct PrControl: PrStatement {
 struct PrInfixWS: Production {
   PrInfixWS(Token);
   virtual std::string to_string();
-  virtual std::string beautiful(const BeautifulConfig& ,BeautifulContext) const;
+  virtual std::string beautiful(const BeautifulConfig&, BeautifulContext) const;
   
   Token val;
+  InfixStyle style = ML_INDENT;
 }
 
 class Parser {
