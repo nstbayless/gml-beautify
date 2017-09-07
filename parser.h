@@ -9,7 +9,7 @@
 
 struct BeautifulConfig {
   //! put open brace on same line
-  bool egyptian = false;
+  bool egyptian = true;
   
   //! put semicolons at the end of each line
   bool semicolons = true;
