@@ -105,6 +105,7 @@ PrExpression* Parser::read_term() {
 }
 
 PrExpression* Parser::read_possessive(PrExpression* owner) {
+  ignoreWS();
   if (ts.peek() == Token(PUNC, ".")) {
     return new PrExprArithmetic(owner,ts.read(),read_term());
   } else
@@ -113,6 +114,7 @@ PrExpression* Parser::read_possessive(PrExpression* owner) {
 
 PrExpression* Parser::read_expression() {
   PrExpression* to_return = read_term();
+  ignoreWS();
   Token t(ts.peek());
   if (t.type == OP || t.type == OPR || t.is_op_keyword())
     to_return = read_arithmetic(to_return);
@@ -120,6 +122,7 @@ PrExpression* Parser::read_expression() {
 } 
 
 PrExpression* Parser::read_accessors(PrExpression* ds) {
+  ignoreWS();
   if (ts.peek() != Token(PUNC,"["))
     return ds;
 
@@ -248,7 +251,7 @@ PrBody* Parser::read_block() {
 }
 
 void Parser::ignoreWS() {
-  while (ts.peek() == Token(ENX,"\n"))
+  while (ts.peek() == Token(ENX,"\n") || ts.peek().type == COMMENT)
     ts.read();
 }
 
