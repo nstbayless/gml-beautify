@@ -61,20 +61,26 @@ PrStatement* Parser::read_statement() {
         return read_statement_function();
       return read_assignment();
     }
+  case OPR:
+    return read_assignment();
   }
 }
 
 PrAssignment* Parser::read_assignment() {
-  PrExpression* lhs = read_term();
-  // check op of correct format:
-  Token op = ts.read();
-  PrExpression* rhs = 0;
-  if (op.type != OPR) {
-    rhs = read_expression();
+  if (ts.peek().type == OPR) {
+    Token op = ts.read();
+    PrExpression* lhs = read_term();
+    return new PrAssignment(lhs,op,nullptr);
+  } else {
+    PrExpression* lhs = read_term();
+    // check op of correct format:
+    Token op = ts.read();
+    PrExpression* rhs = 0;
+    if (op.type != OPR) {
+      rhs = read_expression();
+    }
+    return new PrAssignment(lhs,op,rhs);
   }
-  PrAssignment* a = new PrAssignment(lhs,op,rhs);
-  
-  return a;
 }
 
 PrExpression* Parser::read_term() {

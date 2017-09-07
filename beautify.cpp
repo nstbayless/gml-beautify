@@ -152,7 +152,10 @@ string PrIdentifier::beautiful(const BeautifulConfig& config, BeautifulContext c
 }
 
 string PrAssignment::beautiful(const BeautifulConfig& config, BeautifulContext context) const {
-  string s = indent(config, context) + lhs->beautiful(config,context.as_inline()) + " " + op.value;
+  string s = indent(config, context) + lhs->beautiful(config,context.as_inline());
+  if (op.type != OPR || config.opr_space)
+    s += " ";
+  s += op.value;
   if (rhs)
     s += " " + rhs->beautiful(config,context.as_inline());
   if (!context.is_inline && config.semicolons)
