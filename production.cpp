@@ -8,7 +8,7 @@ Production::~Production() {
     PrInfixWS* p = infixes.front();
     if (p)
       delete(p);
-    infixes.pop();
+    infixes.pop_front();
   }
 }
 

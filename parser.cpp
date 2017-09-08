@@ -17,7 +17,7 @@ Production* Parser::read_production() {
   PrStatement* p = read_statement();
   // read comments before final semicolon
   while (ts.peek().type == COMMENT) {
-    p->infixes.push(new PrInfixWS(ts.read()));
+    p->infixes.push_back(new PrInfixWS(ts.read()));
   }
   read_statement_end();
   return p;
@@ -79,11 +79,15 @@ PrAssignment* Parser::read_assignment() {
     PrExpression* lhs = read_term();
     // check op of correct format:
     Token op = ts.read();
+    PrAssignment* p = new PrAssignment(lhs,op,nullptr);
+    ignoreWS(p);
     PrExpression* rhs = 0;
     if (op.type != OPR) {
       rhs = read_expression();
+      siphonWS(rhs,p,true);
     }
-    return new PrAssignment(lhs,op,rhs);
+    p->rhs = rhs;
+    return p;
   }
 }
 
@@ -120,7 +124,7 @@ PrExpression* Parser::read_possessive(PrExpression* owner) {
 
 PrExpression* Parser::read_expression() {
   PrExpression* to_return = read_term();
-  ignoreWS(to_return);
+  ignoreWS(to_return, true);
   Token t(ts.peek());
   if (t.type == OP || t.type == OPR || t.is_op_keyword())
     to_return = read_arithmetic(to_return);
@@ -128,7 +132,7 @@ PrExpression* Parser::read_expression() {
 } 
 
 PrExpression* Parser::read_accessors(PrExpression* ds) {
-  ignoreWS(ds);
+  ignoreWS(ds,true);
   if (ts.peek() != Token(PUNC,"["))
     return ds;
 
@@ -159,7 +163,12 @@ PrExprArithmetic* Parser::read_arithmetic(PrExpression* lhs) {
     return nullptr; // TODO: better error handling
   if (ts.peek().type == OPR)
     return new PrExprArithmetic(lhs, ts.read(), nullptr);
-  return new PrExprArithmetic(lhs, ts.read(), read_expression());
+  Token op = ts.read();
+  PrExprArithmetic* p = new PrExprArithmetic(lhs, ts.read(), nullptr);
+  ignoreWS(p);
+  p->rhs = read_expression();
+  siphonWS(p->rhs,p,true);
+  return p;
 }
 
 PrExpressionFn* Parser::read_expression_function() {
@@ -258,14 +267,28 @@ PrBody* Parser::read_block() {
   return p;
 }
 
-void Parser::ignoreWS(Production* p) {
+void Parser::ignoreWS(Production* p, bool as_postfix) {
   if (ts.peek() == Token(ENX,"\n") || ts.peek().type == COMMENT) {
     PrInfixWS* infix = new PrInfixWS(ts.read());
     ignoreWS(infix);
-    p->infixes.push(infix);
+    p->infixes.push_back(infix);
   } else {
-    p->infixes.push(nullptr);  
-  } 
+    p->infixes.push_back(nullptr);  
+  }
+  p->postfix_n += as_postfix;
+}
+
+void Parser::siphonWS(Production* src, Production* dst, bool as_postfix) {
+  int N = src->postfix_n;
+  PrInfixWS* infixes[N];
+  while (src->postfix_n > 0) {
+    infixes[--src->postfix_n] = src->infixes.back();
+    src->infixes.pop_back();
+  }
+  for (int i=0;i<N;i++) {
+    dst->infixes.push_back(infixes[i]);
+    dst->postfix_n += as_postfix;
+  }
 }
 
 PrFor* Parser::read_for() {
@@ -296,7 +319,7 @@ PrFor* Parser::read_for() {
   }
   ts.read(); //)
   
-  ignoreWS(pfor);
+  ignoreWS(pfor, true);
   pfor->first = read_statement();
   return pfor;
 }

@@ -1,7 +1,7 @@
 #include <vector>
 #include <string>
 #include <typeinfo>
-#include <queue>
+#include <deque>
 
 #include "tokenstream.h"
 
@@ -114,8 +114,8 @@ struct Production {
   std::string renderWS(const BeautifulConfig&,
     BeautifulContext bc);
     
-protected:
-  std::queue<PrInfixWS*> infixes;
+  std::deque<PrInfixWS*> infixes;
+  int postfix_n = 0;
 };
 
 struct PrInfixWS: Production {
@@ -333,7 +333,13 @@ private:
   PrWhile* read_while();
   PrSwitch* read_switch();
   
-  void ignoreWS(Production* p);
+  //! read comments and whitespaces as infixes for p
+  void ignoreWS(Production* p, bool as_postfix = false);
+  
+  //! take any postfixes of src and apply them as infixes (postfixes, if as_postfix) to dst
+  void siphonWS(Production* src, Production* dst, bool as_postfix = false);
+  
+  //! read semicolon and/or line ending
   void read_statement_end();
   
   LLKTokenStream ts;

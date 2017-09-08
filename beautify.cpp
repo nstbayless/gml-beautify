@@ -115,7 +115,7 @@ string Production::renderWS(const BeautifulConfig& config, BeautifulContext cont
   if (infixes.empty())
     return "";
   PrInfixWS* ws = infixes.front();
-  infixes.pop();
+  infixes.pop_front();
   if (!ws)
     return "";
   string s(ws->beautiful(config, context));
@@ -208,6 +208,7 @@ string PrAssignment::beautiful(const BeautifulConfig& config, BeautifulContext c
   if (op.type != OPR || config.opr_space)
     s += " ";
   s += op.value;
+  s += renderWS(config, context.style(PAD_LEFT));
   if (rhs)
     s += " " + rhs->beautiful(config,context.as_inline());
   s += end_statement_beautiful(config, context);
