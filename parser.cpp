@@ -15,6 +15,10 @@ Production* Parser::read_production() {
   if (t == COMMENT || t == WS)
     return read_rawtoken();
   PrStatement* p = read_statement();
+  // read comments before final semicolon
+  while (ts.peek().type == COMMENT) {
+    p->infixes.push(new PrInfixWS(ts.read()));
+  }
   read_statement_end();
   return p;
 }
@@ -89,23 +93,25 @@ PrExpression* Parser::read_term() {
   if (t == Token(OP,"-")   || t == Token(OP,"!") ||
       t == Token(KW,"not") || t == Token(OP,"~") || t.type == OPR)
     return new PrExprArithmetic(nullptr, ts.read(),read_expression());
-  if (t.type == NUM || t.type == STR)
-    to_return = new PrFinal(ts.read());
-  if (t == Token(PUNC,"("))
-    to_return = read_expression_parentheses();
-  else if (t.type == ID) {
-    t = ts.peek(1);
+  else {
+    if (t.type == NUM || t.type == STR)
+      to_return = new PrFinal(ts.read());
     if (t == Token(PUNC,"("))
-      to_return = read_expression_function();
-    else
-      to_return = new PrIdentifier(ts.read());
+      to_return = read_expression_parentheses();
+    else if (t.type == ID) {
+      t = ts.peek(1);
+      if (t == Token(PUNC,"("))
+        to_return = read_expression_function();
+      else
+        to_return = new PrIdentifier(ts.read());
+    }
+    
+    return read_possessive(read_accessors(to_return));
   }
-  
-  return read_possessive(read_accessors(to_return));
 }
 
 PrExpression* Parser::read_possessive(PrExpression* owner) {
-  ignoreWS();
+  ignoreWS(owner);
   if (ts.peek() == Token(PUNC, ".")) {
     return new PrExprArithmetic(owner,ts.read(),read_term());
   } else
@@ -114,7 +120,7 @@ PrExpression* Parser::read_possessive(PrExpression* owner) {
 
 PrExpression* Parser::read_expression() {
   PrExpression* to_return = read_term();
-  ignoreWS();
+  ignoreWS(to_return);
   Token t(ts.peek());
   if (t.type == OP || t.type == OPR || t.is_op_keyword())
     to_return = read_arithmetic(to_return);
@@ -122,28 +128,27 @@ PrExpression* Parser::read_expression() {
 } 
 
 PrExpression* Parser::read_accessors(PrExpression* ds) {
-  ignoreWS();
+  ignoreWS(ds);
   if (ts.peek() != Token(PUNC,"["))
     return ds;
 
   PrAccessorExpression* a = new PrAccessorExpression();
   a->ds = ds;
   ts.read(); // [
-  ignoreWS();
+  ignoreWS(ds);
   if (ts.peek().type == OPA || ts.peek() == Token(OP,"|"))
     a->acc = ts.read().value;
     
 READ_INDEX:
-  ignoreWS();
+  ignoreWS(ds);
   a->indices.push_back(read_expression());
-  ignoreWS();
+  ignoreWS(ds);
   if (ts.peek() == Token(PUNC,",")) {
     ts.read();
     goto READ_INDEX;
   }
   
   ts.read(); // ]
-  
   
   return read_accessors(a);
 }
@@ -160,14 +165,17 @@ PrExprArithmetic* Parser::read_arithmetic(PrExpression* lhs) {
 PrExpressionFn* Parser::read_expression_function() {
   PrExpressionFn* pfn = new PrExpressionFn(ts.read());
   
-  // )
+  ignoreWS(pfn);
+  // (
   ts.read();  
-  
+
   while (true) {
+    ignoreWS(pfn);
     Token next(ts.peek());
     if (next == Token(PUNC,")"))
       break;
     pfn->args.push_back(read_expression());
+    ignoreWS(pfn);
     next = ts.peek();
     if (next == Token(PUNC,",")) {
       ts.read();
@@ -201,16 +209,16 @@ PrStatementVar* Parser::read_statement_var() {
   
   while (true) {
     // read var declaration:
-    ignoreWS();
+    ignoreWS(p);
     PrVarDeclaration* d = new PrVarDeclaration(ts.read());
-    ignoreWS();
+    ignoreWS(p);
     if (ts.peek() == Token(OP,"=")) {
       ts.read();
-      ignoreWS();
+      ignoreWS(p);
       d->definition = read_expression();
     }
     p->declarations.push_back(d);
-    ignoreWS();
+    ignoreWS(p);
     if (ts.peek() == Token(PUNC,",")) {
       ts.read();
       continue;
@@ -222,18 +230,18 @@ PrStatementVar* Parser::read_statement_var() {
 }
 
 PrStatementIf* Parser::read_statement_if() {
-  ts.read(); // read IF
-  ignoreWS();
   PrStatementIf* p = new PrStatementIf();
-  ignoreWS();
+  ts.read(); // read IF
+  ignoreWS(p);
+  ignoreWS(p);
   p->condition = read_expression();
-  ignoreWS();
+  ignoreWS(p);
   p->result = read_statement();
   read_statement_end();
-  ignoreWS();
+  ignoreWS(p);
   if (ts.peek() == Token(KW, "else")) {
     ts.read();
-    ignoreWS();
+    ignoreWS(p);
     p->otherwise = read_statement();
     read_statement_end();
   }
@@ -243,47 +251,52 @@ PrStatementIf* Parser::read_statement_if() {
 PrBody* Parser::read_block() {
   PrBody* p = new PrBody();
   ts.read(); // {
-  ignoreWS();
+  ignoreWS(p);
   while (ts.peek() != Token(PUNC,"}"))
     p->productions.push_back(read_production());
   ts.read(); // }
   return p;
 }
 
-void Parser::ignoreWS() {
-  while (ts.peek() == Token(ENX,"\n") || ts.peek().type == COMMENT)
-    ts.read();
+void Parser::ignoreWS(Production* p) {
+  if (ts.peek() == Token(ENX,"\n") || ts.peek().type == COMMENT) {
+    PrInfixWS* infix = new PrInfixWS(ts.read());
+    ignoreWS(infix);
+    p->infixes.push(infix);
+  } else {
+    p->infixes.push(nullptr);  
+  } 
 }
 
 PrFor* Parser::read_for() {
   PrFor* pfor = new PrFor();
   ts.read(); // for
-  ignoreWS();
+  ignoreWS(pfor);
   ts.read(); //(
   
-  ignoreWS();
+  ignoreWS(pfor);
   pfor->init = read_statement();
-  ignoreWS();
+  ignoreWS(pfor);
   ts.read(); //;
   
-  ignoreWS();
+  ignoreWS(pfor);
   if (ts.peek() != Token(ENX,";"))
     pfor->condition = read_expression();
   else
     pfor->condition = nullptr;
-  ignoreWS();
+  ignoreWS(pfor);
   ts.read(); //;
   
-  ignoreWS();
+  ignoreWS(pfor);
   if (ts.peek() != Token(PUNC,")")) {
     pfor->second = read_statement();
-    ignoreWS();
+    ignoreWS(pfor);
   } else {
     pfor->second = new PrEmptyStatement();
   }
   ts.read(); //)
   
-  ignoreWS();
+  ignoreWS(pfor);
   pfor->first = read_statement();
   return pfor;
 }
@@ -304,9 +317,9 @@ void Parser::read_statement_end() {
 PrWhile* Parser::read_while() {
   PrWhile* p = new PrWhile();
   ts.read(); // while
-  ignoreWS();
+  ignoreWS(p);
   p->condition = read_expression();
-  ignoreWS();
+  ignoreWS(p);
   p->event = read_statement();
   return p;
 }
@@ -314,9 +327,9 @@ PrWhile* Parser::read_while() {
 PrWith* Parser::read_with() {
   PrWith* p = new PrWith();
   ts.read(); // with
-  ignoreWS();
+  ignoreWS(p);
   p->objid = read_expression();
-  ignoreWS();
+  ignoreWS(p);
   p->event = read_statement();
   return p;
 }
@@ -325,13 +338,13 @@ PrSwitch* Parser::read_switch() {
   PrSwitch* p = new PrSwitch();
   
   ts.read(); // switch
-  ignoreWS();
+  ignoreWS(p);
   
   p->condition = read_expression();
-  ignoreWS();
+  ignoreWS(p);
   
   ts.read(); // {
-  ignoreWS();
+  ignoreWS(p);
   
   while (true) {
     if (ts.peek() == Token(PUNC,"}"))
@@ -339,24 +352,24 @@ PrSwitch* Parser::read_switch() {
         
     PrCase* c = new PrCase();
     Token t(ts.read()); // case
-    ignoreWS();
+    ignoreWS(p);
     
     if (t==Token(KW,"case")) {
       c->value = read_expression();
-      ignoreWS();
+      ignoreWS(p);
     } else {
       ts.read(); // default
       c->value = nullptr;
     }
     
     ts.read(); //:
-    ignoreWS();
+    ignoreWS(p);
     
     while (ts.peek()!=Token(KW,"case") &&
            ts.peek()!=Token(KW,"default") &&
            ts.peek()!=Token(PUNC,"}")) {
       c->productions.push_back(read_production());
-      ignoreWS();
+      ignoreWS(p);
     }
     p->cases.push_back(c);
   }

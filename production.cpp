@@ -3,14 +3,18 @@
 
 using namespace std;
 
-string Production::to_string() {
-  return "?";
+Production::~Production() {
+  while (!infixes.empty()) {
+    PrInfixWS* p = infixes.front();
+    if (p)
+      delete(p);
+    infixes.pop();
+  }
 }
 
-PrInfixWS Production::retrieveWS(InfixStyle style) {
-  PrInfixWS ws = infixes.pop_front();
-  ws.style = style;
-  return ws;
+
+string Production::to_string() {
+  return "?";
 }
 
 PrDecor::PrDecor(Token t): rawToken(t) {}
@@ -180,4 +184,8 @@ string PrSwitch::to_string() {
   return s;
 }
 
-PrInfixWS(Token, )
+PrInfixWS::PrInfixWS(Token t): val(t) {}
+
+string PrInfixWS::to_string() {
+  return val.value;
+}

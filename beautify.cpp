@@ -14,14 +14,21 @@ string indent(const BeautifulConfig& config, BeautifulContext context) {
 }
 
 template<class P>
-string join_productions(const std::vector<P*> productions, string joinder, const BeautifulConfig& config, BeautifulContext context) {
+string join_productions(const std::vector<P*> productions, string joinder, const BeautifulConfig& config, BeautifulContext context, Production* infix_source = nullptr) {
   bool first = true;
   string s = "";
+  context.pad_infix_right = true;
+  if (infix_source)
+    s +=infix_source->renderWS(config, context);
   for (auto p: productions) {
     if (!first)
       s += joinder;
+    if (infix_source)
+      s += infix_source->renderWS(config, context);
     s += p->beautiful(config, context);
     first = false;
+    if (infix_source)
+      s += infix_source->renderWS(config, context);
   }
   return s;
 }
@@ -35,51 +42,96 @@ bool hangable(Production* p) {
   return is_a<PrBody>(p) || is_a<PrEmptyStatement>(p);
 }
 
-BeautifulContext BeautifulContext::increment_depth() {
+BeautifulContext BeautifulContext::increment_depth() const {
   auto b(*this);
   b.depth++;
   return b;
 }
 
-BeautifulContext BeautifulContext::decrement_depth() {
+BeautifulContext BeautifulContext::decrement_depth() const {
   auto b(*this);
   b.depth--;
   return b;
 }
 
-BeautifulContext BeautifulContext::as_condensed() {
+BeautifulContext BeautifulContext::as_condensed() const {
   auto b(*this);
   b.depth++;
   b.condense = true;
   return b;
 }
 
-BeautifulContext BeautifulContext::as_inline() {
+BeautifulContext BeautifulContext::as_inline() const {
   auto b(*this);
   b.is_inline = true;
   return b;
 }
 
-BeautifulContext BeautifulContext::not_inline() {
+BeautifulContext BeautifulContext::not_inline() const {
   auto b(*this);
   b.is_inline = false;
   return b;
 }
 
-BeautifulContext BeautifulContext::attach() {
+BeautifulContext BeautifulContext::attach() const {
   auto b(*this);
   b.attached = true;
   return b;
 }
 
-BeautifulContext BeautifulContext::detach() {
+BeautifulContext BeautifulContext::detach() const {
   auto b(*this);
   b.attached = false;
   return b;
 }
 
+BeautifulContext BeautifulContext::force_semicolon() const {
+  auto b(*this);
+  b.forced_semicolon = true;
+  return b;
+}
+
+BeautifulContext BeautifulContext::style(InfixStyle s) const {
+  auto b(*this);
+  if (s == PAD_LEFT) {
+    b.pad_infix_left = true;
+  } else if (s == PAD_RIGHT) {
+    b.pad_infix_right = true;
+  } else if (s == PAD_BOTH) {
+    b.pad_infix_left = b.pad_infix_right = true;
+  } else if (s == PAD_NEITHER) {
+    b.pad_infix_left = b.pad_infix_right = false;
+  } else {
+    b.infix_style = s;
+  }
+  return b;
+}
+
 string Production::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   return "Unknown Production";
+}
+
+string Production::renderWS(const BeautifulConfig& config, BeautifulContext context) {
+  if (infixes.empty())
+    return "";
+  PrInfixWS* ws = infixes.front();
+  infixes.pop();
+  if (!ws)
+    return "";
+  string s(ws->beautiful(config, context));
+  delete(ws);
+  return s;
+}
+
+string PrStatement::end_statement_beautiful(const BeautifulConfig& config, BeautifulContext context) {
+  string s;
+  if (config.semicolons || context.forced_semicolon) {
+    s += ";";
+  }
+  while (!infixes.empty()) {
+    s += renderWS(config, context.style(AS_IS));
+  }
+  return s;
 }
 
 string PrDecor::beautiful(const BeautifulConfig& config, BeautifulContext context) {
@@ -91,8 +143,8 @@ string PrExprParen::beautiful(const BeautifulConfig& config, BeautifulContext co
 }
 
 string PrExpressionFn::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  string s = indent(config, context) + identifier.value + "(";
-  s += join_productions(args, ", ", config, context.as_inline());
+  string s = indent(config, context) + identifier.value + renderWS(config, context) + "(";
+  s += join_productions(args, ", ", config, context.as_inline(), this);
   s += ")";
   return s;
 }
@@ -139,16 +191,16 @@ string PrExprArithmetic::beautiful(const BeautifulConfig& config, BeautifulConte
 
 string PrEmptyStatement::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   if (context.attached)
-    return ";";
-  return "";
+    return end_statement_beautiful(config, context.force_semicolon());
+  return end_statement_beautiful(config, context);
 }
 
 string PrFinal::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  return final.value;
+  return final.value + renderWS(config, context);
 }
 
 string PrIdentifier::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  return identifier.value;
+  return identifier.value + renderWS(config, context);
 }
 
 string PrAssignment::beautiful(const BeautifulConfig& config, BeautifulContext context) {
@@ -158,15 +210,13 @@ string PrAssignment::beautiful(const BeautifulConfig& config, BeautifulContext c
   s += op.value;
   if (rhs)
     s += " " + rhs->beautiful(config,context.as_inline());
-  if (!context.is_inline && config.semicolons)
-    s += ";";
+  s += end_statement_beautiful(config, context);
   return s;
 }
 
 string PrStatementFn::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   string s(fn->beautiful(config, context));
-  if (!context.is_inline && config.semicolons)
-    s += ";";
+  s += end_statement_beautiful(config, context);
   return s;
 }
 
@@ -179,8 +229,7 @@ string PrVarDeclaration::beautiful(const BeautifulConfig& config, BeautifulConte
 
 string PrStatementVar::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   string s = indent(config, context) + "var " + join_productions(declarations, ", ", config, context.as_inline());
-  if (!context.is_inline) // var statement requires semicolon
-    s += ";";
+  s += end_statement_beautiful(config, context.force_semicolon());
   return s;
 }
 
@@ -273,8 +322,7 @@ string PrFor::beautiful(const BeautifulConfig& config, BeautifulContext context)
 string PrControl::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   string s = indent(config, context) + kw.value;
   if (val) s += " " + val->beautiful(config, context.as_inline());
-  if (!context.is_inline && config.semicolons)
-    s += ";";
+  s += end_statement_beautiful(config, context);
   return s;
 }
 
@@ -301,13 +349,13 @@ string PrWith::beautiful(const BeautifulConfig& config, BeautifulContext context
 
 string PrAccessorExpression::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   string s = indent(config, context) + ds->beautiful(config, context.as_inline());
-  s += "[";
+  s += "[" + renderWS(config, context.style(PAD_RIGHT));
   if (acc.length() > 0) {
     s += acc;
     if (config.accessor_space)
       s += " ";
   }
-  s += join_productions(indices, ", ", config, context.as_inline());
+  s += join_productions(indices, ", ", config, context.as_inline(), this);
   s += "]";
   return s;
 }
@@ -347,12 +395,16 @@ string PrCase::beautiful(const BeautifulConfig& config, BeautifulContext context
   return s;
 }
 
-PrInfixWS::PrInfixWS(Token t): val(t) {}
-
-string PrInfixWS::to_string() {
-  return val.value;
-}
-
 string PrInfixWS::beautiful(const BeautifulConfig& config, BeautifulContext context) {
+  string s = "";
   
+  // pad left
+  if (context.pad_infix_left && val.type == COMMENT)
+    s += " ";
+  
+  s += val.value + renderWS(config, context);
+  
+  if (context.pad_infix_right && val.type == COMMENT)
+    s += " ";
+  return s;
 }
