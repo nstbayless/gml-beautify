@@ -9,21 +9,6 @@
 #define PARSER_H
 
 enum InfixStyle {
-  //! single line; convert comments to /* comment */
-  SL_CONVERT_SML,
-  
-  //! single line; convert comments to /* comment */, leave /* */ untouched even if multi-line
-  SL_CONVERT_ML,
-  
-  //! leaves as is but ensures no \n at end, good for end-of line infix (before newline)
-  EOL_NO_CONVERT,
-  
-  //! one or two line; convert comments to /* comment */ except last comment; add newline if // comment
-  TWO_LINES,
-  
-  //! leave as-is but if newline, adjust indenting to match line's indent
-  ML_INDENT,
-  
   //! leave as-is
   AS_IS,
   
@@ -84,17 +69,20 @@ struct BeautifulContext {
   bool forced_semicolon = false;
   
   //! empty statements do not end with a semicolon
-  bool non_statement = false;
+  bool never_semicolon = false;
   
-  InfixStyle infix_style = TWO_LINES;
+  InfixStyle infix_style = AS_IS;
   bool pad_infix_left = true;
   bool pad_infix_right = false;
+  bool eol = false;
   
   BeautifulContext increment_depth() const;
   BeautifulContext decrement_depth() const;
   BeautifulContext as_condensed() const;
   BeautifulContext as_inline() const;
   BeautifulContext not_inline() const;
+  BeautifulContext as_eol() const;
+  BeautifulContext not_eol() const;
   
   // floating block control:
   BeautifulContext attach() const;
@@ -130,7 +118,7 @@ struct PrInfixWS: Production {
   virtual std::string beautiful(const BeautifulConfig&, BeautifulContext);
   
   Token val;
-  InfixStyle style = ML_INDENT;
+  InfixStyle style = AS_IS;
 };
 
 
@@ -343,7 +331,7 @@ private:
   void ignoreWS(Production* p, bool as_postfix = false);
   
   //! take any postfixes of src and apply them as infixes (postfixes, if as_postfix) to dst
-  void siphonWS(Production* src, Production* dst, bool as_postfix = false);
+  void siphonWS(Production* src, Production* dst, bool as_postfix = false, bool condense = false);
   
   //! read semicolon and/or line ending
   void read_statement_end();

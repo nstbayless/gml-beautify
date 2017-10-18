@@ -74,6 +74,18 @@ BeautifulContext BeautifulContext::not_inline() const {
   return b;
 }
 
+BeautifulContext BeautifulContext::as_eol() const {
+  auto b(*this);
+  b.eol = true;
+  return b;
+}
+
+BeautifulContext BeautifulContext::not_eol() const {
+  auto b(*this);
+  b.eol = false;
+  return b;
+}
+
 BeautifulContext BeautifulContext::attach() const {
   auto b(*this);
   b.attached = true;
@@ -119,27 +131,27 @@ string Production::renderWS(const BeautifulConfig& config, BeautifulContext cont
   infixes.pop_front();
   if (!ws)
     return "";
-  s = ws->beautiful(config, context);
-  if (ws->val.type == COMMENT && context.infix_style <= TWO_LINES && !context.is_inline) {
-    //single-line comment
-    if (ws->val.value[0] == '/' && ws->val.value[1] == '/') {
-      s += "\n" + indent(config, context.increment_depth().not_inline());
+  string s(ws->beautiful(config, context));
+  if (ws->val.type == COMMENT) {
+    //single-line comments require newline afterward
+    if (ws->val.value[0] == '/' && ws->val.value[1] == '/' &&! context.eol) {
+      s += "\n";
     }
   }
-  delete(ws);
-  if context.EOL_NO_CONVERT {
-    s = trim(s);
+  if (ws->val.type == ENX && context.eol) {
+    s = "";
   }
+  delete(ws);
   return s;
 }
 
 string PrStatement::end_statement_beautiful(const BeautifulConfig& config, BeautifulContext context) {
   string s;
-  if ((config.semicolons &&! context.non_statement) || context.forced_semicolon) {
+  if ((config.semicolons &&! context.never_semicolon) || context.forced_semicolon) {
     s += ";";
   }
   while (!infixes.empty()) {
-    s += renderWS(config, context.style(AS_IS));
+    s += renderWS(config, context.as_eol());
   }
   return s;
 }
@@ -149,13 +161,15 @@ string PrDecor::beautiful(const BeautifulConfig& config, BeautifulContext contex
 }
 
 string PrExprParen::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  return indent(config, context) + "(" + content->beautiful(config, context.as_inline()) + ")";
+  string s = indent(config, context) + "(" + content->beautiful(config, context.as_inline()) + ")";
+  return s + renderWS(config, context);
 }
 
 string PrExpressionFn::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   string s = indent(config, context) + identifier.value + renderWS(config, context) + "(";
   s += join_productions(args, ", ", config, context.as_inline(), this);
   s += ")";
+  s += renderWS(config, context);
   return s;
 }
 
@@ -196,11 +210,13 @@ string PrExprArithmetic::beautiful(const BeautifulConfig& config, BeautifulConte
     s += rhs->beautiful(config,context.as_inline());
   }
   
+  s += renderWS(config, context);
+  
   return s;
 }
 
 string PrEmptyStatement::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  context.non_statement = true;
+  context.never_semicolon = true;
   if (context.attached)
     return end_statement_beautiful(config, context.force_semicolon());
   return end_statement_beautiful(config, context);
@@ -284,7 +300,13 @@ string PrStatementIf::beautiful(const BeautifulConfig& config, BeautifulContext 
     s += indent(config, context);
   else
     context = context.decrement_depth();
-  s += "if " + renderWS(config, context) + condition->beautiful(config,context.as_inline().style(SL_NO_CONVERT));
+  
+  s += "if " + renderWS(config, context);
+  s += condition->beautiful(config,context.as_inline());
+  s += renderWS(config, context.as_eol());
+  if (!hangable(result))
+    s += "\n";
+  
   context = context.attach();
   s += result->beautiful(config, context.not_inline().increment_depth());
   context = context.detach();
@@ -302,6 +324,10 @@ string PrStatementIf::beautiful(const BeautifulConfig& config, BeautifulContext 
     }
     s += otherwise->beautiful(config, context.not_inline().increment_depth());
   }
+  
+  // end of statement
+  context.never_semicolon = true;
+  s += end_statement_beautiful(config, context);
   return s;
 }
 
@@ -325,6 +351,10 @@ string PrFor::beautiful(const BeautifulConfig& config, BeautifulContext context)
   else
     s += "\n";
   s += first->beautiful(config, context.increment_depth());
+  
+  // end of statement
+  context.never_semicolon = true;
+  s += end_statement_beautiful(config, context);
   return s;
 }
 
@@ -336,23 +366,36 @@ string PrControl::beautiful(const BeautifulConfig& config, BeautifulContext cont
 }
 
 string PrWhile::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  string s = indent(config, context) + "while (" + condition->beautiful(config, context.as_inline()) + ")";
+  string s = indent(config, context) + "while ";
+  s += renderWS(config, context);
+  s += condition->beautiful(config, context.as_inline());
+  s += renderWS(config, context.as_eol());
   if (hangable(event))
     context = context.attach();
   else
     s += "\n";
   s += event->beautiful(config, context.increment_depth());
+  
+  // end of statement
+  context.never_semicolon = true;
+  s += end_statement_beautiful(config, context);
   return s;
 }
 
 string PrWith::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  string s = indent(config, context) +"with (" + objid->beautiful(config, context.as_inline());
-  s += ")";
+  string s = indent(config, context) +"with ";
+  s += renderWS(config, context);
+  s += objid->beautiful(config, context.as_inline());
+  s += renderWS(config, context.as_eol());
   if (hangable(event))
     context = context.attach();
   else
     s += "\n";
   s += event->beautiful(config, context.increment_depth());
+  
+  // end of statement
+  context.never_semicolon = true;
+  s += end_statement_beautiful(config, context);
   return s;
 }
 
@@ -411,9 +454,11 @@ string PrInfixWS::beautiful(const BeautifulConfig& config, BeautifulContext cont
   if (context.pad_infix_left && val.type == COMMENT)
     s += " ";
   
-  s += val.value + renderWS(config, context);
+  s += val.value;
+  while (!infixes.empty())
+    renderWS(config, context);
   
-  if (context.pad_infix_right && val.type == COMMENT && val.value[1] == "*")
+  if (context.pad_infix_right && val.type == COMMENT && val.value[1] == '*')
     s += " ";
   return s;
 }

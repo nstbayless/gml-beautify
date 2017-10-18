@@ -95,9 +95,10 @@ PrExpression* Parser::read_term() {
   PrExpression* to_return = 0;
   Token t(ts.peek());
   if (t == Token(OP,"-")   || t == Token(OP,"!") ||
-      t == Token(KW,"not") || t == Token(OP,"~") || t.type == OPR)
-    return new PrExprArithmetic(nullptr, ts.read(),read_expression());
-  else {
+      t == Token(KW,"not") || t == Token(OP,"~") || t.type == OPR) {
+    PrExprArithmetic* p = new PrExprArithmetic(nullptr, ts.read(),read_expression());
+    siphonWS(p->rhs,p,true);
+  } else {
     if (t.type == NUM || t.type == STR)
       to_return = new PrFinal(ts.read());
     if (t == Token(PUNC,"("))
@@ -110,33 +111,28 @@ PrExpression* Parser::read_term() {
         to_return = new PrIdentifier(ts.read());
     }
     
+    // read postfixes
+    ignoreWS(to_return,true);
+    
     return read_possessive(read_accessors(to_return));
   }
 }
 
 PrExpression* Parser::read_possessive(PrExpression* owner) {
-  ignoreWS(owner);
   if (ts.peek() == Token(PUNC, ".")) {
-    return new PrExprArithmetic(owner,ts.read(),read_term());
+    PrExprArithmetic* p = new PrExprArithmetic(owner,ts.read(),read_term());
+    siphonWS(p->rhs,p,true);
+    return p;
   } else
     return owner;
 }
 
-PrExpression* Parser::read_expression() {
-  PrExpression* to_return = read_term();
-  ignoreWS(to_return, true);
-  Token t(ts.peek());
-  if (t.type == OP || t.type == OPR || t.is_op_keyword())
-    to_return = read_arithmetic(to_return);
-  return to_return;
-} 
-
 PrExpression* Parser::read_accessors(PrExpression* ds) {
-  ignoreWS(ds,true);
   if (ts.peek() != Token(PUNC,"["))
     return ds;
 
   PrAccessorExpression* a = new PrAccessorExpression();
+  siphonWS(ds, a, false, true);
   a->ds = ds;
   ts.read(); // [
   ignoreWS(ds);
@@ -157,12 +153,22 @@ READ_INDEX:
   return read_accessors(a);
 }
 
+PrExpression* Parser::read_expression() {
+  PrExpression* to_return = read_term();
+  ignoreWS(to_return, true);
+  Token t(ts.peek());
+  if (t.type == OP || t.type == OPR || t.is_op_keyword())
+    to_return = read_arithmetic(to_return);
+  return to_return;
+} 
+
 PrExprArithmetic* Parser::read_arithmetic(PrExpression* lhs) {
   //TODO assert ts.peek() is operator
   if (ts.peek() == Token(OP,"!") || ts.peek() == Token(KW,"not"))
     return nullptr; // TODO: better error handling
-  if (ts.peek().type == OPR)
-    return new PrExprArithmetic(lhs, ts.read(), nullptr);
+  if (ts.peek().type == OPR) {
+    new PrExprArithmetic(lhs, ts.read(), nullptr);
+  }
   Token op = ts.read();
   PrExprArithmetic* p = new PrExprArithmetic(lhs, op, nullptr);
   ignoreWS(p);
@@ -243,11 +249,13 @@ PrStatementIf* Parser::read_statement_if() {
   ts.read(); // read IF
   ignoreWS(p);
   p->condition = read_expression();
-  ignoreWS(p);
+  siphonWS(p->condition,p,false,true);
+  
   p->result = read_statement();
-  read_statement_end();
-  ignoreWS(p);
+  siphonWS(p->result,p,true);
   if (ts.peek() == Token(KW, "else")) {
+    // what were previously postfixes now count as infixes, since we're extending
+    p->postfix_n = 0;
     ts.read();
     ignoreWS(p);
     p->otherwise = read_statement();
@@ -277,13 +285,44 @@ void Parser::ignoreWS(Production* p, bool as_postfix) {
   p->postfix_n += as_postfix;
 }
 
-void Parser::siphonWS(Production* src, Production* dst, bool as_postfix) {
+//! takes all postfixes from src and inserts them into dst
+void Parser::siphonWS(Production* src, Production* dst, bool as_postfix, bool condense) {
   int N = src->postfix_n;
-  PrInfixWS* infixes[N];
+  PrInfixWS* infixes[max(N,1)];
+  
+  // remove infixes from src
   while (src->postfix_n > 0) {
     infixes[--src->postfix_n] = src->infixes.back();
     src->infixes.pop_back();
   }
+  
+  // condense all siphoned infixes into a single infix (if condense is true)
+  if (condense) {
+    // find first not-null postfix
+    int first_non_null = 0;
+    for (int i=0;i<N;i++) {
+      if (infixes[i] == nullptr)
+        first_non_null++;
+      else
+        break;
+    }
+    
+    // attach other postfixes as postfixes to the first non-null postfix:
+    for (int i=first_non_null+1;i<N;i++) {
+      infixes[first_non_null]->infixes.push_back(infixes[i]);
+      infixes[first_non_null]->postfix_n++;
+    }
+    
+    // edge cases:
+    if (N==0) {
+      infixes[0] = nullptr;
+    } else if (first_non_null < N) {
+      infixes[0] = infixes[first_non_null];
+    }
+    N = 1;
+  }
+  
+  // append siphoned infixes to dst
   for (int i=0;i<N;i++) {
     dst->infixes.push_back(infixes[i]);
     dst->postfix_n += as_postfix;
@@ -341,7 +380,7 @@ PrWhile* Parser::read_while() {
   ts.read(); // while
   ignoreWS(p);
   p->condition = read_expression();
-  ignoreWS(p);
+  siphonWS(p->condition, p, false, true);
   p->event = read_statement();
   return p;
 }
@@ -351,7 +390,7 @@ PrWith* Parser::read_with() {
   ts.read(); // with
   ignoreWS(p);
   p->objid = read_expression();
-  ignoreWS(p);
+  siphonWS(p->objid, p, false, true);
   p->event = read_statement();
   return p;
 }

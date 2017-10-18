@@ -26,8 +26,10 @@ int main (int argn, char** argv) {
     Parser parser(&inFile);
     Production* p;
     cout << "-- BEGIN --\n";
-    while (p = parser.read())
+    while (p = parser.read()) {
       cout << p->beautiful(config) + "\n";
+      delete(p);
+    }
     cout << "-- END --\n";
   }
   
