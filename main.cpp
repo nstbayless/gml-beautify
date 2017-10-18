@@ -8,6 +8,8 @@ using namespace std;
 
 int main (int argn, char** argv) {
   const char* filename = "in.gml";
+  if (argn > 1)
+    filename = argv[1];
   
   BeautifulConfig config;
   

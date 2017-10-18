@@ -5,3 +5,5 @@ GMLBeautify
 Makefile
 *.cmake
 *.gml
+!demo/
+!demo/*

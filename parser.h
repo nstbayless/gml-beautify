@@ -15,6 +15,9 @@ enum InfixStyle {
   //! single line; convert comments to /* comment */, leave /* */ untouched even if multi-line
   SL_CONVERT_ML,
   
+  //! leaves as is but ensures no \n at end, good for end-of line infix (before newline)
+  EOL_NO_CONVERT,
+  
   //! one or two line; convert comments to /* comment */ except last comment; add newline if // comment
   TWO_LINES,
   
@@ -33,7 +36,7 @@ enum InfixStyle {
 
 struct BeautifulConfig {
   //! put open brace on same line
-  bool egyptian = true;
+  bool egyptian = false;
   
   //! put semicolons at the end of each line
   bool semicolons = true;
@@ -80,7 +83,10 @@ struct BeautifulContext {
   
   bool forced_semicolon = false;
   
-  InfixStyle infix_style = AS_IS;
+  //! empty statements do not end with a semicolon
+  bool non_statement = false;
+  
+  InfixStyle infix_style = TWO_LINES;
   bool pad_infix_left = true;
   bool pad_infix_right = false;
   

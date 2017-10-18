@@ -1,4 +1,5 @@
 # include "parser.h"
+# include "util.h"
 
 # include <iterator>
 
@@ -118,14 +119,23 @@ string Production::renderWS(const BeautifulConfig& config, BeautifulContext cont
   infixes.pop_front();
   if (!ws)
     return "";
-  string s(ws->beautiful(config, context));
+  s = ws->beautiful(config, context);
+  if (ws->val.type == COMMENT && context.infix_style <= TWO_LINES && !context.is_inline) {
+    //single-line comment
+    if (ws->val.value[0] == '/' && ws->val.value[1] == '/') {
+      s += "\n" + indent(config, context.increment_depth().not_inline());
+    }
+  }
   delete(ws);
+  if context.EOL_NO_CONVERT {
+    s = trim(s);
+  }
   return s;
 }
 
 string PrStatement::end_statement_beautiful(const BeautifulConfig& config, BeautifulContext context) {
   string s;
-  if (config.semicolons || context.forced_semicolon) {
+  if ((config.semicolons &&! context.non_statement) || context.forced_semicolon) {
     s += ";";
   }
   while (!infixes.empty()) {
@@ -190,6 +200,7 @@ string PrExprArithmetic::beautiful(const BeautifulConfig& config, BeautifulConte
 }
 
 string PrEmptyStatement::beautiful(const BeautifulConfig& config, BeautifulContext context) {
+  context.non_statement = true;
   if (context.attached)
     return end_statement_beautiful(config, context.force_semicolon());
   return end_statement_beautiful(config, context);
@@ -273,11 +284,8 @@ string PrStatementIf::beautiful(const BeautifulConfig& config, BeautifulContext 
     s += indent(config, context);
   else
     context = context.decrement_depth();
-  s += "if " + condition->beautiful(config,context.as_inline());
-  if (hangable(result))
-    context = context.attach();
-  else
-    s += "\n";
+  s += "if " + renderWS(config, context) + condition->beautiful(config,context.as_inline().style(SL_NO_CONVERT));
+  context = context.attach();
   s += result->beautiful(config, context.not_inline().increment_depth());
   context = context.detach();
   if (otherwise) {
@@ -405,7 +413,7 @@ string PrInfixWS::beautiful(const BeautifulConfig& config, BeautifulContext cont
   
   s += val.value + renderWS(config, context);
   
-  if (context.pad_infix_right && val.type == COMMENT)
+  if (context.pad_infix_right && val.type == COMMENT && val.value[1] == "*")
     s += " ";
   return s;
 }

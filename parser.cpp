@@ -164,7 +164,7 @@ PrExprArithmetic* Parser::read_arithmetic(PrExpression* lhs) {
   if (ts.peek().type == OPR)
     return new PrExprArithmetic(lhs, ts.read(), nullptr);
   Token op = ts.read();
-  PrExprArithmetic* p = new PrExprArithmetic(lhs, ts.read(), nullptr);
+  PrExprArithmetic* p = new PrExprArithmetic(lhs, op, nullptr);
   ignoreWS(p);
   p->rhs = read_expression();
   siphonWS(p->rhs,p,true);
@@ -241,7 +241,6 @@ PrStatementVar* Parser::read_statement_var() {
 PrStatementIf* Parser::read_statement_if() {
   PrStatementIf* p = new PrStatementIf();
   ts.read(); // read IF
-  ignoreWS(p);
   ignoreWS(p);
   p->condition = read_expression();
   ignoreWS(p);
