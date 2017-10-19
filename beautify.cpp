@@ -134,6 +134,7 @@ string Production::renderWS(const BeautifulConfig& config, BeautifulContext cont
   if (ws->val.type == ENX && context.eol) {
     s = "";
   }
+  
   delete(ws);
   return s;
 }
@@ -487,8 +488,14 @@ string PrInfixWS::beautiful(const BeautifulConfig& config, BeautifulContext cont
   // pad left
   if (context.pad_infix_left && val.type == COMMENT)
     s += " ";
+  context.pad_infix_left = false;
   
   s += val.value;
+  // newline must be followed by correct indent
+  if (val.value == "\n")
+    s += indent(config,context);
+  
+  // render nested infixes:
   while (!infixes.empty())
     s += renderWS(config, context);
   
