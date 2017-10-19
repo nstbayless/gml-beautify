@@ -44,9 +44,6 @@ struct BeautifulConfig {
   //! put spacing after accessor symbol, e.g. array[@ index]
   bool accessor_space = true;
   
-  // maximum blank lines in a row (-1 to leave alone)
-  int max_blanks = -1;
-  
 // these options can modify the (non-comment/ws) tokens:
 
   //! parens for if statement condition (-1: leave untouched)
@@ -116,9 +113,6 @@ struct Production {
   
   std::string renderWS(const BeautifulConfig&,
     BeautifulContext bc);
-
-  void standardizeBlanks(const BeautifulConfig& config,
-    BeautifulContext context, bool drop_final);
   
   std::deque<PrInfixWS*> infixes;
   int postfix_n = 0;
@@ -344,6 +338,9 @@ private:
   
   //! take any postfixes of src and apply them as infixes (postfixes, if as_postfix) to dst
   void siphonWS(Production* src, Production* dst, bool as_postfix = false, bool condense = false);
+  
+  //! removes final newline from end of postfixes
+  void removeExtraNewline(Production* p);
   
   //! read semicolon and/or line ending
   void read_statement_end();

@@ -21,6 +21,7 @@ Production* Parser::read_production() {
   }
   read_statement_end();
   ignoreWS(p, true);
+  removeExtraNewline(p);
   return p;
 }
 
@@ -265,6 +266,7 @@ PrStatementIf* Parser::read_statement_if() {
     p->otherwise = read_statement();
     read_statement_end();
     ignoreWS(p, true);
+    removeExtraNewline(p);
   }
   return p;
 }
@@ -331,6 +333,40 @@ void Parser::siphonWS(Production* src, Production* dst, bool as_postfix, bool co
   for (int i=0;i<N;i++) {
     dst->infixes.push_back(infixes[i]);
     dst->postfix_n += as_postfix;
+  }
+}
+
+void Parser::removeExtraNewline(Production* p) {
+  //TODO: rewrite this to use iterators
+  auto& infixes = p->infixes;
+  auto& postfix_n = p->postfix_n;
+  
+  for (int i=infixes.size()-postfix_n;i<infixes.size();i++) {
+    // flatten postfixes
+    auto ws = infixes[i];
+    if (ws) {
+      ws->postfix_n = 0;
+      // pull out nested infixes
+      while (!ws->infixes.empty()) {
+        auto nested_ws = ws->infixes.back();
+        ws->infixes.pop_back();
+        infixes.insert(infixes.begin() + i+1,nested_ws);
+        postfix_n++;
+      }
+    }
+  }
+  
+  for (int i=0;i<postfix_n;i++) {
+    int iter = infixes.size() - i - 1;
+    if (infixes[iter]) {
+      if (infixes[iter]->val.value == "\n") {
+        delete(infixes[iter]);
+        infixes[iter] = nullptr;
+        return;
+      } else {
+        return;
+      }
+    }
   }
 }
 
