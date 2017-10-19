@@ -16,6 +16,24 @@ string Production::to_string() {
   return "?";
 }
 
+void Production::flattenPostfixes() {
+  //TODO: rewrite with iterators
+  for (int i=infixes.size()-postfix_n;i<infixes.size();i++) {
+    // flatten postfixes
+    auto ws = infixes[i];
+    if (ws) {
+      ws->postfix_n = 0;
+      // pull out nested infixes
+      while (!ws->infixes.empty()) {
+        auto nested_ws = ws->infixes.back();
+        ws->infixes.pop_back();
+        infixes.insert(infixes.begin() + i+1,nested_ws);
+        postfix_n++;
+      }
+    }
+  } 
+}
+
 PrDecor::PrDecor(Token t): rawToken(t) {}
 
 string PrDecor::to_string() {

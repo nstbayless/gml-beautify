@@ -81,13 +81,15 @@ struct BeautifulContext {
   InfixStyle infix_style = AS_IS;
   bool pad_infix_left = true;
   bool pad_infix_right = false;
-  bool eol = false;
+  // 0: not eol, 1: eol, 2: internal eol
+  char eol = 0;
   
   BeautifulContext increment_depth() const;
   BeautifulContext decrement_depth() const;
   BeautifulContext as_inline() const;
   BeautifulContext not_inline() const;
   BeautifulContext as_eol() const;
+  BeautifulContext as_internal_eol() const;
   BeautifulContext not_eol() const;
   
   // floating block control:
@@ -113,6 +115,11 @@ struct Production {
   
   std::string renderWS(const BeautifulConfig&,
     BeautifulContext bc);
+  
+  std::string renderPostfixesTrimmed(const BeautifulConfig&,
+    BeautifulContext bc);
+  
+  void flattenPostfixes();
   
   std::deque<PrInfixWS*> infixes;
   int postfix_n = 0;

@@ -73,6 +73,12 @@ BeautifulContext BeautifulContext::as_eol() const {
   return b;
 }
 
+BeautifulContext BeautifulContext::as_internal_eol() const {
+  auto b(*this);
+  b.eol = 2;
+  return b;
+}
+
 BeautifulContext BeautifulContext::not_eol() const {
   auto b(*this);
   b.eol = false;
@@ -130,13 +136,11 @@ string Production::renderWS(const BeautifulConfig& config, BeautifulContext cont
   return s;
 }
 
-string PrStatement::end_statement_beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  string s;
+string Production::renderPostfixesTrimmed(const BeautifulConfig& config, BeautifulContext context) {
+  string s = "";
   
-  // add semicolon
-  if ((config.semicolons &&! context.never_semicolon) || context.forced_semicolon) {
-    s += ";";
-  }
+  // expand postfixes
+  flattenPostfixes();
   
   // remove trailing blank infixes
   if (context.no_trailing_blanks ){
@@ -156,6 +160,26 @@ string PrStatement::end_statement_beautiful(const BeautifulConfig& config, Beaut
     }
   }
   
+  // internal: aggressively trim newlines internally and externally from postfixes
+  if (context.eol == 2) {
+    int max_blank_count = 0;
+    int blank_count = max_blank_count + 1;;
+    for (int i=0;i<infixes.size();i++) {
+      auto& ws = infixes[i];
+      if (ws) {
+        if (ws->val.value == "\n") {
+          if (blank_count > max_blank_count) {
+            delete(ws);
+            ws = nullptr;
+          }
+          blank_count ++;
+        } else {
+          blank_count = 0;
+        }
+      }
+    }
+  }
+  
   // render postfixes
   while (!infixes.empty()) {
     bool next_pad = context.pad_infix_left;
@@ -163,6 +187,20 @@ string PrStatement::end_statement_beautiful(const BeautifulConfig& config, Beaut
     s += renderWS(config, context);
     context.pad_infix_left = next_pad;
   }
+  
+  return s;
+}
+
+string PrStatement::end_statement_beautiful(const BeautifulConfig& config, BeautifulContext context) {
+  string s = "";
+  
+  // add semicolon
+  if ((config.semicolons &&! context.never_semicolon) || context.forced_semicolon) {
+    s += ";";
+  }
+  
+  s += renderPostfixesTrimmed(config, context);
+  
   return s;
 }
 
@@ -332,7 +370,7 @@ string PrStatementIf::beautiful(const BeautifulConfig& config, BeautifulContext 
   
   s += "if " + renderWS(config, context);
   s += condition->beautiful(config,context.as_inline());
-  s += renderWS(config, context.as_eol());
+  s += renderWS(config, context.as_internal_eol());
   if (!hangable(result))
     s += "\n";
   
@@ -490,8 +528,8 @@ string PrInfixWS::beautiful(const BeautifulConfig& config, BeautifulContext cont
     s += indent(config,context);
   
   // render nested infixes:
-  while (!infixes.empty())
-    s += renderWS(config, context);
+  if (context.eol == 2) 
+   renderPostfixesTrimmed(config, context);
   
   if (context.pad_infix_right && val.type == COMMENT && val.value[1] == '*')
     s += " ";

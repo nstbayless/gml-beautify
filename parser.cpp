@@ -341,20 +341,7 @@ void Parser::removeExtraNewline(Production* p) {
   auto& infixes = p->infixes;
   auto& postfix_n = p->postfix_n;
   
-  for (int i=infixes.size()-postfix_n;i<infixes.size();i++) {
-    // flatten postfixes
-    auto ws = infixes[i];
-    if (ws) {
-      ws->postfix_n = 0;
-      // pull out nested infixes
-      while (!ws->infixes.empty()) {
-        auto nested_ws = ws->infixes.back();
-        ws->infixes.pop_back();
-        infixes.insert(infixes.begin() + i+1,nested_ws);
-        postfix_n++;
-      }
-    }
-  }
+  p->flattenPostfixes();
   
   for (int i=0;i<postfix_n;i++) {
     int iter = infixes.size() - i - 1;
