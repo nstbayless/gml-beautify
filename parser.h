@@ -44,7 +44,10 @@ struct BeautifulConfig {
   //! put spacing after accessor symbol, e.g. array[@ index]
   bool accessor_space = true;
   
-// these options can modify the (non-comment) tokens:
+  // maximum blank lines in a row (-1 to leave alone)
+  int max_blanks = -1;
+  
+// these options can modify the (non-comment/ws) tokens:
 
   //! parens for if statement condition (-1: leave untouched)
   int if_parens = -1;
@@ -113,7 +116,10 @@ struct Production {
   
   std::string renderWS(const BeautifulConfig&,
     BeautifulContext bc);
-    
+
+  void standardizeBlanks(const BeautifulConfig& config,
+    BeautifulContext context, bool drop_final);
+  
   std::deque<PrInfixWS*> infixes;
   int postfix_n = 0;
 };

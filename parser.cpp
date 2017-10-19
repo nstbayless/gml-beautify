@@ -279,7 +279,7 @@ PrBody* Parser::read_block() {
   return p;
 }
 
-void Parser::ignoreWS(Production* p, bool as_postfix) {
+void Parser::ignoreWS(Production* p, bool as_postfix) {  
   if (ts.peek() == Token(ENX,"\n") || ts.peek().type == COMMENT) {
     PrInfixWS* infix = new PrInfixWS(ts.read());
     ignoreWS(infix);
@@ -373,11 +373,6 @@ void Parser::read_statement_end() {
     read = true;
     ts.read();
   }
-  if (ts.peek() == Token(ENX,"\n")) {
-    read = true;
-    ts.read();
-  }
-  // throw error if read is false
 }
 
 PrWhile* Parser::read_while() {

@@ -139,6 +139,48 @@ string Production::renderWS(const BeautifulConfig& config, BeautifulContext cont
   return s;
 }
 
+void Production::standardizeBlanks(const BeautifulConfig& config, BeautifulContext context, bool drop_final) {
+  //TODO: rewrite this to use iterators
+  
+  for (int i=0;i<infixes.size();i++) {
+    // recurse on infixes:
+    if (i < infixes.size() - postfix_n) {
+      if (infixes[i])
+        infixes[i]->standardizeBlanks(config, context, false);
+    }
+    // flatten postfixes
+    auto ws = infixes[i];
+    if (ws) {
+      ws->postfix_n = 0;
+      // pull out nested infixes
+      while (!ws->infixes.empty()) {
+        auto nested_ws = ws->infixes.back();
+        ws->infixes.pop_back();
+        infixes.insert(infixes.begin() + i+1,nested_ws);
+        postfix_n++;
+      }
+    }
+  }
+  
+  int blanks_seen = 0;
+  for (int i=0;i<postfix_n;i++) {
+    int iter = postfix_n - i;
+    if (infixes[iter]) {
+      if (infixes[iter]->val.value == "\n") {
+        if ((blanks_seen > config.max_blanks && config.max_blanks >= 0) || drop_final) {
+          delete(infixes[iter]);
+          infixes[iter] = nullptr;
+          drop_final = false;
+        }
+        blanks_seen ++;
+      } else {
+        blanks_seen = 0;
+        drop_final = false;
+      }
+    }
+  }
+}
+
 string PrStatement::end_statement_beautiful(const BeautifulConfig& config, BeautifulContext context) {
   string s;
   
