@@ -32,6 +32,9 @@ struct BeautifulConfig {
   //! number of spaces to indent with
   int indent_spaces_per_tab = 4;
   
+  //! remove blank lines from start and end of blocks {}
+  bool trim_block = true;
+  
   //! put spacing around ++/-- operator
   bool opr_space = false;
   
@@ -41,7 +44,7 @@ struct BeautifulConfig {
   //! put spacing after accessor symbol, e.g. array[@ index]
   bool accessor_space = true;
   
-// these options can modify the tokens:
+// these options can modify the (non-comment) tokens:
 
   //! parens for if statement condition (-1: leave untouched)
   int if_parens = -1;
@@ -71,6 +74,10 @@ struct BeautifulContext {
   //! empty statements do not end with a semicolon
   bool never_semicolon = false;
   
+  //! statement must not end with any blank lines (from postfixes)
+  //! used at the end of blocks
+  bool no_trailing_blanks = false;
+  
   InfixStyle infix_style = AS_IS;
   bool pad_infix_left = true;
   bool pad_infix_right = false;
@@ -78,7 +85,6 @@ struct BeautifulContext {
   
   BeautifulContext increment_depth() const;
   BeautifulContext decrement_depth() const;
-  BeautifulContext as_condensed() const;
   BeautifulContext as_inline() const;
   BeautifulContext not_inline() const;
   BeautifulContext as_eol() const;

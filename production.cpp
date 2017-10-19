@@ -12,7 +12,6 @@ Production::~Production() {
   }
 }
 
-
 string Production::to_string() {
   return "?";
 }

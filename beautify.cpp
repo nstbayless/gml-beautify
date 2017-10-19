@@ -6,7 +6,7 @@
 using namespace std;
 
 string indent(const BeautifulConfig& config, BeautifulContext context) {
-  if (context.is_inline || context.condense)
+  if (context.is_inline)
     return "";
   if (config.indent_spaces)
     return std::string(config.indent_spaces_per_tab * context.depth, ' ');
@@ -52,13 +52,6 @@ BeautifulContext BeautifulContext::increment_depth() const {
 BeautifulContext BeautifulContext::decrement_depth() const {
   auto b(*this);
   b.depth--;
-  return b;
-}
-
-BeautifulContext BeautifulContext::as_condensed() const {
-  auto b(*this);
-  b.depth++;
-  b.condense = true;
   return b;
 }
 
@@ -147,11 +140,33 @@ string Production::renderWS(const BeautifulConfig& config, BeautifulContext cont
 
 string PrStatement::end_statement_beautiful(const BeautifulConfig& config, BeautifulContext context) {
   string s;
+  
+  // add semicolon
   if ((config.semicolons &&! context.never_semicolon) || context.forced_semicolon) {
     s += ";";
   }
+  
+  // remove trailing blank infixes
+  if (context.no_trailing_blanks ){
+    while (!infixes.empty()) {
+      auto pf = infixes.back();
+      if (pf) {
+        if (pf->val.type != ENX)
+          break;
+        
+        // transfer nested infixes up:
+        while (!pf->infixes.empty()) {
+          infixes.push_back(pf->infixes.back());
+          pf->infixes.pop_back();
+        }
+      }
+      infixes.pop_back();
+    }
+  }
+  
+  // render postfixes
   while (!infixes.empty()) {
-    s += renderWS(config, context.as_eol());
+    s += renderWS(config, context);
   }
   return s;
 }
@@ -281,8 +296,27 @@ string PrBody::beautiful(const BeautifulConfig& config, BeautifulContext context
   
   BeautifulContext subcontext = context.increment_depth().detach();
   
+  // trim config
+  bool l_trim = config.trim_block;
+  bool r_trim = config.trim_block;
+  PrInfixWS* ws_trim = new PrInfixWS(Token(ENX,"\n"));
+  
   // add productions within block
-  for (auto p: productions) {
+  for (int i=0;i<productions.size();i++) {
+    auto p = productions[i];
+    
+    // trim blank lines at start
+    if (is_a<PrEmptyStatement>(p) && l_trim)
+      continue;
+    else
+      l_trim = false;
+     
+    // trim blank lines at end [final iteration]
+    if (i == productions.size() - 1 && r_trim) {
+      subcontext.no_trailing_blanks = true;
+    }
+      
+    // append text from production
     s += "\n";
     s += p->beautiful(config, subcontext);
   }
@@ -456,7 +490,7 @@ string PrInfixWS::beautiful(const BeautifulConfig& config, BeautifulContext cont
   
   s += val.value;
   while (!infixes.empty())
-    renderWS(config, context);
+    s += renderWS(config, context);
   
   if (context.pad_infix_right && val.type == COMMENT && val.value[1] == '*')
     s += " ";

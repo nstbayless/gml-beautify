@@ -20,6 +20,7 @@ Production* Parser::read_production() {
     p->infixes.push_back(new PrInfixWS(ts.read()));
   }
   read_statement_end();
+  ignoreWS(p, true);
   return p;
 }
 
@@ -201,12 +202,15 @@ PrExpressionFn* Parser::read_expression_function() {
   
   ts.read(); // )
   
+  ignoreWS(pfn, true);
+  
   return pfn;
 }
 
 PrStatementFn* Parser::read_statement_function() {
   PrStatementFn* fn = new PrStatementFn();
   fn->fn = read_expression_function();
+  siphonWS(fn->fn,fn,true);
   return fn;
 }
 
@@ -260,6 +264,7 @@ PrStatementIf* Parser::read_statement_if() {
     ignoreWS(p);
     p->otherwise = read_statement();
     read_statement_end();
+    ignoreWS(p, true);
   }
   return p;
 }
