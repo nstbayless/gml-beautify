@@ -23,7 +23,7 @@ string join_productions(const std::vector<P*> productions, string joinder, const
     if (!first)
       s += joinder;
     if (infix_source)
-      s += infix_source->renderWS(config, context);
+      s += infix_source->renderWS(config, context.style(PAD_NEITHER).style((first)?PAD_BOTH:PAD_RIGHT));
     s += p->beautiful(config, context);
     first = false;
     if (infix_source)
@@ -356,9 +356,11 @@ string PrAssignment::beautiful(const BeautifulConfig& config, BeautifulContext c
   if (op.type != OPR || config.opr_space)
     s += " ";
   s += op.value;
-  s += renderWS(config, context.style(PAD_LEFT));
-  if (rhs)
-    s += " " + rhs->beautiful(config,context.as_inline());
+  if (rhs) {
+    s += " ";
+    s += rhs->beautiful(config,context.as_inline());
+    s += renderWS(config, context.style(PAD_LEFT));
+  }
   s += end_statement_beautiful(config, context);
   return s;
 }
