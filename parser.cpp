@@ -89,6 +89,7 @@ PrAssignment* Parser::read_assignment() {
     PrExpression* rhs = 0;
     if (op.type != OPR) {
       rhs = read_expression();
+      p->postfix_n = 0;
       siphonWS(rhs,p,true);
     }
     p->rhs = rhs;

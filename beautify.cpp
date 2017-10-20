@@ -327,6 +327,7 @@ string PrExprArithmetic::beautiful(const BeautifulConfig& config, BeautifulConte
   if (rhs) {
     if (r_space)
       s += " ";
+    s += renderWS(config, context.style(PAD_NEITHER).style(PAD_RIGHT));
     s += rhs->beautiful(config,context.as_inline());
   }
   
@@ -358,8 +359,8 @@ string PrAssignment::beautiful(const BeautifulConfig& config, BeautifulContext c
   s += op.value;
   if (rhs) {
     s += " ";
+    s += renderWS(config, context.style(PAD_NEITHER).style(PAD_RIGHT));
     s += rhs->beautiful(config,context.as_inline());
-    s += renderWS(config, context.style(PAD_LEFT));
   }
   s += end_statement_beautiful(config, context);
   return s;
