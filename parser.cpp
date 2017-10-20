@@ -86,7 +86,7 @@ PrAssignment* Parser::read_assignment() {
     Token op = ts.read();
     PrAssignment* p = new PrAssignment(lhs,op,nullptr);
     ignoreWS(p);
-    PrExpression* rhs = 0;
+    PrExpression* rhs = nullptr;
     if (op.type != OPR) {
       rhs = read_expression();
       p->postfix_n = 0;
@@ -104,6 +104,7 @@ PrExpression* Parser::read_term() {
       t == Token(KW,"not") || t == Token(OP,"~") || t.type == OPR) {
     PrExprArithmetic* p = new PrExprArithmetic(nullptr, ts.read(),read_expression());
     siphonWS(p->rhs,p,true);
+    return p;
   } else {
     if (t.type == NUM || t.type == STR)
       to_return = new PrFinal(ts.read());
