@@ -150,6 +150,10 @@ void perform_tests(ifstream& is, BeautifulConfig& config) {
       std::cout<< "Post: " << post.value << endl;
       return;
     }
+    
+    if (eof_pre && eof_post)
+      std::cout<< "Comments are the same in post and pre"<<endl;
+      break;
   }
   
   // reset for next test

@@ -289,6 +289,7 @@ PrBody* Parser::read_block(bool braces) {
   if (braces) {
     ts.read(); // }
   }
+  ignoreWS(p, true);
   
   return p;
 }

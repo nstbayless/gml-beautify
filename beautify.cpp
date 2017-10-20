@@ -450,6 +450,9 @@ string PrBody::beautiful(const BeautifulConfig& config, BeautifulContext context
   if (!is_root) {
     s += "}";
   }
+  
+  context.never_semicolon = true;
+  s += end_statement_beautiful(config, context);
   return s;
 }
 
