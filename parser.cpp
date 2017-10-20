@@ -10,6 +10,10 @@ Production* Parser::read() {
   return read_production();
 }
 
+PrBody* Parser::parse() {
+  return read_block(false);
+}
+
 Production* Parser::read_production() {
   PrStatement* p = read_statement();
   // read comments before final semicolon
@@ -270,13 +274,22 @@ PrStatementIf* Parser::read_statement_if() {
   return p;
 }
 
-PrBody* Parser::read_block() {
+PrBody* Parser::read_block(bool braces) {
   PrBody* p = new PrBody();
-  ts.read(); // {
-  ignoreWS(p);
-  while (ts.peek() != Token(PUNC,"}"))
+  p->is_root = !braces;
+  
+  if (braces) {
+    ts.read(); // {
+  }
+  
+  // read productions inside of braces
+  while (ts.peek() != Token(PUNC,"}") && !ts.eof())
     p->productions.push_back(read_production());
-  ts.read(); // }
+  
+  if (braces) {
+    ts.read(); // }
+  }
+  
   return p;
 }
 
@@ -284,7 +297,12 @@ void Parser::ignoreWS(Production* p, bool as_postfix) {
   if (ts.peek() == Token(ENX,"\n") || ts.peek().type == COMMENT) {
     PrInfixWS* infix = new PrInfixWS(ts.read());
     ignoreWS(infix);
-    p->infixes.push_back(infix);
+    if (!ignore_decor)
+      p->infixes.push_back(infix);
+    else {
+      delete(infix);
+      p->infixes.push_back(nullptr);
+    }
   } else {
     p->infixes.push_back(nullptr);  
   }

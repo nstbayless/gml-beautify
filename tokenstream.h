@@ -41,6 +41,7 @@ static const char* TOKEN_NAME[] = {
 struct Token {
   TokenType type;
   std::string value;
+  Token();
   Token(const TokenType type, const std::string valuet);
   bool operator==(const Token& other) const;
   bool operator!=(const Token& other) const;

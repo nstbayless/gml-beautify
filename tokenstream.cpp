@@ -7,6 +7,9 @@ using namespace std;
 Token::Token(const TokenType type, const std::string value): type(type), value(value) {
 }
 
+Token::Token(): Token(ERR,"") {
+}
+
 bool Token::operator==(const Token& other) const {
   return type == other.type && value == other.value;
 }

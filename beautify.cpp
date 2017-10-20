@@ -402,12 +402,17 @@ string PrBody::beautiful(const BeautifulConfig& config, BeautifulContext context
   
   s += "{";
   
-  BeautifulContext subcontext = context.increment_depth().detach();
+  BeautifulContext subcontext;
   
+  if (is_root) {
+    s = "";
+  } else {
+    subcontext = context.increment_depth().detach();
+  }
+    
   // trim config
   bool l_trim = config.trim_block;
   bool r_trim = config.trim_block;
-  PrInfixWS* ws_trim = new PrInfixWS(Token(ENX,"\n"));
   
   // add productions within block
   for (int i=0;i<productions.size();i++) {
@@ -426,13 +431,17 @@ string PrBody::beautiful(const BeautifulConfig& config, BeautifulContext context
       
     // append text from production
     s += "\n";
+    if (is_root && i==0)
+      s = "";
     s += p->beautiful(config, subcontext);
   }
   if (productions.size() > 0)
     s += "\n" + indent(config, context);
   else
     s += " ";
-  s += "}";
+  if (!is_root) {
+    s += "}";
+  }
   return s;
 }
 

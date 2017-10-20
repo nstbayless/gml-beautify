@@ -244,6 +244,7 @@ struct PrStatementVar: PrStatement {
 struct PrBody: PrStatement {
   virtual std::string to_string();
   virtual std::string beautiful(const BeautifulConfig&, BeautifulContext);
+  bool is_root = false;
   
   std::vector<Production*> productions;
 };
@@ -321,7 +322,15 @@ struct PrControl: PrStatement {
 class Parser {
 public:
   Parser(std::istream* is);
+  
+  //! parses full stream
+  PrBody* parse();
+  
+  //! parses a single line
   Production* read();
+  
+  //! ignore comments and whitespace
+  bool ignore_decor = false;
 private:
   Production* read_production();
   PrDecor* read_rawtoken();
@@ -337,7 +346,7 @@ private:
   PrStatementFn* read_statement_function();
   PrStatementVar* read_statement_var();
   PrStatementIf* read_statement_if();
-  PrBody* read_block();
+  PrBody* read_block(bool braces = true);
   PrFor* read_for();
   PrWith* read_with();
   PrWhile* read_while();
