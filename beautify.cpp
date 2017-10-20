@@ -342,7 +342,7 @@ string PrEmptyStatement::beautiful(const BeautifulConfig& config, BeautifulConte
   if (context.attached)
     return end_statement_beautiful(config, context.force_semicolon());
   context.pad_infix_left = false;
-  return end_statement_beautiful(config, context);
+  return indent(config, context) + end_statement_beautiful(config, context);
 }
 
 string PrFinal::beautiful(const BeautifulConfig& config, BeautifulContext context) {
@@ -419,10 +419,18 @@ string PrBody::beautiful(const BeautifulConfig& config, BeautifulContext context
     auto p = productions[i];
     
     // trim blank lines at start
-    if (is_a<PrEmptyStatement>(p) && l_trim)
-      continue;
-    else
-      l_trim = false;
+    if (is_a<PrEmptyStatement>(p) && l_trim) {
+      p->flattenPostfixes();
+      for (int i=0;i<p->infixes.size();i++) {
+        if (p->infixes[i]) {
+          if (p->infixes[i]->val.value == "\n") {
+            delete(p->infixes[i]);
+            p->infixes[i] = nullptr;
+          } else break;
+        }
+      }
+    }
+    l_trim = false;
      
     // trim blank lines at end [final iteration]
     if (i == productions.size() - 1 && r_trim) {
