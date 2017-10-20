@@ -148,8 +148,6 @@ string render_internal_eol(const BeautifulConfig& config, BeautifulContext conte
     } else postfixes.pop_front();
   }
   
-  context.eol = false;
-  
   // remove blank lines and collect string
   string s = "";
   int blanks_seen = 0;
@@ -158,6 +156,8 @@ string render_internal_eol(const BeautifulConfig& config, BeautifulContext conte
       bool render = true;
       if (postfixes[i]->val.value == "\n") {
         render = blanks_seen == 0;
+        if (render)
+          context.pad_infix_left = false;
         blanks_seen += 1;
       } else {
         blanks_seen = 0;
