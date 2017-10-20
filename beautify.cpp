@@ -19,8 +19,6 @@ string join_productions(const std::vector<P*> productions, string joinder, const
   bool first = true;
   string s = "";
   context.pad_infix_right = true;
-  if (infix_source)
-    s +=infix_source->renderWS(config, context);
   for (auto p: productions) {
     if (!first)
       s += joinder;
