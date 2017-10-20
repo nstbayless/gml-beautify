@@ -105,8 +105,10 @@ Token TokenStream::read_comment() {
     if (is->eof())
       break;
     c = is->get();
-    if (c == '\n')
+    if (c == '\n') {
+      is->putback(c);
       break;
+    }
     val += c;
   }
   
