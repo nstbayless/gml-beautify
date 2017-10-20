@@ -422,14 +422,20 @@ string PrBody::beautiful(const BeautifulConfig& config, BeautifulContext context
     // trim blank lines at start
     if (is_a<PrEmptyStatement>(p) && l_trim) {
       p->flattenPostfixes();
+      bool seen_non_blank = false;
       for (int i=0;i<p->infixes.size();i++) {
         if (p->infixes[i]) {
           if (p->infixes[i]->val.value == "\n") {
             delete(p->infixes[i]);
             p->infixes[i] = nullptr;
-          } else break;
+          } else {
+            seen_non_blank = true;
+            break;
+          }
         }
       }
+      if (!seen_non_blank)
+        continue;
     }
     l_trim = false;
      
