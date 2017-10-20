@@ -123,6 +123,53 @@ string Production::beautiful(const BeautifulConfig& config, BeautifulContext con
   return "Unknown Production";
 }
 
+string render_internal_eol(const BeautifulConfig& config, BeautifulContext context, PrInfixWS* piws) {
+  PrEmptyStatement pes;
+  pes.infixes.push_back(piws);
+  pes.postfix_n = 1;
+  pes.flattenPostfixes();
+  auto& postfixes = pes.infixes;
+  
+  // trim postfixes at start and end:
+  while (!postfixes.empty()) {
+    if (postfixes.front()) {
+      if (postfixes.front()->val.value == "\n") {
+        postfixes.pop_front();
+      } else {
+        if (postfixes.back()) {
+          if (postfixes.back()->val.value == "\n")
+            postfixes.pop_back();
+          else
+            break;
+        } else {
+          postfixes.pop_back();
+        }
+      }
+    } else postfixes.pop_front();
+  }
+  
+  context.eol = false;
+  
+  // remove blank lines and collect string
+  string s = "";
+  int blanks_seen = 0;
+  for (int i=0;i<postfixes.size();i++) {
+    if (postfixes[i]) {
+      bool render = true;
+      if (postfixes[i]->val.value == "\n") {
+        render = blanks_seen == 0;
+        blanks_seen += 1;
+      } else {
+        blanks_seen = 0;
+      }
+      if (render)
+        s += postfixes[i]->beautiful(config, context);
+    }
+  }
+  
+  return s;
+}
+
 string Production::renderWS(const BeautifulConfig& config, BeautifulContext context) {
   if (infixes.empty())
     return "";
@@ -130,6 +177,11 @@ string Production::renderWS(const BeautifulConfig& config, BeautifulContext cont
   infixes.pop_front();
   if (!ws)
     return "";
+  // internal eol requires processing infix list:
+  if (context.eol == 2) {
+    return render_internal_eol(config, context, ws);
+  }
+  
   string s(ws->beautiful(config, context));
   
   delete(ws);
@@ -391,7 +443,7 @@ string PrStatementIf::beautiful(const BeautifulConfig& config, BeautifulContext 
   else
     context = context.decrement_depth();
   
-  s += "if " + renderWS(config, context);
+  s += "if " + renderWS(config, context.style(PAD_NEITHER).style(PAD_RIGHT));
   s += condition->beautiful(config,context.as_inline());
   s += renderWS(config, context.as_internal_eol());
   if (!hangable(result))
@@ -457,7 +509,7 @@ string PrControl::beautiful(const BeautifulConfig& config, BeautifulContext cont
 
 string PrWhile::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   string s = indent(config, context) + "while ";
-  s += renderWS(config, context);
+  s += renderWS(config, context.style(PAD_NEITHER).style(PAD_RIGHT));
   s += condition->beautiful(config, context.as_inline());
   s += renderWS(config, context.as_internal_eol());
   if (hangable(event))
@@ -474,7 +526,7 @@ string PrWhile::beautiful(const BeautifulConfig& config, BeautifulContext contex
 
 string PrWith::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   string s = indent(config, context) +"with ";
-  s += renderWS(config, context);
+  s += renderWS(config, context.style(PAD_NEITHER).style(PAD_RIGHT));
   s += objid->beautiful(config, context.as_inline());
   s += renderWS(config, context.as_internal_eol());
   if (hangable(event))
@@ -504,7 +556,7 @@ string PrAccessorExpression::beautiful(const BeautifulConfig& config, BeautifulC
 
 string PrSwitch::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   string s = indent(config, context) + "switch ";
-  s += renderWS(config, context);
+  s += renderWS(config, context.style(PAD_NEITHER).style(PAD_RIGHT));
   s += condition->beautiful(config, context.as_inline());
   s += renderWS(config, context.as_internal_eol());
   
@@ -539,49 +591,8 @@ string PrCase::beautiful(const BeautifulConfig& config, BeautifulContext context
   return s;
 }
 
-string render_internal_eol(const BeautifulConfig& config, BeautifulContext context, PrInfixWS* piws) {
-  PrEmptyStatement pes;
-  pes.infixes[0] = piws;
-  pes.postfix_n = 1;
-  pes.flattenPostfixes();
-  auto& postfixes = pes.infixes;
-  
-  // trim postfixes at start:
-  while (!postfixes.empty()) {
-    if (postfixes.front()->val.value == "\n")
-      postfixes.pop_front();
-    else if( postfixes.back()->val.value == "\n")
-      postfixes.pop_back();
-    else
-      break;
-  }
-  
-  // remove blank lines and collect string
-  string s = "";
-  int blanks_seen = 0;
-  for (int i=0;i<postfixes.size();i++) {
-    if (postfixes[i]) {
-      bool render = true;
-      if (postfixes[i]->val.value == "\n") {
-        render = blanks_seen == 0;
-        blanks_seen += 1;
-      } else {
-        blanks_seen = 0;
-      }
-      if (render)
-        s += postfixes[i]->beautiful(config, context);
-    }
-  }
-  return s;
-}
-
 string PrInfixWS::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   string s = "";
-  
-  // internal eol requires processing infix list:
-  if (context.eol == 2) {
-    return render_internal_eol(config, context, this);
-  }
   
   // pad left
   if (context.pad_infix_left && val.type == COMMENT)
@@ -594,8 +605,9 @@ string PrInfixWS::beautiful(const BeautifulConfig& config, BeautifulContext cont
     s += indent(config,context);
   
   // render nested infixes:
-  if (context.eol == 2) 
-   renderPostfixesTrimmed(config, context);
+  for (int i=0;i<infixes.size();i++)
+    if (infixes[i])
+      s += infixes[i]->beautiful(config, context);
   
   if (context.pad_infix_right && val.type == COMMENT && val.value[1] == '*')
     s += " ";
