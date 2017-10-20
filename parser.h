@@ -44,6 +44,9 @@ struct BeautifulConfig {
   //! put spacing after accessor symbol, e.g. array[@ index]
   bool accessor_space = true;
   
+  //! if a comment starts a line but is not the first line of a body, it must follow a blank line.
+  bool blank_before_comment = true;
+  
 // these options can modify the (non-comment/ws) tokens:
 
   //! parens for if statement condition (-1: leave untouched)

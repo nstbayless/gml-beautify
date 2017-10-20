@@ -105,7 +105,7 @@ Token TokenStream::read_comment() {
     if (is->eof())
       break;
     c = is->get();
-    if (c == '\n') {
+    if (c == '\n' || c == -1) {
       is->putback(c);
       break;
     }

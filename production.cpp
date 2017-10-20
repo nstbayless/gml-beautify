@@ -204,5 +204,8 @@ string PrSwitch::to_string() {
 PrInfixWS::PrInfixWS(Token t): val(t) {}
 
 string PrInfixWS::to_string() {
+  if (val.value == "\n") {
+    return "\\n";
+  }
   return val.value;
 }

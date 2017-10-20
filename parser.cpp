@@ -11,9 +11,6 @@ Production* Parser::read() {
 }
 
 Production* Parser::read_production() {
-  TokenType t = ts.peek().type;
-  if (t == COMMENT || t == WS)
-    return read_rawtoken();
   PrStatement* p = read_statement();
   // read comments before final semicolon
   while (ts.peek().type == COMMENT) {
@@ -32,6 +29,8 @@ PrDecor* Parser::read_rawtoken() {
 PrStatement* Parser::read_statement() {  
   string value(ts.peek().value);
   switch (ts.peek().type) {
+  case WS:
+  case COMMENT:
   case ENX:
     return new PrEmptyStatement();
   case KW:
@@ -425,7 +424,7 @@ PrSwitch* Parser::read_switch() {
   ignoreWS(p);
   
   p->condition = read_expression();
-  ignoreWS(p);
+  siphonWS(p->condition, p, false, true);
   
   ts.read(); // {
   ignoreWS(p);

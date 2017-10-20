@@ -143,7 +143,7 @@ string Production::renderPostfixesTrimmed(const BeautifulConfig& config, Beautif
   flattenPostfixes();
   
   // remove trailing blank infixes
-  if (context.no_trailing_blanks ){
+  if (context.no_trailing_blanks) {
     while (!infixes.empty()) {
       auto pf = infixes.back();
       if (pf) {
@@ -157,6 +157,28 @@ string Production::renderPostfixesTrimmed(const BeautifulConfig& config, Beautif
         }
       }
       infixes.pop_back();
+    }
+  }
+  
+  // blank_before_comment configuration option
+  if (config.blank_before_comment) {
+    if (!infixes.empty()) {
+      if (!is_a<PrEmptyStatement>(this)) {
+        int starting_blank_count = 0;
+        for (int i=0;i<infixes.size();i++) {
+          if (infixes[i]) {
+            if (infixes[i]->val.type == COMMENT && starting_blank_count == 0) {
+              continue;
+            } else if (infixes[i]->val.value == "\n") {
+              starting_blank_count++;
+            } else {
+              if (starting_blank_count == 1)
+                infixes.insert(infixes.begin() + i, new PrInfixWS(Token(ENX,"\n")));
+              break;
+            }
+          }
+        }
+      }
     }
   }
   
@@ -267,6 +289,7 @@ string PrEmptyStatement::beautiful(const BeautifulConfig& config, BeautifulConte
   context.never_semicolon = true;
   if (context.attached)
     return end_statement_beautiful(config, context.force_semicolon());
+  context.pad_infix_left = false;
   return end_statement_beautiful(config, context);
 }
 
@@ -436,7 +459,7 @@ string PrWhile::beautiful(const BeautifulConfig& config, BeautifulContext contex
   string s = indent(config, context) + "while ";
   s += renderWS(config, context);
   s += condition->beautiful(config, context.as_inline());
-  s += renderWS(config, context.as_eol());
+  s += renderWS(config, context.as_internal_eol());
   if (hangable(event))
     context = context.attach();
   else
@@ -453,7 +476,7 @@ string PrWith::beautiful(const BeautifulConfig& config, BeautifulContext context
   string s = indent(config, context) +"with ";
   s += renderWS(config, context);
   s += objid->beautiful(config, context.as_inline());
-  s += renderWS(config, context.as_eol());
+  s += renderWS(config, context.as_internal_eol());
   if (hangable(event))
     context = context.attach();
   else
@@ -481,7 +504,9 @@ string PrAccessorExpression::beautiful(const BeautifulConfig& config, BeautifulC
 
 string PrSwitch::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   string s = indent(config, context) + "switch ";
+  s += renderWS(config, context);
   s += condition->beautiful(config, context.as_inline());
+  s += renderWS(config, context.as_internal_eol());
   
   if (cases.size() == 0 && !config.egyptian) {
     return s + "\n{ }\n";
@@ -514,8 +539,49 @@ string PrCase::beautiful(const BeautifulConfig& config, BeautifulContext context
   return s;
 }
 
+string render_internal_eol(const BeautifulConfig& config, BeautifulContext context, PrInfixWS* piws) {
+  PrEmptyStatement pes;
+  pes.infixes[0] = piws;
+  pes.postfix_n = 1;
+  pes.flattenPostfixes();
+  auto& postfixes = pes.infixes;
+  
+  // trim postfixes at start:
+  while (!postfixes.empty()) {
+    if (postfixes.front()->val.value == "\n")
+      postfixes.pop_front();
+    else if( postfixes.back()->val.value == "\n")
+      postfixes.pop_back();
+    else
+      break;
+  }
+  
+  // remove blank lines and collect string
+  string s = "";
+  int blanks_seen = 0;
+  for (int i=0;i<postfixes.size();i++) {
+    if (postfixes[i]) {
+      bool render = true;
+      if (postfixes[i]->val.value == "\n") {
+        render = blanks_seen == 0;
+        blanks_seen += 1;
+      } else {
+        blanks_seen = 0;
+      }
+      if (render)
+        s += postfixes[i]->beautiful(config, context);
+    }
+  }
+  return s;
+}
+
 string PrInfixWS::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   string s = "";
+  
+  // internal eol requires processing infix list:
+  if (context.eol == 2) {
+    return render_internal_eol(config, context, this);
+  }
   
   // pad left
   if (context.pad_infix_left && val.type == COMMENT)
