@@ -619,7 +619,7 @@ string PrSwitch::beautiful(const BeautifulConfig& config, BeautifulContext conte
   s += renderWS(config, context.as_internal_eol());
   
   if (cases.size() == 0 && !config.egyptian) {
-    return s + "\n{ }\n";
+    return s + "\n{ }" + end_statement_beautiful(config, context);
   }
   
   context = context.not_inline();
@@ -628,21 +628,28 @@ string PrSwitch::beautiful(const BeautifulConfig& config, BeautifulContext conte
     s += " {\n";
   else
     s += "\n" + indent(config, context) + "{\n";
+  s += renderWS(config, context.trim_leading_blanks());
   
   for (auto c: cases)
     s += c->beautiful(config, context);
   
   s += indent(config, context) + "}";
+  s += end_statement_beautiful(config, context);
   return s;
 }
 
 string PrCase::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   string s = indent(config, context);
-  if (value)
-    s += "case " + value->beautiful(config, context.as_inline());
-  else
+  if (value) {
+    s += "case ";
+    s += renderWS(config, context.style(PAD_NEITHER).style(PAD_RIGHT));
+    s += value->beautiful(config, context.as_inline());
+    s += renderWS(config, context);
+  } else {
     s += "default";
-  s += ":\n";
+    s += renderWS(config, context);
+  }
+  s += ":" + renderWS(config, context.as_internal_eol()) + "\n";
   for (auto p: productions) {
     s += p->beautiful(config, context.increment_depth()) + "\n";
   }

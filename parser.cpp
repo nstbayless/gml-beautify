@@ -463,29 +463,30 @@ PrSwitch* Parser::read_switch() {
         
     PrCase* c = new PrCase();
     Token t(ts.read()); // case
-    ignoreWS(p);
+    ignoreWS(c);
     
     if (t==Token(KW,"case")) {
       c->value = read_expression();
-      ignoreWS(p);
+      ignoreWS(c);
     } else {
       ts.read(); // default
       c->value = nullptr;
+      ignoreWS(c);
     }
     
     ts.read(); //:
-    ignoreWS(p);
+    ignoreWS(c);
     
     while (ts.peek()!=Token(KW,"case") &&
            ts.peek()!=Token(KW,"default") &&
            ts.peek()!=Token(PUNC,"}")) {
       c->productions.push_back(read_production());
-      ignoreWS(p);
     }
     p->cases.push_back(c);
   }
   
   ts.read(); // }
+  ignoreWS(p, true);
   
   return p;
 }
