@@ -415,6 +415,7 @@ PrFor* Parser::read_for() {
   
   ignoreWS(pfor, true);
   pfor->first = read_statement();
+  siphonWS(pfor->first, pfor, true);
   return pfor;
 }
 
@@ -433,6 +434,7 @@ PrWhile* Parser::read_while() {
   p->condition = read_expression();
   siphonWS(p->condition, p, false, true);
   p->event = read_statement();
+  siphonWS(p->event, p, true);
   return p;
 }
 
@@ -443,6 +445,7 @@ PrWith* Parser::read_with() {
   p->objid = read_expression();
   siphonWS(p->objid, p, false, true);
   p->event = read_statement();
+  siphonWS(p->event, p, true);
   return p;
 }
 
