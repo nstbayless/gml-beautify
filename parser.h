@@ -21,7 +21,7 @@ enum InfixStyle {
 
 struct BeautifulConfig {
   //! put open brace on same line
-  bool egyptian = false;
+  bool egyptian = true;
   
   //! put semicolons at the end of each line
   bool semicolons = true;
@@ -92,8 +92,9 @@ struct BeautifulContext {
   BeautifulContext as_inline() const;
   BeautifulContext not_inline() const;
   BeautifulContext as_eol() const;
-  BeautifulContext as_internal_eol() const;
   BeautifulContext not_eol() const;
+  BeautifulContext as_internal_eol() const;
+  BeautifulContext trim_leading_blanks() const;
   
   // floating block control:
   BeautifulContext attach() const;

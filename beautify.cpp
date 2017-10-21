@@ -77,6 +77,12 @@ BeautifulContext BeautifulContext::as_internal_eol() const {
   return b;
 }
 
+BeautifulContext BeautifulContext::trim_leading_blanks() const {
+  auto b(*this);
+  b.eol = 3;
+  return b;
+}
+
 BeautifulContext BeautifulContext::not_eol() const {
   auto b(*this);
   b.eol = false;
@@ -122,6 +128,9 @@ string Production::beautiful(const BeautifulConfig& config, BeautifulContext con
 }
 
 string render_internal_eol(const BeautifulConfig& config, BeautifulContext context, PrInfixWS* piws) {
+  // this function uses dark magic to render nested
+  // infixes in a pretty way that ensures properties
+  // of consecutive, leading, and trailing blank lines
   PrEmptyStatement pes;
   pes.infixes.push_back(piws);
   pes.postfix_n = 1;
@@ -134,6 +143,8 @@ string render_internal_eol(const BeautifulConfig& config, BeautifulContext conte
       if (postfixes.front()->val.value == "\n") {
         postfixes.pop_front();
       } else {
+        if (context.eol == 3)
+          break;
         if (postfixes.back()) {
           if (postfixes.back()->val.value == "\n")
             postfixes.pop_back();
@@ -154,6 +165,8 @@ string render_internal_eol(const BeautifulConfig& config, BeautifulContext conte
       bool render = true;
       if (postfixes[i]->val.value == "\n") {
         render = blanks_seen == 0;
+        if (context.eol == 3)
+          render = true;
         if (render)
           context.pad_infix_left = false;
         blanks_seen += 1;
@@ -176,7 +189,7 @@ string Production::renderWS(const BeautifulConfig& config, BeautifulContext cont
   if (!ws)
     return "";
   // internal eol requires processing infix list:
-  if (context.eol == 2) {
+  if (context.eol >= 2) {
     return render_internal_eol(config, context, ws);
   }
   
@@ -393,8 +406,6 @@ string PrBody::beautiful(const BeautifulConfig& config, BeautifulContext context
   if (config.egyptian) {
     if (!context.attached)
       s = indent(config, context);
-    else
-      s = " ";
   } else {
     if (context.attached)
       s = "\n";
@@ -475,16 +486,20 @@ string PrStatementIf::beautiful(const BeautifulConfig& config, BeautifulContext 
   s += renderWS(config, context.as_internal_eol());
   if (!hangable(result))
     s += "\n";
+  else
+    s += " ";
   
   context = context.attach();
   s += result->beautiful(config, context.not_inline().increment_depth());
   context = context.detach();
   if (otherwise) {
+    s += renderWS(config, context.trim_leading_blanks());
     if (hangable(result) && config.egyptian)
       s += " ";
     else
       s += "\n" + indent(config, context);
     s += "else";
+    s += renderWS(config, context.trim_leading_blanks());
     if (hangable(otherwise) || is_a<PrStatementIf>(otherwise)) {
       context = context.attach();
       s += " ";
@@ -514,7 +529,7 @@ string PrFor::beautiful(const BeautifulConfig& config, BeautifulContext context)
     if (!is_a<PrEmptyStatement>(second))
       s += " ";
   s += second->beautiful(config, context.as_inline());
-  s += ")";
+  s += ") ";
   if (hangable(first))
     context = context.attach();
   else
@@ -529,7 +544,10 @@ string PrFor::beautiful(const BeautifulConfig& config, BeautifulContext context)
 
 string PrControl::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   string s = indent(config, context) + kw.value;
-  if (val) s += " " + val->beautiful(config, context.as_inline());
+  if (val) {
+    s += renderWS(config, context.style(PAD_NEITHER).style(PAD_LEFT));
+    s += " " + val->beautiful(config, context.as_inline());
+  }
   s += end_statement_beautiful(config, context);
   return s;
 }
@@ -539,9 +557,10 @@ string PrWhile::beautiful(const BeautifulConfig& config, BeautifulContext contex
   s += renderWS(config, context.style(PAD_NEITHER).style(PAD_RIGHT));
   s += condition->beautiful(config, context.as_inline());
   s += renderWS(config, context.as_internal_eol());
-  if (hangable(event))
+  if (hangable(event)) {
+    s += " ";
     context = context.attach();
-  else
+  } else
     s += "\n";
   s += event->beautiful(config, context.increment_depth());
   
@@ -556,8 +575,10 @@ string PrWith::beautiful(const BeautifulConfig& config, BeautifulContext context
   s += renderWS(config, context.style(PAD_NEITHER).style(PAD_RIGHT));
   s += objid->beautiful(config, context.as_inline());
   s += renderWS(config, context.as_internal_eol());
-  if (hangable(event))
+  if (hangable(event)) {
+    s += " ";
     context = context.attach();
+  }
   else
     s += "\n";
   s += event->beautiful(config, context.increment_depth());
@@ -626,7 +647,9 @@ string PrInfixWS::beautiful(const BeautifulConfig& config, BeautifulContext cont
     s += " ";
   context.pad_infix_left = false;
   
+  // value
   s += val.value;
+  
   // newline must be followed by correct indent
   if (val.value == "\n")
     s += indent(config,context);
@@ -636,7 +659,9 @@ string PrInfixWS::beautiful(const BeautifulConfig& config, BeautifulContext cont
     if (infixes[i])
       s += infixes[i]->beautiful(config, context);
   
+  // pad right
   if (context.pad_infix_right && val.type == COMMENT && val.value[1] == '*')
     s += " ";
+  
   return s;
 }

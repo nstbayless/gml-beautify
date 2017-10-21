@@ -49,7 +49,6 @@ int main (int argn, char** argv) {
     if (!test_suite) {
       Parser parser(&inFile);
       Production* p;
-      cout << "-- BEGIN --\n";
       while (p = parser.read()) {
         switch (print_style) {
           case BEAUTIFUL:
@@ -70,7 +69,6 @@ int main (int argn, char** argv) {
         }
         delete(p);
       }
-      cout << "-- END --\n";
     } else {
       // test battery
       perform_tests(inFile, config);
@@ -142,8 +140,7 @@ void perform_tests(ifstream& is, BeautifulConfig& config) {
       std::cout << endl;
       return;
     }
-    
-    if (post != pre) {
+    else if (!eof_pre && !eof_post && post != pre) {
       std::cout<< "Test failed!" <<endl;
       std::cout<< "Difference in comments " <<endl;
       std::cout<< "Pre:  " << pre.value << endl;
@@ -151,9 +148,10 @@ void perform_tests(ifstream& is, BeautifulConfig& config) {
       return;
     }
     
-    if (eof_pre && eof_post)
+    if (eof_pre && eof_post) {
       std::cout<< "Comments are the same in post and pre"<<endl;
       break;
+    }
   }
   
   // reset for next test

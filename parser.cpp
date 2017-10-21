@@ -40,21 +40,28 @@ PrStatement* Parser::read_statement() {
   case KW:
     if (value == "var")
       return read_statement_var();
-    if (value == "if")
+    else if (value == "if")
       return read_statement_if();
-    if (value == "for")
+    else if (value == "for")
       return read_for();
-    if (value == "while")
+    else if (value == "while")
       return read_while();
-    if (value == "with")
+    else if (value == "with")
       return read_with();
-    if (value == "switch")
+    else if (value == "switch")
       return read_switch();
-    if (value == "return")
-      return new PrControl(ts.read(),read_expression());
-    if (value == "exit" || value == "continue" || value == "break")
-      return new PrControl(ts.read());
-    return nullptr;
+    else if (value == "return") {
+      auto* p = new PrControl(ts.read());
+      ignoreWS(p);
+      p->val = read_expression();
+      siphonWS(p->val, p, true);
+      return p;
+    } else if (value == "exit" || value == "continue" || value == "break") {
+      auto* p = new PrControl(ts.read());
+      ignoreWS(p, true);
+      return p;
+    }
+    else return nullptr;
   case PUNC:
     if (value == "(") {
       return read_assignment();
@@ -269,6 +276,7 @@ PrStatementIf* Parser::read_statement_if() {
     ts.read();
     ignoreWS(p);
     p->otherwise = read_statement();
+    siphonWS(p->otherwise, p, true);
     read_statement_end();
     ignoreWS(p, true);
     removeExtraNewline(p);
