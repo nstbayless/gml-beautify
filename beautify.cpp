@@ -634,6 +634,7 @@ string PrSwitch::beautiful(const BeautifulConfig& config, BeautifulContext conte
     s += c->beautiful(config, context);
   
   s += indent(config, context) + "}";
+  context.never_semicolon = true;
   s += end_statement_beautiful(config, context);
   return s;
 }
