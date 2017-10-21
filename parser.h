@@ -72,6 +72,7 @@ struct BeautifulContext {
   //! block is attached to if/while/with/etc.
   bool attached = false;
   
+  //! i.e. for for statements
   bool forced_semicolon = false;
   
   //! empty statements do not end with a semicolon

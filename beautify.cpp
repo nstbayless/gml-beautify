@@ -516,8 +516,13 @@ string PrStatementIf::beautiful(const BeautifulConfig& config, BeautifulContext 
 }
 
 string PrFor::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  string s = indent(config, context) + "for (" + init->beautiful(config, context.as_inline());
-  s += ";";
+  string s = indent(config, context) + "for";
+  s += renderWS(config, context.style(PAD_NEITHER).style(PAD_LEFT).trim_leading_blanks());
+  s += " (";
+  s += renderWS(config, context);
+  context.forced_semicolon = true;
+  s += init->beautiful(config, context.as_inline().trim_leading_blanks());
+  s += renderWS(config, context.trim_leading_blanks());
   if (condition)
     if (init)
       if (!is_a<PrEmptyStatement>(init))
@@ -525,15 +530,20 @@ string PrFor::beautiful(const BeautifulConfig& config, BeautifulContext context)
   if (condition)
     s += condition->beautiful(config, context.as_inline());
   s += ";";
+  s += renderWS(config, context.trim_leading_blanks());
   if (second)
     if (!is_a<PrEmptyStatement>(second))
       s += " ";
   s += second->beautiful(config, context.as_inline());
+  s += renderWS(config, context.trim_leading_blanks().style(PAD_NEITHER).style(PAD_LEFT));
   s += ") ";
+  s += renderWS(config, context.trim_leading_blanks().style(PAD_NEITHER));
   if (hangable(first))
     context = context.attach();
   else
     s += "\n";
+  
+  context.forced_semicolon = false;
   s += first->beautiful(config, context.increment_depth());
   
   // end of statement
