@@ -469,9 +469,7 @@ PrSwitch* Parser::read_switch() {
       c->value = read_expression();
       ignoreWS(c);
     } else {
-      ts.read(); // default
       c->value = nullptr;
-      ignoreWS(c);
     }
     
     ts.read(); //:

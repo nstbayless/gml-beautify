@@ -3,7 +3,7 @@ switch /*a*/ x /*b*/{ /*o*/
   case 1: exit
   case 3:
   case 5: break
-  default /*g*/:/*h*/ exit
-} /*x*/
+  default /*g*/:/*h*/ exit /*i*/
+} /*a*/
 // nesting
 {{{}}}
