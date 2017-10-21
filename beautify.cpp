@@ -1,4 +1,5 @@
 # include "parser.h"
+# include "beautify.h"
 # include "util.h"
 
 # include <iterator>

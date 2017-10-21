@@ -1,3 +1,7 @@
+if true //
+{}
+
+
 switch /*a*/ x /*b*/{ /*o*/
   case/*c*/ 0 /*d*/:/*e*/ break /*f*/
   case 1: exit
