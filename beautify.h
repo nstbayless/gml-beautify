@@ -63,10 +63,7 @@ struct BeautifulConfig {
 };
 
 struct BeautifulContext {
-  //! number of indents
-  int depth = 0;
-  
-  //! do not indent
+ //! do not indent
   bool condense = false;
   
   //! is inline (do not indent and do not append semicolon)
@@ -134,6 +131,8 @@ class LBString {
   LBString(std::string chunk);
   
   void operator+=(const LBString&);
+  void append(const LBString&);
+  void extend(const LBString&);
   
   void arrange(const BeautifulConfig&, int indent);
   std::string to_string(const BeautifulConfig&, int indent = 0);
@@ -141,4 +140,8 @@ private:
   std::string get_indent_string(const BeautifulConfig&, int indent = 0);
 };
 
+LBString operator+(const LBString&, const LBString&);
+LBString operator+(const std::string, const LBString&);
+LBString operator+(const LBString&, std::string);
+  
 #endif /*BEAUTIFY_H*/
