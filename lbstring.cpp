@@ -6,7 +6,7 @@ LBString::LBString(LBTreeType type): type(type) {
 }
 
 LBString::LBString(std::string chunk): type(CHUNK), chunk(chunk) {};
-LBString::LBString(const char* chunk): LBString(chunk) {};
+LBString::LBString(const char* chunk): type(CHUNK), chunk(chunk) {};
 
 LBString::LBString(const LBString& other) {
   type = other.type;
@@ -135,14 +135,18 @@ void LBString::arrange(const BeautifulConfig& config, int indent) {
     return;
 }
 
-std::string LBString::to_string(const BeautifulConfig& config, int indent) {
+std::string LBString::to_string(const BeautifulConfig& config, int indent, bool mark_nesting) {
   arrange(config, indent);
   switch (type) {
     case LIST: {
       std::string s = "";
+      if (mark_nesting)
+        s += ":[";
       for (auto& iter: list) {
-        s += iter.to_string(config, indent + 1);
+        s += iter.to_string(config, indent + 1, mark_nesting);
       }
+      if (mark_nesting)
+        s += "]:";
       return s;
     }
     case CHUNK:

@@ -114,7 +114,7 @@ public:
   void extend(const LBString&, bool append = false);
   
   void arrange(const BeautifulConfig&, int indent);
-  std::string to_string(const BeautifulConfig&, int indent = 0);
+  std::string to_string(const BeautifulConfig&, int indent = 0, bool mark_nest = false);
 private:
   std::string get_indent_string(const BeautifulConfig&, int indent = 0);
 };
