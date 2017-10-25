@@ -8,17 +8,6 @@
 #ifndef BEAUTIFY_H
 #define BEAUTIFY_H
 
-enum InfixStyle {
-  //! leave as-is
-  AS_IS,
-  
-  /** the following are not styles per se but do modify flags if passed to .style() */
-  PAD_LEFT,
-  PAD_RIGHT,
-  PAD_BOTH,
-  PAD_NEITHER
-};
-
 struct BeautifulConfig {
   //! put open brace on same line
   bool egyptian = false;
@@ -50,6 +39,9 @@ struct BeautifulConfig {
   //! if a comment starts a line but is not the first line of a body, it must follow a blank line.
   bool blank_before_comment = true;
   
+  //! do not start a line with a binary operator (+-/* etc.)
+  bool op_end_line = true;
+  
 // these options can modify the (non-comment/ws) tokens:
 
   //! parens for if statement condition (-1: leave untouched)
@@ -66,9 +58,6 @@ struct BeautifulContext {
  //! do not indent
   bool condense = false;
   
-  //! is inline (do not indent and do not append semicolon)
-  bool is_inline = false;
-  
   //! block is attached to if/while/with/etc.
   bool attached = false;
   
@@ -82,27 +71,14 @@ struct BeautifulContext {
   //! used at the end of blocks
   bool no_trailing_blanks = false;
   
-  InfixStyle infix_style = AS_IS;
-  bool pad_infix_left = true;
-  bool pad_infix_right = false;
   // 0: not eol, 1: eol, 2: internal eol
   char eol = 0;
   
-  BeautifulContext increment_depth() const;
-  BeautifulContext decrement_depth() const;
-  BeautifulContext as_inline() const;
-  BeautifulContext not_inline() const;
   BeautifulContext as_eol() const;
   BeautifulContext not_eol() const;
   BeautifulContext as_internal_eol() const;
   BeautifulContext trim_leading_blanks() const;
-  
-  // floating block control:
-  BeautifulContext attach() const;
-  BeautifulContext detach() const;
-  
   BeautifulContext force_semicolon() const;
-  BeautifulContext style(InfixStyle) const;
 };
 
 const BeautifulContext DEFAULT_CONTEXT;
@@ -127,12 +103,15 @@ class LBString {
   //! true if this is a linebreak
   bool taken = false;
   
+public:
   LBString(LBTreeType type = LIST);
   LBString(std::string chunk);
+  LBString(const char* chunk);
+  LBString(const LBString& other);
   
   void operator+=(const LBString&);
-  void append(const LBString&);
-  void extend(const LBString&);
+  void append(LBString);
+  void extend(const LBString&, bool append = false);
   
   void arrange(const BeautifulConfig&, int indent);
   std::string to_string(const BeautifulConfig&, int indent = 0);
@@ -142,6 +121,8 @@ private:
 
 LBString operator+(const LBString&, const LBString&);
 LBString operator+(const std::string, const LBString&);
-LBString operator+(const LBString&, std::string);
+LBString operator+(const LBString&, const std::string);
+LBString operator+(const char*, const LBString&);
+LBString operator+(const LBString&, const char*);
   
 #endif /*BEAUTIFY_H*/

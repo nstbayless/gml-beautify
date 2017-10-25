@@ -17,10 +17,10 @@ struct Production {
   virtual LBString beautiful(const BeautifulConfig&,
     BeautifulContext bc = DEFAULT_CONTEXT);
   
-  std::string renderWS(const BeautifulConfig&,
+  LBString renderWS(const BeautifulConfig&,
     BeautifulContext bc);
   
-  std::string renderPostfixesTrimmed(const BeautifulConfig&,
+  LBString renderPostfixesTrimmed(const BeautifulConfig&,
     BeautifulContext bc);
   
   void flattenPostfixes();
@@ -35,7 +35,6 @@ struct PrInfixWS: Production {
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
   
   Token val;
-  InfixStyle style = AS_IS;
 };
 
 
@@ -78,7 +77,7 @@ struct PrExprArithmetic: PrExpression {
 };
 
 struct PrStatement: Production {
-  std::string end_statement_beautiful(const BeautifulConfig&, BeautifulContext);
+  LBString end_statement_beautiful(const BeautifulConfig&, BeautifulContext);
 };
 
 struct PrEmptyStatement: PrStatement {

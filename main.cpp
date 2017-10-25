@@ -52,7 +52,7 @@ int main (int argn, char** argv) {
       while (p = parser.read()) {
         switch (print_style) {
           case BEAUTIFUL:
-            cout << p->beautiful(config) + "\n";
+            cout << p->beautiful(config).to_string(config) + "\n";
             break;
           case PRODUCTIONS:
             cout << p->to_string() + "\n";
@@ -85,7 +85,7 @@ void perform_tests(ifstream& is, BeautifulConfig& config) {
   fbuff.seekg(0, fbuff.beg);
   Parser parser(&fbuff);
   Production* root = parser.parse();
-  string s = root->beautiful(config);
+  string s = root->beautiful(config).to_string(config);
   delete(root);
   fbuff.seekg(0, fbuff.beg);
   istringstream ss(s);

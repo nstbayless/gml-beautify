@@ -7,15 +7,14 @@
 using namespace std;
 
 template<class P>
-string join_productions(const std::vector<P*> productions, string joinder, const BeautifulConfig& config, BeautifulContext context, Production* infix_source = nullptr) {
+LBString join_productions(const std::vector<P*> productions, LBString joinder, const BeautifulConfig& config, BeautifulContext context, Production* infix_source = nullptr) {
   bool first = true;
-  string s = "";
-  context.pad_infix_right = true;
+  LBString s = "";
   for (auto p: productions) {
     if (!first)
       s += joinder;
     if (infix_source)
-      s += infix_source->renderWS(config, context.style(PAD_NEITHER).style((first)?PAD_BOTH:PAD_RIGHT));
+      s += infix_source->renderWS(config, context);
     s += p->beautiful(config, context);
     first = false;
     if (infix_source)
@@ -29,32 +28,8 @@ bool is_a(Any* ptr) {
   return !! dynamic_cast<Base*>(ptr);
 }
 
-bool hangable(Production* p) {
-  return is_a<PrBody>(p) || is_a<PrEmptyStatement>(p);
-}
-
-BeautifulContext BeautifulContext::increment_depth() const {
-  auto b(*this);
-  b.depth++;
-  return b;
-}
-
-BeautifulContext BeautifulContext::decrement_depth() const {
-  auto b(*this);
-  b.depth--;
-  return b;
-}
-
-BeautifulContext BeautifulContext::as_inline() const {
-  auto b(*this);
-  b.is_inline = true;
-  return b;
-}
-
-BeautifulContext BeautifulContext::not_inline() const {
-  auto b(*this);
-  b.is_inline = false;
-  return b;
+bool hangable(const BeautifulConfig& config, Production* p) {
+  return (is_a<PrBody>(p) && !config.egyptian) || is_a<PrEmptyStatement>(p);
 }
 
 BeautifulContext BeautifulContext::as_eol() const {
@@ -81,37 +56,9 @@ BeautifulContext BeautifulContext::not_eol() const {
   return b;
 }
 
-BeautifulContext BeautifulContext::attach() const {
-  auto b(*this);
-  b.attached = true;
-  return b;
-}
-
-BeautifulContext BeautifulContext::detach() const {
-  auto b(*this);
-  b.attached = false;
-  return b;
-}
-
 BeautifulContext BeautifulContext::force_semicolon() const {
   auto b(*this);
   b.forced_semicolon = true;
-  return b;
-}
-
-BeautifulContext BeautifulContext::style(InfixStyle s) const {
-  auto b(*this);
-  if (s == PAD_LEFT) {
-    b.pad_infix_left = true;
-  } else if (s == PAD_RIGHT) {
-    b.pad_infix_right = true;
-  } else if (s == PAD_BOTH) {
-    b.pad_infix_left = b.pad_infix_right = true;
-  } else if (s == PAD_NEITHER) {
-    b.pad_infix_left = b.pad_infix_right = false;
-  } else {
-    b.infix_style = s;
-  }
   return b;
 }
 
@@ -159,8 +106,6 @@ LBString render_internal_eol(const BeautifulConfig& config, BeautifulContext con
         render = blanks_seen == 0;
         if (context.eol == 3)
           render = true;
-        if (render)
-          context.pad_infix_left = false;
         blanks_seen += 1;
       } else {
         blanks_seen = 0;
@@ -259,10 +204,7 @@ LBString Production::renderPostfixesTrimmed(const BeautifulConfig& config, Beaut
   
   // render postfixes
   while (!infixes.empty()) {
-    bool next_pad = context.pad_infix_left;
-    if (infixes[0]) next_pad = infixes[0]->val.value != "\n";
     s += renderWS(config, context);
-    context.pad_infix_left = next_pad;
   }
   
   return s;
@@ -286,13 +228,13 @@ LBString PrDecor::beautiful(const BeautifulConfig& config, BeautifulContext cont
 }
 
 LBString PrExprParen::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  LBString s = "(" + content->beautiful(config, context.as_inline()) + ")";
+  LBString s = "(" + content->beautiful(config, context) + ")";
   return s + renderWS(config, context);
 }
 
 LBString PrExpressionFn::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   LBString s = identifier.value + renderWS(config, context) + "(";
-  s.append(join_productions(args, ", ", config, context.as_inline(), this));
+  s.append(join_productions(args, ", ", config, context, this));
   s += ")";
   s += renderWS(config, context);
   return s;
@@ -322,18 +264,26 @@ LBString PrExprArithmetic::beautiful(const BeautifulConfig& config, BeautifulCon
   LBString s = "";
   
   if (lhs) {
-    s += lhs->beautiful(config,context.as_inline());
-    if (l_space)
-      s += " ";
+    s += lhs->beautiful(config,context);
+    if (l_space) {
+      if (rhs && config.op_end_line)
+        s += LBString(PAD);
+      else
+        s += " ";
+    }
   }
   
   s += op.value;
   
   if (rhs) {
-    if (r_space)
-      s += " ";
-    s += renderWS(config, context.style(PAD_NEITHER).style(PAD_RIGHT));
-    s += rhs->beautiful(config,context.as_inline());
+    if (r_space) {
+      if (lhs && !config.op_end_line)
+        s += LBString(PAD);
+      else
+        s += " ";
+    }
+    s += renderWS(config, context);
+    s += rhs->beautiful(config,context);
   }
   
   s += renderWS(config, context);
@@ -343,10 +293,7 @@ LBString PrExprArithmetic::beautiful(const BeautifulConfig& config, BeautifulCon
 
 LBString PrEmptyStatement::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   context.never_semicolon = true;
-  if (context.attached)
-    return end_statement_beautiful(config, context.force_semicolon());
-  context.pad_infix_left = false;
-  return "" + end_statement_beautiful(config, context);
+  return end_statement_beautiful(config, context);
 }
 
 LBString PrFinal::beautiful(const BeautifulConfig& config, BeautifulContext context) {
@@ -358,14 +305,14 @@ LBString PrIdentifier::beautiful(const BeautifulConfig& config, BeautifulContext
 }
 
 LBString PrAssignment::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  LBString s = "" + lhs->beautiful(config,context.as_inline());
-  if (op.type != OPR || config.opr_space)
+  LBString s = lhs->beautiful(config,context);
+  if ((rhs && lhs) || config.opr_space)
     s += " ";
   s += op.value;
   if (rhs) {
-    s += " ";
-    s += renderWS(config, context.style(PAD_NEITHER).style(PAD_RIGHT));
-    s += rhs->beautiful(config,context.as_inline());
+    s += LBString(PAD);
+    s += renderWS(config, context);
+    s += rhs->beautiful(config,context);
   }
   s += end_statement_beautiful(config, context);
   return s;
@@ -380,38 +327,28 @@ LBString PrStatementFn::beautiful(const BeautifulConfig& config, BeautifulContex
 LBString PrVarDeclaration::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   LBString s = identifier.value;
   if (definition)
-    s += " = " + definition->beautiful(config, context);
+    s += " =" + LBString(PAD) + definition->beautiful(config, context);
   return s;
 }
 
 LBString PrStatementVar::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  LBString s = "" + "var " + join_productions(declarations, ", ", config, context.as_inline());
+  LBString s = "var " + join_productions(declarations, "," + LBString(PAD), config, context);
   s += end_statement_beautiful(config, context.force_semicolon());
   return s;
 }
 
 LBString PrBody::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  if (context.attached)
-    context = context.decrement_depth();
-  LBString s = "";
-  if (config.egyptian) {
-    if (!context.attached)
-      s = "";
-  } else {
-    if (context.attached)
-      s = "\n";
-    s += "";
-  }
+  LBString s;
   
   s += "{";
   
   BeautifulContext subcontext;
   
   if (is_root) {
-    s = "";
-  } else {
-    subcontext = context.increment_depth().detach();
+    s = LBString(LIST);
   }
+  
+  LBString s2;
     
   // trim config
   bool l_trim = config.trim_block;
@@ -447,15 +384,17 @@ LBString PrBody::beautiful(const BeautifulConfig& config, BeautifulContext conte
     }
       
     // append text from production
-    s += "\n";
+    s2 += LBString(FORCE);
     if (is_root && i==0)
-      s = "";
-    s += p->beautiful(config, subcontext);
+      s2 = LBString(LIST);
+    s2 += p->beautiful(config, subcontext);
   }
+  
+  s.append(s2);
   if (productions.size() > 0)
-    s += "\n" + "";
+    s += LBString(FORCE);
   else
-    s += " ";
+    s += LBString(PAD);
   if (!is_root) {
     s += "}";
   }
@@ -465,39 +404,38 @@ LBString PrBody::beautiful(const BeautifulConfig& config, BeautifulContext conte
   return s;
 }
 
+LBString PrControl::beautiful(const BeautifulConfig& config, BeautifulContext context) {
+  LBString s = kw.value;
+  if (val) {
+    s += renderWS(config, context);
+    s += LBString(PAD) + val->beautiful(config, context);
+  }
+  s += end_statement_beautiful(config, context);
+  return s;
+}
+
 LBString PrStatementIf::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  LBString s = "";
-  if (!context.attached)
-    s += "";
-  else
-    context = context.decrement_depth();
+  LBString s;
   
-  s += "if " + renderWS(config, context.style(PAD_NEITHER).style(PAD_RIGHT));
-  s += condition->beautiful(config,context.as_inline());
+  s += "if" + LBString(PAD) + renderWS(config, context);
+  s += condition->beautiful(config,context);
   s += renderWS(config, context.as_internal_eol());
-  if (!hangable(result))
-    s += "\n";
-  else
-    s += " ";
+  s += LBString(PAD);
   
-  context = context.attach();
-  s += result->beautiful(config, context.not_inline().increment_depth());
-  context = context.detach();
+  if (!hangable(config, result))
+    s += LBString(FORCE);
+  
+  s.extend(result->beautiful(config, context), !hangable(config, result));
   if (otherwise) {
     s += renderWS(config, context.trim_leading_blanks());
-    if (hangable(result) && config.egyptian)
-      s += " ";
-    else
-      s += "\n" + "";
-    s += "else";
+    s += LBString(PAD) + "else" + LBString(PAD);
     s += renderWS(config, context.trim_leading_blanks());
-    if (hangable(otherwise) || is_a<PrStatementIf>(otherwise)) {
-      context = context.attach();
-      s += " ";
-    } else {
-      s += "\n";
+    bool append = false;
+    if (!hangable(config, otherwise) && !is_a<PrStatementIf>(otherwise)) {
+      s += LBString(FORCE);
+      append = true;
     }
-    s += otherwise->beautiful(config, context.not_inline().increment_depth());
+    s.extend(otherwise->beautiful(config, context), append);
   }
   
   // end of statement
@@ -507,35 +445,34 @@ LBString PrStatementIf::beautiful(const BeautifulConfig& config, BeautifulContex
 }
 
 LBString PrFor::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  LBString s = "" + "for";
-  s += renderWS(config, context.style(PAD_NEITHER).style(PAD_LEFT).trim_leading_blanks());
-  s += " (";
+  LBString s = "for";
+  s += renderWS(config, context.trim_leading_blanks());
+  s += LBString(PAD) + "(";
   s += renderWS(config, context);
   context.forced_semicolon = true;
-  s += init->beautiful(config, context.as_inline().trim_leading_blanks());
+  s += init->beautiful(config, context.trim_leading_blanks());
   s += renderWS(config, context.trim_leading_blanks());
+  s += LBString(NOPAD);
   if (condition)
     if (init)
       if (!is_a<PrEmptyStatement>(init))
-        s += " ";
+        s += LBString(PAD);
   if (condition)
-    s += condition->beautiful(config, context.as_inline());
-  s += ";";
+    s += condition->beautiful(config, context);
+  s += ";" + LBString(NOPAD);
   s += renderWS(config, context.trim_leading_blanks());
   if (second)
     if (!is_a<PrEmptyStatement>(second))
-      s += " ";
-  s += second->beautiful(config, context.as_inline());
-  s += renderWS(config, context.trim_leading_blanks().style(PAD_NEITHER).style(PAD_LEFT));
-  s += ") ";
-  s += renderWS(config, context.trim_leading_blanks().style(PAD_NEITHER));
-  if (hangable(first))
-    context = context.attach();
-  else
-    s += "\n";
+      s += LBString(PAD);
+  s += second->beautiful(config, context);
+  s += renderWS(config, context.trim_leading_blanks());
+  s += ")" + LBString(PAD);
+  s += renderWS(config, context.trim_leading_blanks());
+  if (!hangable(config, first))
+    s += LBString(FORCE);
   
   context.forced_semicolon = false;
-  s += first->beautiful(config, context.increment_depth());
+  s.extend(first->beautiful(config, context), !hangable(config, first));
   
   // end of statement
   context.never_semicolon = true;
@@ -543,27 +480,16 @@ LBString PrFor::beautiful(const BeautifulConfig& config, BeautifulContext contex
   return s;
 }
 
-LBString PrControl::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  LBString s = "" + kw.value;
-  if (val) {
-    s += renderWS(config, context.style(PAD_NEITHER).style(PAD_LEFT));
-    s += " " + val->beautiful(config, context.as_inline());
-  }
-  s += end_statement_beautiful(config, context);
-  return s;
-}
-
 LBString PrWhile::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  LBString s = "" + "while ";
-  s += renderWS(config, context.style(PAD_NEITHER).style(PAD_RIGHT));
-  s += condition->beautiful(config, context.as_inline());
+  LBString s = "while";
+  s += LBString(PAD);
+  s += renderWS(config, context);
+  s += condition->beautiful(config, context);
   s += renderWS(config, context.as_internal_eol());
-  if (hangable(event)) {
-    s += " ";
-    context = context.attach();
-  } else
-    s += "\n";
-  s += event->beautiful(config, context.increment_depth());
+  s += LBString(PAD);
+  if (!hangable(config, event))
+    s += LBString(FORCE);
+  s.extend(event->beautiful(config, context), !hangable(config, event));
   
   // end of statement
   context.never_semicolon = true;
@@ -572,17 +498,14 @@ LBString PrWhile::beautiful(const BeautifulConfig& config, BeautifulContext cont
 }
 
 LBString PrWith::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  LBString s = "" +"with ";
-  s += renderWS(config, context.style(PAD_NEITHER).style(PAD_RIGHT));
-  s += objid->beautiful(config, context.as_inline());
+  LBString s = "with";
+  s += LBString(PAD);
+  s += renderWS(config, context);
+  s += objid->beautiful(config, context);
   s += renderWS(config, context.as_internal_eol());
-  if (hangable(event)) {
-    s += " ";
-    context = context.attach();
-  }
-  else
-    s += "\n";
-  s += event->beautiful(config, context.increment_depth());
+  if (!hangable(config, event))
+    s += LBString(FORCE);
+  s.extend(event->beautiful(config, context), !hangable(config, event));
   
   // end of statement
   context.never_semicolon = true;
@@ -591,40 +514,46 @@ LBString PrWith::beautiful(const BeautifulConfig& config, BeautifulContext conte
 }
 
 LBString PrAccessorExpression::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  LBString s = "" + ds->beautiful(config, context.as_inline());
-  s += "[" + renderWS(config, context.style(PAD_RIGHT));
+  LBString s = "" + ds->beautiful(config, context);
+  s += renderWS(config, context);
+  s += "[" + renderWS(config, context);
   if (acc.length() > 0) {
     s += acc;
     if (config.accessor_space)
-      s += " ";
+      s += LBString(PAD);
   }
-  s += join_productions(indices, ", ", config, context.as_inline(), this);
+  s += LBString(NOPAD);
+  s += join_productions(indices, "," + LBString(PAD), config, context, this);
   s += "]";
   return s;
 }
 
 LBString PrSwitch::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  LBString s = "" + "switch ";
-  s += renderWS(config, context.style(PAD_NEITHER).style(PAD_RIGHT));
-  s += condition->beautiful(config, context.as_inline());
+  LBString s = "switch";
+  s += LBString(PAD);
+  s += renderWS(config, context);
+  s += condition->beautiful(config, context);
   s += renderWS(config, context.as_internal_eol());
   
   if (cases.size() == 0 && !config.egyptian) {
-    return s + "\n{ }" + end_statement_beautiful(config, context);
+    return s + LBString(FORCE) + "{ }" + end_statement_beautiful(config, context);
   }
   
-  context = context.not_inline();
+  context = context;
   
   if (config.egyptian)
-    s += " {\n";
+    s += " {";
   else
-    s += "\n" + "" + "{\n";
-  s += renderWS(config, context.trim_leading_blanks());
+    s += LBString(FORCE) + "{";
+    
+  LBString s2 = LBString(FORCE);
+  s2 += renderWS(config, context.trim_leading_blanks());
   
   for (auto c: cases)
-    s += c->beautiful(config, context);
+    s2 += c->beautiful(config, context);
   
-  s += "" + "}";
+  s.append(s2);
+  s += "}";
   context.never_semicolon = true;
   s += end_statement_beautiful(config, context);
   return s;
@@ -633,18 +562,20 @@ LBString PrSwitch::beautiful(const BeautifulConfig& config, BeautifulContext con
 LBString PrCase::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   LBString s = "";
   if (value) {
-    s += "case ";
-    s += renderWS(config, context.style(PAD_NEITHER).style(PAD_RIGHT));
-    s += value->beautiful(config, context.as_inline());
+    s += "case" + LBString(PAD);
+    s += renderWS(config, context);
+    s += value->beautiful(config, context);
     s += renderWS(config, context);
   } else {
     s += "default";
     s += renderWS(config, context);
   }
-  s += ":" + renderWS(config, context.as_internal_eol()) + "\n";
+  s += ":"  + LBString(PAD) + renderWS(config, context.as_internal_eol());
+  LBString s2 = LBString(FORCE);
   for (auto p: productions) {
-    s += p->beautiful(config, context.increment_depth()) + "\n";
+    s += p->beautiful(config, context) + LBString(FORCE);
   }
+  s.append(s2);
   return s;
 }
 
@@ -652,9 +583,7 @@ LBString PrInfixWS::beautiful(const BeautifulConfig& config, BeautifulContext co
   LBString s = "";
   
   // pad left
-  if (context.pad_infix_left && val.type == COMMENT)
-    s += " ";
-  context.pad_infix_left = false;
+  s += LBString(PAD);
   
   // value
   s += val.value;
@@ -665,8 +594,7 @@ LBString PrInfixWS::beautiful(const BeautifulConfig& config, BeautifulContext co
       s += infixes[i]->beautiful(config, context);
   
   // pad right
-  if (context.pad_infix_right && val.type == COMMENT && val.value[1] == '*')
-    s += " ";
+  s += LBString(PAD);
   
   return s;
 }
