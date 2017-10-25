@@ -12,6 +12,8 @@ LBString::LBString(const LBString& other) {
   type = other.type;
   list = other.list;
   chunk = other.chunk;
+  contents_indented = other.contents_indented;
+  taken = other.taken;
 }
 
 void LBString::operator+=(const LBString& other) {
@@ -39,6 +41,11 @@ LBString operator+(const char* a, const LBString& b) {
 
 LBString operator+(const LBString& a, const char* b) {
   return a + LBString(b);
+}
+
+LBString& LBString::indent(bool t) {
+  contents_indented = t;
+  return *this;
 }
 
 void LBString::append(LBString other) {
@@ -86,8 +93,8 @@ void LBString::append(LBString other) {
         }
       }
       
-      // sub lists absorb left-whitespace into them and eject their own right-whitespace
-      if (other.type == LIST) {
+      // indented sub-lists absorb left-whitespace into them and eject their own right-whitespace
+      if (other.type == LIST && other.contents_indented) {
         if (other.list.empty())
           return;
         while (list.back().type >= PAD) {
@@ -125,6 +132,10 @@ void LBString::extend(const LBString& other, bool do_append) {
     } else if (type == LIST) {
       append(other);
     } else {
+      LBString altme = *this;
+      type = LIST;
+      chunk = "";
+      list.push_back(altme);
       // not supported
     }
   }
@@ -140,13 +151,21 @@ std::string LBString::to_string(const BeautifulConfig& config, int indent, bool 
   switch (type) {
     case LIST: {
       std::string s = "";
-      if (mark_nesting)
-        s += ":[";
-      for (auto& iter: list) {
-        s += iter.to_string(config, indent + 1, mark_nesting);
+      if (mark_nesting) {
+        if (contents_indented)
+          s += "=[";
+        else
+          s += ":[";
       }
-      if (mark_nesting)
-        s += "]:";
+      for (auto& iter: list) {
+        s += iter.to_string(config, indent + contents_indented, mark_nesting);
+      }
+      if (mark_nesting) {
+        if (contents_indented)
+          s += "]=";
+        else
+          s += "]:";
+      }
       return s;
     }
     case CHUNK:

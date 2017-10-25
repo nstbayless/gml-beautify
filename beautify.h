@@ -98,6 +98,7 @@ enum LBTreeType {
 class LBString {
   LBTreeType type;
   std::vector<LBString> list;
+  bool contents_indented = false;
   std::string chunk;
   
   //! true if this is a linebreak
@@ -108,6 +109,8 @@ public:
   LBString(std::string chunk);
   LBString(const char* chunk);
   LBString(const LBString& other);
+  
+  LBString& indent(bool do_indent = true);
   
   void operator+=(const LBString&);
   void append(LBString);

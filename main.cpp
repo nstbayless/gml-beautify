@@ -5,6 +5,7 @@
 
 #include "tokenstream.h"
 #include "parser.h"
+#include "util.h"
 
 using namespace std;
 void perform_tests(ifstream& is, BeautifulConfig& config) ;
@@ -144,17 +145,21 @@ void perform_tests(ifstream& is, BeautifulConfig& config) {
       std::cout << endl;
       return;
     }
-    else if (!eof_pre && !eof_post && post != pre) {
+    
+    if (eof_pre && eof_post) {
+      std::cout<< "Comments are the same in post and pre"<<endl;
+      break;
+    }
+    
+    trim(post.value);
+    trim(pre.value);
+    
+    if (post != pre) {
       std::cout<< "Test failed!" <<endl;
       std::cout<< "Difference in comments " <<endl;
       std::cout<< "Pre:  " << pre.value << endl;
       std::cout<< "Post: " << post.value << endl;
       return;
-    }
-    
-    if (eof_pre && eof_post) {
-      std::cout<< "Comments are the same in post and pre"<<endl;
-      break;
     }
   }
   

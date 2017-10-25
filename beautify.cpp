@@ -9,7 +9,7 @@ using namespace std;
 template<class P>
 LBString join_productions(const std::vector<P*> productions, LBString joinder, const BeautifulConfig& config, BeautifulContext context, Production* infix_source = nullptr) {
   bool first = true;
-  LBString s = "";
+  LBString s;
   for (auto p: productions) {
     if (!first)
       s += joinder;
@@ -28,8 +28,8 @@ bool is_a(Any* ptr) {
   return !! dynamic_cast<Base*>(ptr);
 }
 
-bool hangable(const BeautifulConfig& config, Production* p) {
-  return (is_a<PrBody>(p) && !config.egyptian) || is_a<PrEmptyStatement>(p);
+bool hangable(const BeautifulConfig& config, Production* p, bool egyptian = false) {
+  return (is_a<PrBody>(p) && (config.egyptian || !egyptian)) || is_a<PrEmptyStatement>(p);
 }
 
 BeautifulContext BeautifulContext::as_eol() const {
@@ -97,7 +97,7 @@ LBString render_internal_eol(const BeautifulConfig& config, BeautifulContext con
   }
   
   // remove blank lines and collect string
-  LBString s = "";
+  LBString s;
   int blanks_seen = 0;
   for (int i=0;i<postfixes.size();i++) {
     if (postfixes[i]) {
@@ -137,7 +137,7 @@ LBString Production::renderWS(const BeautifulConfig& config, BeautifulContext co
 }
 
 LBString Production::renderPostfixesTrimmed(const BeautifulConfig& config, BeautifulContext context) {
-  LBString s = "";
+  LBString s;
   
   // expand postfixes
   flattenPostfixes();
@@ -211,7 +211,7 @@ LBString Production::renderPostfixesTrimmed(const BeautifulConfig& config, Beaut
 }
 
 LBString PrStatement::end_statement_beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  LBString s = "";
+  LBString s;
   
   // add semicolon
   if ((config.semicolons &&! context.never_semicolon) || context.forced_semicolon) {
@@ -261,7 +261,7 @@ LBString PrExprArithmetic::beautiful(const BeautifulConfig& config, BeautifulCon
   }
   
   // beautiful string:
-  LBString s = "";
+  LBString s;   
   
   if (lhs) {
     s += lhs->beautiful(config,context);
@@ -349,6 +349,7 @@ LBString PrBody::beautiful(const BeautifulConfig& config, BeautifulContext conte
   }
   
   LBString s2;
+  s2.indent();
     
   // trim config
   bool l_trim = config.trim_block;
@@ -422,20 +423,22 @@ LBString PrStatementIf::beautiful(const BeautifulConfig& config, BeautifulContex
   s += renderWS(config, context.as_internal_eol());
   s += LBString(PAD);
   
-  if (!hangable(config, result))
+  if (!hangable(config, result, true))
     s += LBString(FORCE);
   
-  s.extend(result->beautiful(config, context), !hangable(config, result));
+  s.extend(result->beautiful(config, context).indent(!hangable(config,result)), !hangable(config, result));
   if (otherwise) {
     s += renderWS(config, context.trim_leading_blanks());
+    if (!config.egyptian)
+      s += LBString(FORCE);
     s += LBString(PAD) + "else" + LBString(PAD);
     s += renderWS(config, context.trim_leading_blanks());
     bool append = false;
-    if (!hangable(config, otherwise) && !is_a<PrStatementIf>(otherwise)) {
-      s += LBString(FORCE);
-      append = true;
+    if (!hangable(config, otherwise,true) && !is_a<PrStatementIf>(otherwise)) {
+      if (!config.egyptian && !is_a<PrStatementIf>(otherwise))
+        s += LBString(FORCE);
     }
-    s.extend(otherwise->beautiful(config, context), append);
+    s.extend(otherwise->beautiful(config, context).indent(!hangable(config, otherwise)), !hangable(config, otherwise));
   }
   
   // end of statement
@@ -468,11 +471,11 @@ LBString PrFor::beautiful(const BeautifulConfig& config, BeautifulContext contex
   s += renderWS(config, context.trim_leading_blanks());
   s += ")" + LBString(PAD);
   s += renderWS(config, context.trim_leading_blanks());
-  if (!hangable(config, first))
+  if (!hangable(config, first, true))
     s += LBString(FORCE);
   
   context.forced_semicolon = false;
-  s.extend(first->beautiful(config, context), !hangable(config, first));
+  s.extend(first->beautiful(config, context).indent(!hangable(config,first)), !hangable(config, first));
   
   // end of statement
   context.never_semicolon = true;
@@ -487,9 +490,9 @@ LBString PrWhile::beautiful(const BeautifulConfig& config, BeautifulContext cont
   s += condition->beautiful(config, context);
   s += renderWS(config, context.as_internal_eol());
   s += LBString(PAD);
-  if (!hangable(config, event))
+  if (!hangable(config, event, true))
     s += LBString(FORCE);
-  s.extend(event->beautiful(config, context), !hangable(config, event));
+  s.extend(event->beautiful(config, context).indent(!hangable(config,event)), !hangable(config, event));
   
   // end of statement
   context.never_semicolon = true;
@@ -503,9 +506,9 @@ LBString PrWith::beautiful(const BeautifulConfig& config, BeautifulContext conte
   s += renderWS(config, context);
   s += objid->beautiful(config, context);
   s += renderWS(config, context.as_internal_eol());
-  if (!hangable(config, event))
+  if (!hangable(config, event, true))
     s += LBString(FORCE);
-  s.extend(event->beautiful(config, context), !hangable(config, event));
+  s.extend(event->beautiful(config, context).indent(!hangable(config,event)), !hangable(config, event));
   
   // end of statement
   context.never_semicolon = true;
@@ -514,7 +517,7 @@ LBString PrWith::beautiful(const BeautifulConfig& config, BeautifulContext conte
 }
 
 LBString PrAccessorExpression::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  LBString s = "" + ds->beautiful(config, context);
+  LBString s = ds->beautiful(config, context);
   s += renderWS(config, context);
   s += "[" + renderWS(config, context);
   if (acc.length() > 0) {
@@ -552,7 +555,7 @@ LBString PrSwitch::beautiful(const BeautifulConfig& config, BeautifulContext con
   for (auto c: cases)
     s2 += c->beautiful(config, context);
   
-  s.append(s2);
+  s.append(s2.indent(true));
   s += "}";
   context.never_semicolon = true;
   s += end_statement_beautiful(config, context);
@@ -560,7 +563,7 @@ LBString PrSwitch::beautiful(const BeautifulConfig& config, BeautifulContext con
 }
 
 LBString PrCase::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  LBString s = "";
+  LBString s;
   if (value) {
     s += "case" + LBString(PAD);
     s += renderWS(config, context);
@@ -575,18 +578,21 @@ LBString PrCase::beautiful(const BeautifulConfig& config, BeautifulContext conte
   for (auto p: productions) {
     s += p->beautiful(config, context) + LBString(FORCE);
   }
-  s.append(s2);
+  s.append(s2.indent(true));
   return s;
 }
 
 LBString PrInfixWS::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  LBString s = "";
+  LBString s;
   
   // pad left
   s += LBString(PAD);
   
   // value
-  s += val.value;
+  if (val.value == "\n")
+    s += LBString(FORCE);
+  else
+    s += val.value;
   
   // render nested infixes:
   for (int i=0;i<infixes.size();i++)
