@@ -27,42 +27,32 @@ LBString operator+(const LBString& a, std::string b) {
 }
 
 void LBString::append(const LBString& other) {
-  if (type == LIST)
+  if (type == LIST) {
+    if (!list.empty()) {
+      LBTreeType back = list.back().type;
+      if (other.type == CHUNK && back == CHUNK) {
+        // glue chunks together
+        immediate.chunk = list.back().chunk + immediate.chunk;
+        list.pop_back();
+      }
+      // no consecutive pads
+      if (other.type == PAD && back == PAD) {
+        list.pop_back();
+      }
     list.push_back(other);
+  }
   else {
     // not supported
   }
 }
 
-void LBString::extend(const LBString& other) {
-  // need to determine if back is chunk
-  // to do chunk gluing.
-  bool back_is_chunk = false;
-  if (!list.empty()) {
-    if (list.back().type == CHUNK) {
-      back_is_chunk = true;
-    }
-  }
-  
+void LBString::extend(const LBString& other) {  
   // extend
   if (other.type == LIST && type == LIST) {
     for (int i=0;i<other.list.size();i++)
-      if (!other.list.empty() && back_is_chunk) {
-        auto& immediate = other.list[0]
-        if (immediate.type == CHUNK) {
-          // glue chunks together
-          immediate.chunk = list.back().chunk + immediate.chunk;
-          list.pop_back();
-        }
-      }
-      list.push_back(other.list[i]);
+      append(other.list[i]);
   } else if (type == LIST) {
-    if (back_is_chunk && other.type == CHUNK) {
-      // glue chunks together
-      list.back().chunk += other.chunk;
-    } else {
-      list.push_back(other);
-    }
+    append(other);
   } else {
     // not supported
   }
