@@ -163,7 +163,7 @@ LBString Production::renderPostfixesTrimmed(const BeautifulConfig& config, Beaut
   // blank_before_comment configuration option
   if (config.blank_before_comment) {
     if (!infixes.empty()) {
-      if (!is_a<PrEmptyStatement>(this)) {
+      if (!is_a<PrEmptyStatement>(this)) { // empty statements are exempt from blank_before_comment
         int starting_blank_count = 0;
         for (int i=0;i<infixes.size();i++) {
           if (infixes[i]) {
@@ -172,8 +172,10 @@ LBString Production::renderPostfixesTrimmed(const BeautifulConfig& config, Beaut
             } else if (infixes[i]->val.value == "\n") {
               starting_blank_count++;
             } else {
-              if (starting_blank_count == 1)
+              if (starting_blank_count == 1) {
                 infixes.insert(infixes.begin() + i, new PrInfixWS(Token(ENX,"\n")));
+                postfix_n++;
+              }
               break;
             }
           }
@@ -452,9 +454,11 @@ LBString PrFor::beautiful(const BeautifulConfig& config, BeautifulContext contex
   s += renderWS(config, context.trim_leading_blanks());
   s += LBString(PAD) + "(";
   s += renderWS(config, context);
-  context.forced_semicolon = true;
+  context.forced_semicolon = false;
+  context.never_semicolon = true;
   s += init->beautiful(config, context.trim_leading_blanks());
   s += renderWS(config, context.trim_leading_blanks());
+  s += ";";
   s += LBString(NOPAD);
   if (condition)
     if (init)
@@ -464,10 +468,12 @@ LBString PrFor::beautiful(const BeautifulConfig& config, BeautifulContext contex
     s += condition->beautiful(config, context);
   s += ";" + LBString(NOPAD);
   s += renderWS(config, context.trim_leading_blanks());
-  if (second)
+  
+  if (second) {
     if (!is_a<PrEmptyStatement>(second))
       s += LBString(PAD);
-  s += second->beautiful(config, context);
+    s += second->beautiful(config, context);
+  }
   s += renderWS(config, context.trim_leading_blanks());
   s += ")" + LBString(PAD);
   s += renderWS(config, context.trim_leading_blanks());
@@ -475,6 +481,7 @@ LBString PrFor::beautiful(const BeautifulConfig& config, BeautifulContext contex
     s += LBString(FORCE);
   
   context.forced_semicolon = false;
+  context.never_semicolon = false;
   s.extend(first->beautiful(config, context).indent(!hangable(config,first)), !hangable(config, first));
   
   // end of statement
@@ -576,7 +583,7 @@ LBString PrCase::beautiful(const BeautifulConfig& config, BeautifulContext conte
   s += ":"  + LBString(PAD) + renderWS(config, context.as_internal_eol());
   LBString s2 = LBString(FORCE);
   for (auto p: productions) {
-    s += p->beautiful(config, context) + LBString(FORCE);
+    s2 += p->beautiful(config, context) + LBString(FORCE);
   }
   s.append(s2.indent(true));
   return s;

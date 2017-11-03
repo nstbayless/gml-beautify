@@ -50,6 +50,11 @@ LBString& LBString::indent(bool t) {
 
 void LBString::append(LBString other) {
   if (type == LIST) {
+    // empty chunks are not allowed in lists.which reminds me, the engine really does need a name...
+    if (other.type == CHUNK) {
+      if (other.chunk.length() == 0)
+        return;
+    }
     if (!list.empty()) {
       LBTreeType back = list.back().type;
       
@@ -72,6 +77,12 @@ void LBString::append(LBString other) {
         list.push_back(LBString(PAD));
         return;
       } 
+      
+      // consecutive forces
+      if (other.type == FORCE && back == FORCE) {
+        list.push_back(other);
+        return;
+      }
        
       // force adjacent to pad
       if ((other.type == FORCE && back >= PAD) || (other.type >= PAD && back == FORCE)) {
@@ -117,7 +128,11 @@ void LBString::append(LBString other) {
     }
     list.push_back(other);
   } else {
-    // not supported
+    LBString altme = *this;
+    type = LIST;
+    chunk = "";
+    list.push_back(altme);
+    append(other);
   }
 }
 
@@ -136,7 +151,7 @@ void LBString::extend(const LBString& other, bool do_append) {
       type = LIST;
       chunk = "";
       list.push_back(altme);
-      // not supported
+      extend(other);
     }
   }
 }
@@ -146,8 +161,12 @@ void LBString::arrange(const BeautifulConfig& config, int indent) {
     return;
 }
 
-std::string LBString::to_string(const BeautifulConfig& config, int indent, bool mark_nesting) {
+std::string LBString::to_string(const BeautifulConfig& config, int indent, bool mark_nesting) { 
   arrange(config, indent);
+  to_string_unarranged(config, indent, mark_nesting);
+}
+
+std::string LBString::to_string_unarranged(const BeautifulConfig& config, int indent, bool mark_nesting) const {
   switch (type) {
     case LIST: {
       std::string s = "";
@@ -158,7 +177,7 @@ std::string LBString::to_string(const BeautifulConfig& config, int indent, bool 
           s += ":[";
       }
       for (auto& iter: list) {
-        s += iter.to_string(config, indent + contents_indented, mark_nesting);
+        s += iter.to_string_unarranged(config, indent + contents_indented, mark_nesting);
       }
       if (mark_nesting) {
         if (contents_indented)
@@ -179,7 +198,7 @@ std::string LBString::to_string(const BeautifulConfig& config, int indent, bool 
   }
 }
 
-std::string LBString::get_indent_string(const BeautifulConfig& config, int indent) {
+std::string LBString::get_indent_string(const BeautifulConfig& config, int indent) const {
   std::string s = "";
   std::string tab = "\t";
   if (config.indent_spaces) {

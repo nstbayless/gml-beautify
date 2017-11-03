@@ -396,7 +396,10 @@ PrFor* Parser::read_for() {
   read_statement_end();
   ignoreWS(pfor);
   
-  pfor->condition = read_expression();
+  if (ts.peek() != Token(ENX,";"))
+    pfor->condition = read_expression();
+  else
+    pfor->condition = nullptr;
   read_statement_end();
   
   ignoreWS(pfor);
