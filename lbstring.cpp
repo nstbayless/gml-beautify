@@ -163,7 +163,7 @@ void LBString::arrange(const BeautifulConfig& config, int indent) {
 
 std::string LBString::to_string(const BeautifulConfig& config, int indent, bool mark_nesting) { 
   arrange(config, indent);
-  to_string_unarranged(config, indent, mark_nesting);
+  return to_string_unarranged(config, indent, mark_nesting);
 }
 
 std::string LBString::to_string_unarranged(const BeautifulConfig& config, int indent, bool mark_nesting) const {
