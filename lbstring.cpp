@@ -108,19 +108,25 @@ void LBString::append(LBString other) {
       if (other.type == LIST && other.contents_indented) {
         if (other.list.empty())
           return;
+        
+        // donate own right-whitespace to new sublist (to other)
         while (list.back().type >= PAD) {
           other.list.insert(other.list.begin() + 0,list.back());
           list.pop_back();
           if (list.empty())
             break;
         }
+        
+        // append new sublist (to other)
         list.push_back(other);
-        auto& ll = list.back();
+        
+        // siphon out new sublist's right-whitespace
+        int lln = list.size() - 1;
         int k = 0;
-        while (ll.list.back().type >= PAD) {
-          list.insert(list.begin() + (list.size() + (k--)), ll.list.back());
-          ll.list.pop_back();
-          if (ll.list.empty())
+        while (list[lln].list.back().type >= PAD) {
+          list.insert(list.begin() + (list.size() + (k--)), list[lln].list.back());
+          list[lln].list.pop_back();
+          if (list[lln].list.empty())
             break;
         }
         return;
