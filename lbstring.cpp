@@ -208,7 +208,7 @@ void LBString::arrange_sublist(const BeautifulConfig& config, int indent, int st
     if (acc_width > row_start_length) {
       if (chunk_lengths[i] + acc_width > max_width) {
         acc_width = row_start_length;
-        list[break_indices[i]].taken = true;
+        list[break_indices[i - 1]].taken = true;
       }
     }
     
