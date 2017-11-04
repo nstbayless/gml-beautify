@@ -23,9 +23,24 @@ LBString join_productions(const std::vector<P*> productions, LBString joinder, c
   return s;
 }
 
-template<class Base, class Any>
-bool is_a(Any* ptr) {
-  return !! dynamic_cast<Base*>(ptr);
+/// modifies surrounding parenthesis for production according to config.
+LBString paren_wrap(Production* pr, const BeautifulConfig& config, BeautifulContext context) {
+  if (!pr)
+    return "";
+  switch (config.cond_parens) {
+    case 0: // leave as-is
+      return pr->beautiful(config,context);
+    case 1: // exactly one paren
+      while (is_a<PrExprParen>(pr)) {
+        pr = ((PrExprParen*)pr)->content;
+      }
+      return "(" + pr->beautiful(config,context) + ")";
+    case 2: // exactly zero parens
+      while (is_a<PrExprParen>(pr)) {
+        pr = ((PrExprParen*)pr)->content;
+      }
+      return pr->beautiful(config,context);
+  }
 }
 
 bool hangable(const BeautifulConfig& config, Production* p, bool egyptian = false) {
@@ -246,6 +261,26 @@ LBString PrExprArithmetic::beautiful(const BeautifulConfig& config, BeautifulCon
   bool l_space = true;
   bool r_space = true;
   
+  // adjust operator for some config options:
+  if (op.value == "=" && config.force_double_equals_comparison)
+    op.value = "==";
+  if (op.value == "!" && config.compare_style == 2)
+    op = Token(KW,"not");
+  if (op.value == "||" && config.compare_style == 2)
+    op = Token(KW,"or");
+  if (op.value == "&&" && config.compare_style == 2)
+    op = Token(KW,"and");
+  if (op.value == "^^" && config.compare_style == 2)
+    op = Token(KW,"xor");
+  if (op.value == "not" && config.compare_style == 1)
+    op = Token(OP,"!");
+  if (op.value == "and" && config.compare_style == 1)
+    op = Token(OP,"&&");
+  if (op.value == "or" && config.compare_style == 1)
+    op = Token(OP,"||");
+  if (op.value == "xor" && config.compare_style == 1)
+    op = Token(OP,"^^");
+  
   // determine whether to put spacing on side of operator
   if (!config.opr_space && op.type == OPR)
     l_space = r_space = false;
@@ -421,7 +456,7 @@ LBString PrStatementIf::beautiful(const BeautifulConfig& config, BeautifulContex
   LBString s;
   
   s += "if" + LBString(PAD) + renderWS(config, context);
-  s += condition->beautiful(config,context);
+  s += paren_wrap(condition,config,context);
   s += renderWS(config, context.as_internal_eol());
   s += LBString(PAD);
   
@@ -435,12 +470,12 @@ LBString PrStatementIf::beautiful(const BeautifulConfig& config, BeautifulContex
       s += LBString(FORCE);
     s += LBString(PAD) + "else" + LBString(PAD);
     s += renderWS(config, context.trim_leading_blanks());
-    bool append = false;
+    bool append = !hangable(config, otherwise) && !is_a<PrStatementIf>(otherwise);
     if (!hangable(config, otherwise,true) && !is_a<PrStatementIf>(otherwise)) {
       if (!config.egyptian && !is_a<PrStatementIf>(otherwise))
         s += LBString(FORCE);
     }
-    s.extend(otherwise->beautiful(config, context).indent(!hangable(config, otherwise)), !hangable(config, otherwise));
+    s.extend(otherwise->beautiful(config, context).indent(append), append);
   }
   
   // end of statement
@@ -494,7 +529,7 @@ LBString PrWhile::beautiful(const BeautifulConfig& config, BeautifulContext cont
   LBString s = "while";
   s += LBString(PAD);
   s += renderWS(config, context);
-  s += condition->beautiful(config, context);
+  s += paren_wrap(condition,config,context);
   s += renderWS(config, context.as_internal_eol());
   s += LBString(PAD);
   if (!hangable(config, event, true))
@@ -511,7 +546,7 @@ LBString PrWith::beautiful(const BeautifulConfig& config, BeautifulContext conte
   LBString s = "with";
   s += LBString(PAD);
   s += renderWS(config, context);
-  s += objid->beautiful(config, context);
+  s += paren_wrap(objid,config,context);
   s += renderWS(config, context.as_internal_eol());
   if (!hangable(config, event, true))
     s += LBString(FORCE);
@@ -542,7 +577,7 @@ LBString PrSwitch::beautiful(const BeautifulConfig& config, BeautifulContext con
   LBString s = "switch";
   s += LBString(PAD);
   s += renderWS(config, context);
-  s += condition->beautiful(config, context);
+  s += paren_wrap(condition,config,context);
   s += renderWS(config, context.as_internal_eol());
   
   if (cases.size() == 0 && !config.egyptian) {

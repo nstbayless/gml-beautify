@@ -5,6 +5,12 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+template<class Base, class Any>
+bool is_a(Any* ptr) {
+  return !! dynamic_cast<Base*>(ptr);
+}
+
+
 // trim from https://stackoverflow.com/a/217605
 
 // trim from start (in place)

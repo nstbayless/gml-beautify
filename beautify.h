@@ -43,15 +43,15 @@ struct BeautifulConfig {
   bool op_end_line = true;
   
 // these options can modify the (non-comment/ws) tokens:
-
-  //! parens for if statement condition (-1: leave untouched)
-  int if_parens = -1;
   
-  //! parens for while loop condition
-  int while_parens = 1;
-
-  //! parens for object id in with statement
-  int with_parens = 0;
+  // use == instead of =
+  bool force_double_equals_comparison = true;
+  
+  // 0: leave as-is. 1: use !,&&,^^,||. 2: use not, and, xor, or
+  char compare_style = 1;
+  
+  // 0: leave as-is. 1: if (blah). 2: if blah.
+  char cond_parens = 1;
 };
 
 struct BeautifulContext {

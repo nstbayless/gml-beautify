@@ -14,33 +14,40 @@ void check_comments_identical(TokenStream&, TokenStream&);
 void check_logic_identical(TokenStream&, TokenStream&);
 
 void perform_tests(ifstream& is, BeautifulConfig& config) {
-  std::stringstream fbuff;
-  fbuff << is.rdbuf();
+  std::string s_is;
+  std::string line;
+  while (getline(is, line)) {
+    s_is += line + "\n";
+  }
+  std::stringstream fbuff(s_is);
   fbuff.seekg(0, fbuff.beg);
   Parser parser(&fbuff);
   Production* root = parser.parse();
+  config.force_double_equals_comparison = false;
+  config.compare_style = 0;
+  config.cond_parens = 0;
   string s = root->beautiful(config).to_string(config);
   delete(root);
   fbuff.seekg(0, fbuff.beg);
   istringstream ss(s);
   std::cout<<s<<endl;
   std::cout<<"^ for reference ^"<<endl;
-  is.seekg(0, is.beg);
-  ss.seekg(0, is.beg);
+
+  std::stringstream log_ss_pre(s_is);
+  std::stringstream log_ss_post(s);
   
   // check if any comments were deleted or re-ordered
-  TokenStream lex_logic_pre(&is);
-  TokenStream lex_logic_post(&ss);
+  TokenStream lex_logic_pre(&log_ss_pre);
+  TokenStream lex_logic_post(&log_ss_post);
   
   check_comments_identical(lex_logic_pre,lex_logic_post);
   
-  // reset for next test
-  is.seekg(0, is.beg);
-  ss.seekg(0, ss.beg);
-  
   // check if any logic was changed
-  TokenStream lex_com_pre(&is);
-  TokenStream lex_com_post(&ss);
+  std::stringstream log_ssl_pre(s_is);
+  std::stringstream log_ssl_post(s);
+  
+  TokenStream lex_com_pre(&log_ssl_pre);
+  TokenStream lex_com_post(&log_ssl_post);
   
   check_logic_identical(lex_com_pre, lex_com_post);
 }
@@ -56,7 +63,7 @@ void check_logic_identical(TokenStream& lex_com_pre, TokenStream& lex_com_post) 
       }
         
       pre = lex_com_pre.read();
-      if (pre.type == COMMENT || pre.type == WS)
+      if (pre.type == COMMENT || pre.type == WS || pre.type == ENX)
         continue;
       break;
     }
@@ -68,7 +75,7 @@ void check_logic_identical(TokenStream& lex_com_pre, TokenStream& lex_com_post) 
       }
       
       post = lex_com_post.read();
-      if (post.type == COMMENT|| post.type == WS)
+      if (post.type == COMMENT|| post.type == WS || post.type == ENX)
         continue;
       break;
     }
