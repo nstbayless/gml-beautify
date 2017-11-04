@@ -483,6 +483,7 @@ PrSwitch* Parser::read_switch() {
            ts.peek()!=Token(PUNC,"}")) {
       c->productions.push_back(read_production());
     }
+    if (!c->productions.empty())
     siphonWS(c->productions.back(),c,true);
     p->cases.push_back(c);
   }

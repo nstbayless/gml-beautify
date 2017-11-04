@@ -1,9 +1,3 @@
-//for statements
-for (;;) break
-for (a();a();a();)
-{break}
-
-//switch statements
 switch x{
   case 0: break
   case 1: exit

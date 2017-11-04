@@ -4,11 +4,15 @@
 
 using namespace std;
 
-Token::Token(const TokenType type, const std::string value): type(type), value(value) {
-}
+Token::Token(const TokenType type, const std::string value, int col, int row):
+  type(type),
+  value(value),
+  col(col),
+  row(row)
+{ }
 
-Token::Token(): Token(ERR,"") {
-}
+Token::Token(): Token(ERR,"")
+{ }
 
 bool Token::operator==(const Token& other) const {
   return type == other.type && value == other.value;
@@ -46,6 +50,18 @@ TokenStream::TokenStream(istream* istream): is(istream), next(END,"")  {
   read();
 }
 
+  
+char TokenStream::read_char() {
+  char c = is->get();
+  if (c=='\n') {
+    col = 0;
+    row ++;
+  } else {
+    col ++;
+  }
+  return c;
+}
+
 Token TokenStream::read_string() {
   unsigned char c;
   unsigned char terminal;
@@ -54,12 +70,12 @@ Token TokenStream::read_string() {
   if (is->eof())
     return Token(ERR,"Unterminated string");
   while (true) {
-    c = is->get();
+    c = read_char();
     if (c == terminal) break;
     if (is->eof())
       return Token(ERR,"Unterminated string");    
     if (c == '\\')
-      c = is->get();
+      c = read_char();
     if (is->eof())
       return Token(ERR,"Unterminated string");
     val += c;
@@ -76,7 +92,7 @@ Token TokenStream::read_number() {
   while (true) {
     if (is->eof())
       break;
-    c = is->get();
+    c = read_char();
     if (position == 0 && c == '#') {
       val += c;
       continue;
@@ -100,14 +116,14 @@ Token TokenStream::read_number() {
 Token TokenStream::read_comment() {
   string val;
   char c;
-  c = is->get();
-  c = is->get();
+  c = read_char();
+  c = read_char();
   val = "//";
   
   while (true) {
     if (is->eof())
       break;
-    c = is->get();
+    c = read_char();
     if (c == '\n' || c == -1) {
       is->putback(c);
       break;
@@ -121,15 +137,15 @@ Token TokenStream::read_comment() {
 Token TokenStream::read_comment_multiline() {
   string val;
   char c;
-  c = is->get();
-  c = is->get();
+  c = read_char();
+  c = read_char();
   val = "/*";
   while (true) {
     if (is->eof()) break;
-    c = is->get();
+    c = read_char();
     if (c == '*') {
       char c2;
-      c2 = is->get();
+      c2 = read_char();
       if (c2 == '/') {
         val += "*/";
         break;
@@ -168,13 +184,13 @@ const char* op_multichar[] = {
 
 Token TokenStream::read_operator() {
   char c1;
-  c1 = is->get();
+  c1 = read_char();
   if (is_opa_char(c1)) {
     return Token(OPA,string(1,(char)c1));
   }
   if (!is->eof()) {
     char c2;
-    c2 = is->get();
+    c2 = read_char();
     
     string multi(1, c1);
     multi += c2;
@@ -219,7 +235,7 @@ Token TokenStream::read_ident() {
     index += 1;
     if (is->eof())
       break;
-    c = is->get();
+    c = read_char();
     if ((c >= '0' && c <= '9') && index > 0) {
       val += c;
       continue;
@@ -245,7 +261,7 @@ Token TokenStream::read_next() {
     return Token(END,"");
   // read whitespace:
   while (true) {
-    in = is->get();
+    in = read_char();
     if (!isspace(in) || in == '\n'|| is->eof()) break;
   }
   if (in == '\n')
@@ -263,7 +279,7 @@ Token TokenStream::read_next() {
   }
   if ((in == '.' || in == '#') &&! is->eof()) {
     unsigned char in2;
-    in2 = is->get();
+    in2 = read_char();
     is->putback(in2);
     if (in2 >= '0' && in2 <= '9') {
       return read_number();
@@ -271,7 +287,7 @@ Token TokenStream::read_next() {
   }
   if (in == '/' &&! is->eof()) {
     unsigned char in2;
-    in2 = is->get();
+    in2 = read_char();
     is->putback(in2);
     if (in2 == '/') {
       is->putback(in);
@@ -300,7 +316,7 @@ Token TokenStream::read() {
   return to_return;
 }
 
-Token TokenStream::peek() {
+Token TokenStream::peek() const {
   return next;
 }
 

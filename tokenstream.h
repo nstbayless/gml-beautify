@@ -41,8 +41,10 @@ static const char* TOKEN_NAME[] = {
 struct Token {
   TokenType type;
   std::string value;
+  unsigned int row;
+  unsigned int col;
   Token();
-  Token(const TokenType type, const std::string valuet);
+  Token(const TokenType type, const std::string value, int row = 0, int col = 0);
   bool operator==(const Token& other) const;
   bool operator!=(const Token& other) const;
   bool is_op_keyword();
@@ -54,11 +56,15 @@ class TokenStream {
 public:
   TokenStream(std::istream*);
   virtual Token read();
-  Token peek();
+  Token peek() const;
   virtual bool eof();
 private:
   Token next;
   std::istream* is;
+  unsigned int row=1;
+  unsigned int col=0;
+  
+  char read_char();
   
   Token read_next();
   Token read_string();
