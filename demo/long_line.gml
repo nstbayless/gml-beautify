@@ -1,2 +1,1 @@
-if abra_cadabra() + x + fhjkldh + fheuiwlhaufilwhef + hwauiliuehflawiuehf - aliwuerhlwiuer * huiqieurh > rreiwhauwfe + fueilhuefewa + x + fhjkldh + fheuiwlhaufilwhef + hwauiliuehflawiuehf - aliwuerhlwiuer * huiqieurh > rreiwhauwfe + fueilhuefewa+ x + fhjkldh + fheuiwlhaufilwhef + hwauiliuehflawiuehf - aliwuerhlwiuer * huiqieurh > rreiwhauwfe + fueilhuefewa+ x + fhjkldh + fheuiwlhaufilwhef + hwauiliuehflawiuehf - aliwuerhlwiuer * huiqieurh > rreiwhauwfe + fueilhuefewa+ x + fhjkldh + fheuiwlhaufilwhef + hwauiliuehflawiuehf - aliwuerhlwiuer * huiqieurh > rreiwhauwfe + fueilhuefewa
-  return true;
+o_bullet = instance_create(x + (7 * image_xscale), y - 4, obj_miniBlastMega); //creates bullet

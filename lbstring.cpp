@@ -181,14 +181,16 @@ void LBString::arrange(const BeautifulConfig& config, int indent) {
       previous_break = i+1;
     }
   }
+  
+   arrange_sublist(config, indent, previous_break, list.size());
 }
 
 void LBString::arrange_sublist(const BeautifulConfig& config, int indent, int start, int end) {
   // gather data on what break points are available
-  std::vector<unsigned int> break_indices;
+  std::vector<int> break_indices;
   std::vector<unsigned int> chunk_lengths;
   unsigned int cc = 0;
-  int max_width = config.columns; - indent * config.indent_spaces_per_tab;
+  int max_width = config.columns - indent * config.indent_spaces_per_tab;
   for (int i=start;i<end;i++) {
     if (list[i].type == CHUNK)
       cc += list[i].chunk.length();
@@ -200,6 +202,9 @@ void LBString::arrange_sublist(const BeautifulConfig& config, int indent, int st
       cc = 0;
     }
   }
+  
+  break_indices.push_back(-1);
+  chunk_lengths.push_back(cc);
   
   // assign pads taken
   int acc_width = 0;
