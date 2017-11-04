@@ -22,7 +22,10 @@ struct BeautifulConfig {
   int indent_spaces_per_tab = 4;
   
   //! column width (-1 means arbitrary)
-  int columns = -1;
+  int columns = 80;
+  
+  //! number of linebreaks if wrapping
+  int premature_linebreak_indent = 2;
   
   //! remove blank lines from start and end of blocks {}
   bool trim_block = true;
@@ -123,6 +126,7 @@ public:
   std::string to_string(const BeautifulConfig&, int indent = 0, bool mark_nest = false);
 private:
   std::string get_indent_string(const BeautifulConfig&, int indent = 0) const;
+  void arrange_sublist(const BeautifulConfig&, int indent, int start_index, int end_index);
 };
 
 LBString operator+(const LBString&, const LBString&);
