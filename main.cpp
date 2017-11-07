@@ -7,6 +7,7 @@
 #include "parser.h"
 #include "util.h"
 #include "test.h"
+#include "project.h"
 
 using namespace std;
 void perform_tests(ifstream& is, BeautifulConfig& config) ;
@@ -19,6 +20,7 @@ int main (int argn, char** argv) {
   } print_style = BEAUTIFUL;
   bool test_suite = false;
   bool mark_nesting = false;
+  bool beautify_project = false;
   const char* filename = "in.gml";
   for (int i=1;i<argn;i++) {
     if (strncmp(argv[i],"--",2) == 0) {
@@ -35,6 +37,9 @@ int main (int argn, char** argv) {
       if (strcmp(arg, "mark-nest") == 0) {
         mark_nesting = true;
       }
+      if (strcmp(arg,"project") == 0) {
+        beautify_project = true;
+      }
     } else {
       filename = argv[i];
     }
@@ -45,6 +50,16 @@ int main (int argn, char** argv) {
   if (argn >= 2) {
     filename = argv[1];
   }
+  
+  if (beautify_project) {
+    Project* p = new Project(filename);
+    bool error = p->test_beautify(config, true);
+    if (!error && test_suite) {
+      p->beautify(config);
+    }
+    return;
+  }
+  
   ifstream inFile;
   
   inFile.open(filename);

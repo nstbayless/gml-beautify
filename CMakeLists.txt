@@ -4,8 +4,17 @@ project (GMLBeautify)
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
+include_directories(pugixml)
+
 file(GLOB _SRC
     "*.cpp"
 )
 
-add_executable(GMLBeautify ${_SRC})
+file(GLOB _PUGIXML
+  "pugixml/*.cpp"
+)
+
+add_executable(GMLBeautify
+  ${_SRC}
+  ${_PUGIXML}
+)

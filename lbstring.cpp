@@ -1,4 +1,5 @@
 #include "beautify.h"
+#include "lbstring.h"
 
 LBString::LBString(LBTreeType type): type(type) {
   if (type == FORCE)
