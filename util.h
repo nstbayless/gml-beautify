@@ -33,4 +33,14 @@ static inline void trim(std::string &s) {
     rtrim(s);
 }
 
+class ParseError : public std::runtime_error {
+public:
+  ParseError(std::string message);
+  virtual const char* what() const noexcept override {
+    return message.c_str();
+  }
+private:
+  std::string message;
+};
+
 #endif /* UTIL_H */

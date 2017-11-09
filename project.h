@@ -1,6 +1,8 @@
 #include <cstring>
+#include <unordered_map>
 
 #include "beautify.h"
+#include "resource.h"
 
 #ifndef PROJECT_H
 #define PROJECT_H
@@ -16,20 +18,40 @@ enum ResourceType {
   TIMELINE,
   OBJECT,
   ROOM,
+  CONSTANT,
   NONE
 };
 
-struct ResourceTreeNode {
+extern const char* RESOURCE_TYPE_NAMES[NONE];
+
+extern const char* RESOURCE_TREE_NAMES[NONE];
+
+
+struct ResourceTableEntry {
+  ResourceTableEntry(ResourceType, std::string path);
+  ResourceTableEntry(ResourceType, Resource* ptr);
+  ResourceTableEntry(const ResourceTableEntry&);
+  Resource& get();
+private:    
+  // pointer to resource (if realized)
+  Resource* ptr;
   ResourceType type;
-};
-
-struct ResourceTree: ResourceTreeNode {
-  std::vector<ResourceTree> list;
-};
-
-struct ResourceTreeFile: ResourceTreeNode {
-  //! path on disk relative to project root; .gmx or .gml
+  
+  // path to resource (to construct if necessary)
   std::string path;
+};
+
+struct ResourceTree {
+  bool is_leaf;
+  
+  ResourceType type;
+  
+  // for trees --
+  std::vector<ResourceTree> list;
+  
+  // for leaves --
+  //! key for resource's entry in resource table
+  std::string rtkey;
 };
 
 //! Manages a GMX project on the disk
@@ -46,7 +68,11 @@ public:
   
 private:
   ResourceTree resourceTree;
+  std::unordered_map<std::string, ResourceTableEntry> resourceTable;
   std::string root;
+  
+  //! parses the given DOM tree for the given type of resources
+  void read_resource_tree(ResourceTree& out, void* xml, ResourceType type);
 };
 
 #endif /*PROJECT_H*/

@@ -1,4 +1,4 @@
-#include "beautfy.h"
+#include "beautify.h"
 
 #ifndef LBSTRING_H
 #define LBSTRING_H
@@ -52,4 +52,4 @@ LBString operator+(const LBString&, const std::string);
 LBString operator+(const char*, const LBString&);
 LBString operator+(const LBString&, const char*);
 
-#endif LBSTRING_H
+#endif /*LBSTRING_H*/

@@ -53,11 +53,12 @@ int main (int argn, char** argv) {
   
   if (beautify_project) {
     Project* p = new Project(filename);
-    bool error = p->test_beautify(config, true);
+    p->read_project_file();
+    bool error = p->beautify(config, true);
     if (!error && test_suite) {
       p->beautify(config);
     }
-    return;
+    return error;
   }
   
   ifstream inFile;

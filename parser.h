@@ -5,6 +5,7 @@
 
 #include "tokenstream.h"
 #include "beautify.h"
+#include "lbstring.h"
 
 #ifndef PARSER_H
 #define PARSER_H
