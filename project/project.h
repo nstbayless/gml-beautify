@@ -2,7 +2,8 @@
 #include <unordered_map>
 
 #include "beautify.h"
-#include "resource.h"
+#include "resource/resource.h"
+#include "resource/script.h"
 
 #ifndef PROJECT_H
 #define PROJECT_H
@@ -31,6 +32,7 @@ struct ResourceTableEntry {
   ResourceTableEntry(ResourceType, std::string path);
   ResourceTableEntry(ResourceType, Resource* ptr);
   ResourceTableEntry(const ResourceTableEntry&);
+  ResourceTableEntry() {};
   Resource& get();
 private:    
   // pointer to resource (if realized)
@@ -43,7 +45,7 @@ private:
 
 struct ResourceTree {
   bool is_leaf;
-  
+
   ResourceType type;
   
   // for trees --
@@ -57,22 +59,31 @@ struct ResourceTree {
 //! Manages a GMX project on the disk
 class Project {
 public:
-  Project(std::string root_directory);
+  Project(std::string path_to_project_file);
   
   // reads the project file and stores the resource tree.
   void read_project_file();
   
   //! performs beautification and returns if there are any errors
   //! if an error occurs, beautification stops immediately.
-  int beautify(BeautifulConfig bc, bool dry = false);
+  void beautify(BeautifulConfig bc, bool dry = false);
   
 private:
   ResourceTree resourceTree;
   std::unordered_map<std::string, ResourceTableEntry> resourceTable;
   std::string root;
+  std::string project_file;
   
   //! parses the given DOM tree for the given type of resources
   void read_resource_tree(ResourceTree& out, void* xml, ResourceType type);
+  
+  //! helper for beautify
+  //! beautifies the script resource tree.
+  void beautify_script_tree(BeautifulConfig bc, bool dry, ResourceTree&);
+  
+  //! helper for beautiy_script_tree
+  //! beautifies a single script
+  void beautify_script(BeautifulConfig bc, bool dry, ResScript&);
 };
 
 #endif /*PROJECT_H*/

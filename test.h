@@ -1,10 +1,11 @@
 #include <cstring>
+#include <istream>
 
+#include "beautify.h"
 
 #ifndef TEST_H
 #define TEST_H
 
-/// runs test suite on the given string of GML code.
-void run_test_suite(std::string raw_gml);
+bool perform_tests(std::istream& is, BeautifulConfig& config);
 
 #endif /* TEST_H */

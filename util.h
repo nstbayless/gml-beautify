@@ -1,6 +1,9 @@
 #include <algorithm> 
 #include <cctype>
 #include <locale>
+#include <sstream>
+#include <fstream>
+#include <string>
 
 #ifndef UTIL_H
 #define UTIL_H
@@ -42,5 +45,69 @@ public:
 private:
   std::string message;
 };
+
+static std::string path_leaf(std:: string path) {
+  size_t last_bsl = path.find_last_of("\\");
+  size_t last_rsl = path.find_last_of("/");
+  
+  size_t sep;
+  
+  if (last_bsl == std::string::npos) {
+    if (last_rsl == std::string::npos)
+      return "";
+    sep = last_rsl;
+  }
+  else if (last_rsl == std::string::npos) {
+    sep = last_bsl;
+  } else {
+    sep = std::max(last_rsl, last_bsl);
+  }
+  
+  return path.substr(sep+1,path.length() - sep-1);
+}
+
+static std::string path_directory(std:: string path) {
+  size_t last_bsl = path.find_last_of("\\");
+  size_t last_rsl = path.find_last_of("/");
+  
+  size_t sep;
+  
+  if (last_bsl == std::string::npos) {
+    if (last_rsl == std::string::npos)
+      return "";
+    sep = last_rsl;
+  }
+  else if (last_rsl == std::string::npos) {
+    sep = last_bsl;
+  } else {
+    sep = std::max(last_rsl, last_bsl);
+  }
+  
+  return path.substr(0,sep+1);
+}
+
+static inline std::string read_file_contents(std::string path_to_file) {
+  std::string line;
+  std::string out;
+  
+  std::ifstream infile(path_to_file);
+  while (getline(infile, line))
+  {
+      out += line;
+  }
+  
+  return out;
+}
+
+static inline std::string read_file_contents(std::ifstream& infile) {
+  std::string out;
+  std::string line;
+  while (getline(infile, line))
+  {
+      out += line;
+  }
+  
+  return out;
+}
 
 #endif /* UTIL_H */

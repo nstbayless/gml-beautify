@@ -7,10 +7,9 @@
 #include "parser.h"
 #include "util.h"
 #include "test.h"
-#include "project.h"
+#include "project/project.h"
 
 using namespace std;
-void perform_tests(ifstream& is, BeautifulConfig& config) ;
 
 int main (int argn, char** argv) {
   enum PrintStyle {
@@ -54,11 +53,11 @@ int main (int argn, char** argv) {
   if (beautify_project) {
     Project* p = new Project(filename);
     p->read_project_file();
-    bool error = p->beautify(config, true);
-    if (!error && test_suite) {
+    p->beautify(config, true);
+    if (test_suite) {
       p->beautify(config);
     }
-    return error;
+    return 0;
   }
   
   ifstream inFile;
@@ -93,7 +92,9 @@ int main (int argn, char** argv) {
       }
     } else {
       // test battery
-      perform_tests(inFile, config);
+      std::string file_contents = read_file_contents(inFile);
+      std::stringstream ss(file_contents);
+      perform_tests(ss, config);
     }
   }
   

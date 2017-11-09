@@ -222,6 +222,7 @@ struct PrControl: PrStatement {
 class Parser {
 public:
   Parser(std::istream* is);
+  Parser(std::string s);
   
   //! parses full stream
   PrBody* parse();

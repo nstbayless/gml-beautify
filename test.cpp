@@ -10,10 +10,10 @@
 
 using namespace std;
 
-void check_comments_identical(TokenStream&, TokenStream&);
-void check_logic_identical(TokenStream&, TokenStream&);
+bool check_comments_identical(TokenStream&, TokenStream&);
+bool check_logic_identical(TokenStream&, TokenStream&);
 
-void perform_tests(ifstream& is, BeautifulConfig& config) {
+bool perform_tests(istream& is, BeautifulConfig& config) {
   std::string s_is;
   std::string line;
   while (getline(is, line)) {
@@ -40,7 +40,8 @@ void perform_tests(ifstream& is, BeautifulConfig& config) {
   TokenStream lex_logic_pre(&log_ss_pre);
   TokenStream lex_logic_post(&log_ss_post);
   
-  check_comments_identical(lex_logic_pre,lex_logic_post);
+  if (check_comments_identical(lex_logic_pre,lex_logic_post))
+    return true;
   
   // check if any logic was changed
   std::stringstream log_ssl_pre(s_is);
@@ -49,10 +50,12 @@ void perform_tests(ifstream& is, BeautifulConfig& config) {
   TokenStream lex_com_pre(&log_ssl_pre);
   TokenStream lex_com_post(&log_ssl_post);
   
-  check_logic_identical(lex_com_pre, lex_com_post);
+  if (check_logic_identical(lex_com_pre, lex_com_post))
+    return true;
+  return false;
 }
 
-void check_logic_identical(TokenStream& lex_com_pre, TokenStream& lex_com_post) {
+bool check_logic_identical(TokenStream& lex_com_pre, TokenStream& lex_com_post) {
   while (true) {
     Token pre, post;
     bool eof_pre = false, eof_post = false;
@@ -93,12 +96,12 @@ void check_logic_identical(TokenStream& lex_com_pre, TokenStream& lex_com_post) 
       else
         std::cout<<pre.value;
       std::cout << endl;
-      return;
+      return true;
     }
     
     if (eof_pre && eof_post) {
       std::cout<< "Logic tokens are the same in post and pre"<<endl;
-      break;
+      return false;
     }
     
     trim(post.value);
@@ -109,12 +112,14 @@ void check_logic_identical(TokenStream& lex_com_pre, TokenStream& lex_com_post) 
       std::cout<< "Difference in comments " <<endl;
       std::cout<< "Pre:  " << pre.value << endl;
       std::cout<< "Post: " << post.value << endl;
-      return;
+      return true;
     }
   }
+  
+  return false;
 }
 
-void check_comments_identical(TokenStream& lex_logic_pre, TokenStream& lex_logic_post) {
+bool check_comments_identical(TokenStream& lex_logic_pre, TokenStream& lex_logic_post) {
   while (true) {
     Token pre, post;
     bool eof_pre = false, eof_post = false;
@@ -155,12 +160,12 @@ void check_comments_identical(TokenStream& lex_logic_pre, TokenStream& lex_logic
       else
         std::cout<<pre.value;
       std::cout << endl;
-      return;
+      return true;
     }
     
     if (eof_pre && eof_post) {
       std::cout<< "Comments are the same in post and pre"<<endl;
-      break;
+      return false;
     }
     
     trim(post.value);
@@ -171,7 +176,9 @@ void check_comments_identical(TokenStream& lex_logic_pre, TokenStream& lex_logic
       std::cout<< "Difference in comments " <<endl;
       std::cout<< "Pre:  " << pre.value << endl;
       std::cout<< "Post: " << post.value << endl;
-      return;
+      return true;
     }
   }
+  
+  return false;
 }

@@ -1,6 +1,12 @@
 #include <pugixml.hpp>
 
 #include "project.h"
+#include "util.h"
+#include "test.h"
+#include "resource/script.h"
+
+#include <iostream>
+#include <fstream>
 
 const char* RESOURCE_TYPE_NAMES[] = {
   "sprite",
@@ -40,10 +46,18 @@ ResourceTableEntry::ResourceTableEntry(const ResourceTableEntry& r): type(r.type
 { }
 
 Resource& ResourceTableEntry::get() {
+  if (ptr)
+    return *ptr;
+  // if resource not realized, construct it:
+  switch (type) {
+    case SCRIPT:
+      ptr = new ResScript(path);
+      break;
+  }
   return *ptr;
 }
 
-Project::Project(std::string path): root(path)
+Project::Project(std::string path): root(path_directory(path)), project_file(path_leaf(path))
 { }
 
 void Project::read_project_file() {
@@ -73,26 +87,6 @@ void Project::read_project_file() {
     
     std::cout<<"Added "<<resourceTable.size() - prev_rte_size<<" "<<RESOURCE_TREE_NAMES[r_type]<<std::endl;
   }
-}
-
-std::string resource_name_from_path(std:: string path) {
-  size_t last_bsl = path.find_last_of("\\");
-  size_t last_rsl = path.find_last_of("/");
-  
-  size_t sep;
-  
-  if (last_bsl == std::string::npos) {
-    if (last_rsl == std::string::npos)
-      return "";
-    sep = last_rsl;
-  }
-  else if (last_rsl == std::string::npos) {
-    sep = last_bsl;
-  } else {
-    sep = std::max(last_rsl, last_bsl);
-  }
-  
-  return path.substr(sep+1,path.length() - sep-1);
 }
 
 void Project::read_resource_tree(ResourceTree& root, void* xml_v, ResourceType t) {
@@ -126,7 +120,7 @@ void Project::read_resource_tree(ResourceTree& root, void* xml_v, ResourceType t
         name = node.attribute("name").value();
       } else {
         // determine resource name:
-        name = resource_name_from_path(value);
+        name = path_leaf(value);
       }
       // insert resource table entry
       resourceTable.insert(std::make_pair(name, rte));
@@ -135,5 +129,32 @@ void Project::read_resource_tree(ResourceTree& root, void* xml_v, ResourceType t
   }
 }
 
-int Project::beautify(BeautifulConfig bc, bool dry) {
+void Project::beautify(BeautifulConfig bc, bool dry) {
+  beautify_script_tree(bc, dry, resourceTree.list[SCRIPT]);
+}
+
+void Project::beautify_script_tree(BeautifulConfig bc, bool dry, ResourceTree& tree) {
+  if (!tree.is_leaf) {
+    for (auto iter : tree.list) {
+      beautify_script_tree(bc, dry, iter);
+    }    
+  } else {
+    beautify_script(bc, dry, (ResScript&)resourceTable[tree.rtkey].get());
+  }
+}
+
+void Project::beautify_script(BeautifulConfig bc, bool dry, ResScript& script) {
+  std::string beautified_script;
+  std::string raw_script;
+  
+  // read in script
+  raw_script = read_file_contents(root + script.path);
+  
+  // test
+  
+  // beautify
+  
+  if (!dry) {
+    // write out
+  }
 }
