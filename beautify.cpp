@@ -525,7 +525,7 @@ LBString PrFor::beautiful(const BeautifulConfig& config, BeautifulContext contex
   }
   s += renderWS(config, context.trim_leading_blanks());
   s += ")" + LBString(PAD);
-  s += renderWS(config, context.trim_leading_blanks());
+  s += renderWS(config, context.trim_leading_blanks().as_internal_eol());
   if (!hangable(config, first, true))
     s += LBString(FORCE);
   
