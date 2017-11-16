@@ -209,6 +209,8 @@ const char* KEYWORDS[] = {
   "if",
   "else",
   "while",
+  "do",
+  "until",
   "with",
   "for",
   "switch",

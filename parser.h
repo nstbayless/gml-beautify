@@ -176,6 +176,14 @@ struct PrWhile: PrStatement {
   PrStatement* event;
 };
 
+struct PrDo: PrStatement {
+  virtual std::string to_string();
+  virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
+  
+  PrExpression* condition;
+  PrStatement* event;
+};
+
 struct PrWith: PrStatement {
   virtual std::string to_string();
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
@@ -251,6 +259,7 @@ private:
   PrFor* read_for();
   PrWith* read_with();
   PrWhile* read_while();
+  PrDo* read_do();
   PrSwitch* read_switch();
   
   //! read comments and whitespaces as infixes for p

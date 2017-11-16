@@ -169,6 +169,10 @@ string PrWith::to_string() {
   return "with " + objid->to_string() + "\n" + event->to_string();
 }
 
+string PrDo::to_string() {
+  return "do "+event->to_string() + " until " + condition->to_string();
+}
+
 string PrAccessorExpression::to_string() {
   string s = ds->to_string() + "[" + acc;
   for (auto index: indices) {

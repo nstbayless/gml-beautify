@@ -163,6 +163,18 @@ void LBString::extend(const LBString& other, bool do_append) {
   }
 }
 
+void LBString::new_line() {
+  if (type != LIST) {
+    if (type != FORCE)
+      extend(FORCE);
+  } else if (list.back().type != FORCE) {
+    if (list.back().type == LIST)
+      list.back().new_line();
+    else
+      extend(FORCE);
+  }
+}
+
 void LBString::arrange(const BeautifulConfig& config, int indent) {
   indent += contents_indented;
   if (config.columns < 0)

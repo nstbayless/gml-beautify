@@ -12,6 +12,7 @@ using namespace std;
 
 bool check_comments_identical(TokenStream&, TokenStream&);
 bool check_logic_identical(TokenStream&, TokenStream&);
+bool check_idempotent(std::string, BeautifulConfig& );
 
 bool perform_tests(istream& is, BeautifulConfig& config) {
   std::string s_is;
@@ -52,6 +53,10 @@ bool perform_tests(istream& is, BeautifulConfig& config) {
   
   if (check_logic_identical(lex_com_pre, lex_com_post))
     return true;
+  
+  if (check_idempotent(s_is, config))
+    return true;
+  
   return false;
 }
 
@@ -181,4 +186,32 @@ bool check_comments_identical(TokenStream& lex_logic_pre, TokenStream& lex_logic
   }
   
   return false;
+}
+
+bool check_idempotent(std::string s, BeautifulConfig& bc) {
+  std::stringstream ss1(s);
+  Parser parser1(&ss1);
+  Production* root1 = parser1.parse();
+  std::string beautiful1 = root1->beautiful(bc).to_string(bc);
+  std::stringstream ss2(beautiful1);
+  Parser parser2(&ss2);
+  Production* root2 = parser2.parse();
+  std::string beautiful2 = root2->beautiful(bc).to_string(bc);
+  if (beautiful1 != beautiful2) {
+    
+    auto p = first_difference(beautiful1,beautiful2);
+    std::cout<<"Idempotence failed." <<endl;
+    
+    int radius = 80;
+    
+    std::cout<<beautiful1.substr(max(0,p.first - radius), 2*radius)<<endl;
+    
+    std::cout<<"*=====================*" <<endl;
+    
+    std::cout<<beautiful2.substr(max(0,p.first - radius), 2*radius)<<endl;
+    
+    std::cout<<"Idempotence failed." <<endl;
+    std::cout<<"First difference at " <<p.first<<" (line "<<p.second<<")"<<endl;
+  }
+  return beautiful1 != beautiful2;
 }

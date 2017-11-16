@@ -145,6 +145,16 @@ LBString Production::renderWS(const BeautifulConfig& config, BeautifulContext co
     return render_internal_eol(config, context, ws);
   }
   
+  if (ws->val.value == "\n" && context.no_single_newline) {
+    // check no non-null infixes
+    bool no_non_null = true;
+    for (int i=0;i<ws->infixes.size();i++)
+      if (ws->infixes[i])
+        no_non_null = false;
+    if (no_non_null)
+      return "";
+  }
+  
   LBString s(ws->beautiful(config, context));
   
   delete(ws);
@@ -153,6 +163,8 @@ LBString Production::renderWS(const BeautifulConfig& config, BeautifulContext co
 
 LBString Production::renderPostfixesTrimmed(const BeautifulConfig& config, BeautifulContext context) {
   LBString s;
+  
+  context.no_single_newline = false;
   
   // expand postfixes
   flattenPostfixes();
@@ -309,6 +321,8 @@ LBString PrExprArithmetic::beautiful(const BeautifulConfig& config, BeautifulCon
         s += " ";
     }
   }
+  
+  s += renderWS(config, context);
   
   s += op.value;
   
@@ -468,12 +482,12 @@ LBString PrStatementIf::beautiful(const BeautifulConfig& config, BeautifulContex
     s += renderWS(config, context.trim_leading_blanks());
     if (!config.egyptian)
       s += LBString(FORCE);
-    s += LBString(PAD) + "else" + LBString(PAD);
-    s += renderWS(config, context.trim_leading_blanks());
+    s += LBString(PAD) + "else ";
+    s += renderWS(config, context.as_internal_eol().trim_leading_blanks());
     bool append = !hangable(config, otherwise) && !is_a<PrStatementIf>(otherwise);
     if (!hangable(config, otherwise,true) && !is_a<PrStatementIf>(otherwise)) {
       if (!config.egyptian && !is_a<PrStatementIf>(otherwise))
-        s += LBString(FORCE);
+          s.new_line();
     }
     s.extend(otherwise->beautiful(config, context).indent(append), append);
   }
@@ -536,6 +550,25 @@ LBString PrWhile::beautiful(const BeautifulConfig& config, BeautifulContext cont
     s += LBString(FORCE);
   s.extend(event->beautiful(config, context).indent(!hangable(config,event)), !hangable(config, event));
   
+  // end of statement
+  context.never_semicolon = true;
+  s += end_statement_beautiful(config, context);
+  return s;
+}
+
+LBString PrDo::beautiful(const BeautifulConfig& config, BeautifulContext context) {
+  LBString s = "do";
+  s += renderWS(config, context.as_internal_eol());
+  s += LBString(PAD);
+  if (!hangable(config, event, true))
+    s += LBString(FORCE);
+  s.extend(event->beautiful(config, context).indent(!hangable(config,event)), !hangable(config, event));
+  s += renderWS(config, context);
+  s += " until";
+  s += LBString(PAD);
+  s += renderWS(config, context);
+  s += paren_wrap(condition,config,context);
+  s += LBString(PAD);
   // end of statement
   context.never_semicolon = true;
   s += end_statement_beautiful(config, context);
@@ -628,14 +661,17 @@ LBString PrCase::beautiful(const BeautifulConfig& config, BeautifulContext conte
 LBString PrInfixWS::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   LBString s;
   
-  // pad left
-  s += LBString(PAD);
   
+  // pad left (except for postfixes)
+  s += " ";
+   
   // value
   if (val.value == "\n")
     s += LBString(FORCE);
   else
     s += val.value;
+  
+  context.no_single_newline=false;
   
   // render nested infixes:
   for (int i=0;i<infixes.size();i++)

@@ -46,6 +46,8 @@ PrStatement* Parser::read_statement() {
       return read_for();
     else if (value == "while")
       return read_while();
+    else if (value == "do")
+      return read_do();
     else if (value == "with")
       return read_with();
     else if (value == "switch")
@@ -185,6 +187,7 @@ PrExprArithmetic* Parser::read_arithmetic(PrExpression* lhs) {
   }
   Token op = ts.read();
   PrExprArithmetic* p = new PrExprArithmetic(lhs, op, nullptr);
+  siphonWS(lhs,p,false,true);
   ignoreWS(p);
   p->rhs = read_expression();
   siphonWS(p->rhs,p,true);
@@ -436,6 +439,20 @@ PrWhile* Parser::read_while() {
   siphonWS(p->event, p, true);
   return p;
 }
+
+PrDo* Parser::read_do() {
+  PrDo* p = new PrDo();
+  ts.read(); // do
+  ignoreWS(p);
+  p->event = read_statement();
+  siphonWS(p->event, p, false, true);
+  ts.read(); // until
+  ignoreWS(p);
+  p->condition = read_expression();
+  siphonWS(p->condition, p, true);
+  return p;
+}
+
 
 PrWith* Parser::read_with() {
   PrWith* p = new PrWith();

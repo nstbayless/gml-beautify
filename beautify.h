@@ -74,6 +74,9 @@ struct BeautifulContext {
   //! used at the end of blocks
   bool no_trailing_blanks = false;
   
+  //! do not render single newlines (disabled for postfixes)
+  bool no_single_newline = true;
+  
   // 0: not eol, 1: eol, 2: internal eol
   char eol = 0;
   

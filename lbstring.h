@@ -32,9 +32,13 @@ public:
   
   LBString& indent(bool do_indent = true);
   
+  
+  //! alias for extend
   void operator+=(const LBString&);
-  void append(LBString);
   void extend(const LBString&, bool append = false);
+  void append(LBString);
+  //! starts a new line if not already on one.
+  void new_line();
   
   void arrange(const BeautifulConfig&, int indent);
   std::string to_string_unarranged(const BeautifulConfig&, int indent = 0, bool mark_nest = false) const;

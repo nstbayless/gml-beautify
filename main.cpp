@@ -7,6 +7,7 @@
 #include "parser.h"
 #include "util.h"
 #include "test.h"
+#include "error.h"
 #include "project/project.h"
 
 using namespace std;
@@ -94,7 +95,8 @@ int main (int argn, char** argv) {
       // test battery
       std::string file_contents = read_file_contents(inFile);
       std::stringstream ss(file_contents);
-      perform_tests(ss, config);
+      if (perform_tests(ss, config))
+        throw TestError("Error while testing " + std::string(filename));
     }
   }
   

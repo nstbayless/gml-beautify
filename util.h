@@ -118,4 +118,22 @@ static inline std::string read_file_contents(std::ifstream& infile) {
   return out;
 }
 
+static std::pair<int,int> first_difference(std::string a, std::string b) {
+  if (a == b)
+    return std::pair<int, int>(-1,-1);
+  
+  int line = 1;
+  for (int x=0;x<std::min(a.size(),b.size());x++) {
+    if (a[x] != b[x])
+      return std::pair<int, int>(x,line);
+    if (a[x] == '\n')
+      line ++;
+  }
+  
+  return std::pair<int, int> (
+    std::min(a.size(),b.size()),
+    line
+  );
+}
+
 #endif /* UTIL_H */
