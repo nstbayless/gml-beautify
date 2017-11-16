@@ -74,12 +74,6 @@ Token TokenStream::read_string() {
     if (c == terminal) break;
     if (is->eof())
       return Token(ERR,"Unterminated string");    
-    if (c == '\\') {
-      val += '\\';
-      c = read_char();
-    }
-    if (is->eof())
-      return Token(ERR,"Unterminated string");
     val += c;
   }
   std::string terminal_str = " ";
