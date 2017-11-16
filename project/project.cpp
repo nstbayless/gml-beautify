@@ -4,6 +4,7 @@
 #include "util.h"
 #include "test.h"
 #include "resource/script.h"
+#include "error.h"
 
 #include <iostream>
 #include <fstream>
@@ -62,7 +63,7 @@ Project::Project(std::string path): root(path_directory(path)), project_file(pat
 
 void Project::read_project_file() {
   pugi::xml_document doc;
-  pugi::xml_parse_result result = doc.load_file(root.c_str());
+  pugi::xml_parse_result result = doc.load_file((root + project_file).c_str());
   
   std::cout<<"reading project file " << root<<std::endl;
   std::cout<<"Load result: "<<result.description()<<std::endl;
@@ -125,6 +126,7 @@ void Project::read_resource_tree(ResourceTree& root, void* xml_v, ResourceType t
       // insert resource table entry
       resourceTable.insert(std::make_pair(name, rte));
       root.list.back().rtkey = name;
+      root.list.back().is_leaf = true;
     }
   }
 }
@@ -147,12 +149,18 @@ void Project::beautify_script(BeautifulConfig bc, bool dry, ResScript& script) {
   std::string beautified_script;
   std::string raw_script;
   
+  std::cout<<"beautify "<<native_path(root+script.path)<<std::endl;
+  
   // read in script
   raw_script = read_file_contents(root + script.path);
   
   // test
+  std::stringstream ss(raw_script);
+  if (perform_tests(ss, bc))
+    throw TestError("Error while testing " + script.path);
   
   // beautify
+  
   
   if (!dry) {
     // write out

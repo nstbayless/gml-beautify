@@ -621,6 +621,7 @@ LBString PrCase::beautiful(const BeautifulConfig& config, BeautifulContext conte
     s2 += p->beautiful(config, context) + LBString(FORCE);
   }
   s.append(s2.indent(true));
+  context.never_semicolon = true;
   return s;
 }
 

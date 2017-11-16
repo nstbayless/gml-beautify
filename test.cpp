@@ -30,8 +30,8 @@ bool perform_tests(istream& is, BeautifulConfig& config) {
   delete(root);
   fbuff.seekg(0, fbuff.beg);
   istringstream ss(s);
-  std::cout<<s<<endl;
-  std::cout<<"^ for reference ^"<<endl;
+  //std::cout<<s<<endl;
+  //std::cout<<"^ for reference ^"<<endl;
 
   std::stringstream log_ss_pre(s_is);
   std::stringstream log_ss_post(s);
@@ -109,7 +109,7 @@ bool check_logic_identical(TokenStream& lex_com_pre, TokenStream& lex_com_post) 
     
     if (post != pre) {
       std::cout<< "Test failed!" <<endl;
-      std::cout<< "Difference in comments " <<endl;
+      std::cout<< "Difference in logic " <<endl;
       std::cout<< "Pre:  " << pre.value << endl;
       std::cout<< "Post: " << post.value << endl;
       return true;
@@ -174,7 +174,7 @@ bool check_comments_identical(TokenStream& lex_logic_pre, TokenStream& lex_logic
     if (post != pre) {
       std::cout<< "Test failed!" <<endl;
       std::cout<< "Difference in comments " <<endl;
-      std::cout<< "Pre:  " << pre.value << endl;
+      std::cout<< " Pre: " << pre.value << endl;
       std::cout<< "Post: " << post.value << endl;
       return true;
     }

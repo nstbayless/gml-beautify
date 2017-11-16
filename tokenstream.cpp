@@ -74,13 +74,17 @@ Token TokenStream::read_string() {
     if (c == terminal) break;
     if (is->eof())
       return Token(ERR,"Unterminated string");    
-    if (c == '\\')
+    if (c == '\\') {
+      val += '\\';
       c = read_char();
+    }
     if (is->eof())
       return Token(ERR,"Unterminated string");
     val += c;
   }
-  return Token(STR,val);
+  std::string terminal_str = " ";
+  terminal_str[0] = terminal;
+  return Token(STR,terminal_str + val + terminal_str);
 }
 
 Token TokenStream::read_number() {
