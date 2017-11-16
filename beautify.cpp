@@ -479,7 +479,7 @@ LBString PrStatementIf::beautiful(const BeautifulConfig& config, BeautifulContex
   
   s.extend(result->beautiful(config, context).indent(!hangable(config,result)), !hangable(config, result));
   if (otherwise) {
-    s += renderWS(config, context.trim_leading_blanks());
+    s += renderWS(config, context.trim_leading_blanks().as_internal_eol());
     if (!config.egyptian)
       s += LBString(FORCE);
     s += LBString(PAD) + "else ";
