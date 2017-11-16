@@ -243,7 +243,7 @@ LBString PrStatement::end_statement_beautiful(const BeautifulConfig& config, Bea
   LBString s;
   
   // add semicolon
-  if ((config.semicolons &&! context.never_semicolon) || context.forced_semicolon) {
+  if ((config.semicolons || context.forced_semicolon) &&! context.never_semicolon) {
     s += ";";
   }
   
