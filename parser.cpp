@@ -272,7 +272,10 @@ PrStatementIf* Parser::read_statement_if() {
   siphonWS(p->condition,p,false,true);
   
   p->result = read_statement();
-  siphonWS(p->result,p,true);
+  read_statement_end();
+  ignoreWS(p->result,true);
+  siphonWS(p->result,p,true,true);
+  
   if (ts.peek() == Token(KW, "else")) {
     // what were previously postfixes now count as infixes, since we're extending
     p->postfix_n = 0;
