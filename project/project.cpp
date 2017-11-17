@@ -4,6 +4,7 @@
 #include "util.h"
 #include "test.h"
 #include "resource/script.h"
+#include "resource/object.h"
 #include "error.h"
 #include "parser.h"
 
@@ -54,6 +55,9 @@ Resource& ResourceTableEntry::get() {
   switch (type) {
     case SCRIPT:
       ptr = new ResScript(path);
+      break;
+    case OBJECT:
+      ptr = new ResObject(path + ".object.gmx");
       break;
   }
   return *ptr;
@@ -133,7 +137,8 @@ void Project::read_resource_tree(ResourceTree& root, void* xml_v, ResourceType t
 }
 
 void Project::beautify(BeautifulConfig bc, bool dry) {
-  beautify_script_tree(bc, dry, resourceTree.list[SCRIPT]);
+  //beautify_script_tree(bc, dry, resourceTree.list[SCRIPT]);
+  beautify_object_tree(bc, dry, resourceTree.list[OBJECT]);
   
   if (dry) {
     std::cout<<"Dry run succeeded."<<std::endl;
@@ -176,5 +181,58 @@ void Project::beautify_script(BeautifulConfig bc, bool dry, ResScript& script) {
     std::ofstream out(path);
     out << beautiful;
     std::cout<<"writing output to "<<path<<std::endl;
+  }
+}
+
+void Project::beautify_object_tree(BeautifulConfig bc, bool dry, ResourceTree& tree) {
+  if (!tree.is_leaf) {
+    for (auto iter : tree.list) {
+      beautify_object_tree(bc, dry, iter);
+    }    
+  } else {
+    beautify_object(bc, dry, (ResObject&)resourceTable[tree.rtkey].get());
+  }
+}
+
+void Project::beautify_object(BeautifulConfig bc, bool dry, ResObject& obj) {
+  std::string path = native_path(root+obj.path);
+  pugi::xml_document doc;
+  pugi::xml_parse_result result = doc.load_file(path.c_str());
+  
+  std::cout<<"beautify "<<path<<std::endl;
+  
+  pugi::xml_node node_object = doc.child("object");
+  pugi::xml_node node_events = node_object.child("events");
+  for (pugi::xml_node event: node_events.children("event")) {
+    std::string event_type = event.attribute("eventtype").value();
+    std::string enumb = event.attribute("enumb").value();
+    int action_n = 0;
+    for (pugi::xml_node action: event.children("action")) {
+      // is code event:
+      if (action.child("kind").text().get() == std::string("7") &&
+          action.child("id").text().get() == std::string("603")) {
+        std::string descriptor = path + ", event type " + event_type + ", enumb " + enumb;
+        std::cout<<"beautify "<<descriptor<<std::endl;
+        // read 
+        auto node_code = action.child("arguments").child("argument").child("string");
+        std::string raw_code = node_code.text().get();
+        
+        // test
+        std::stringstream ss(raw_code);
+        if (perform_tests(ss, bc))
+          throw TestError("Error while testing " + descriptor);
+        
+        // beautify
+        Parser p(raw_code);
+        Production* syntree = p.parse();
+        std::string beautiful = syntree->beautiful(bc).to_string(bc);
+        delete(syntree);
+        
+        if (!dry) {
+          // todo
+        }
+      }
+      action_n ++;
+    }
   }
 }

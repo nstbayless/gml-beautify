@@ -2,6 +2,7 @@
 #include <sstream>
 
 #include "tokenstream.h"
+#include "util.h"
 
 using namespace std;
 
@@ -150,6 +151,10 @@ Token TokenStream::read_comment_multiline() {
   while (true) {
     if (is->eof()) break;
     c = read_char();
+    if (c == -1 || is->eof()) {
+      rtrim(val);
+      break;
+    }
     if (c == '*') {
       char c2;
       c2 = read_char();
