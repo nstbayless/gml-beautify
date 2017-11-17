@@ -660,6 +660,25 @@ LBString PrCase::beautiful(const BeautifulConfig& config, BeautifulContext conte
   return s;
 }
 
+LBString beautify_comment(std::string in, const BeautifulConfig& config, BeautifulContext context) {
+  if (!config.comment_space)
+    return in;
+    
+  std::string out = in.substr(0,2);
+  
+  // find first meaningful character and prepend a space
+  for (int i=2;i<in.size();i++) {
+    char c = in[i];
+    if (iswspace(c))
+      return in;
+    if (isalnum(c) || c == '$' || c == '.' || c == '?' || c == '<' || c == '>')
+      return out + " " + in.substr(i,in.length()-i);
+    out += c;
+  }
+  
+  return out;
+}
+
 LBString PrInfixWS::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   LBString s;
   
@@ -669,8 +688,12 @@ LBString PrInfixWS::beautiful(const BeautifulConfig& config, BeautifulContext co
   // value
   if (val.value == "\n")
     s += LBString(FORCE);
-  else
-    s += val.value;
+  else {
+    if (val.type == COMMENT)
+      s += beautify_comment(val.value, config, context);
+    else
+      s += val.value;
+  }
   
   // render nested infixes:
   context.no_single_newline=false;
