@@ -303,6 +303,9 @@ LBString PrExprArithmetic::beautiful(const BeautifulConfig& config, BeautifulCon
   if (op == Token(PUNC,"."))
     l_space = r_space = false;
   
+  if (op == Token(OP,"-") && !lhs)
+    r_space = false;
+  
   // (keywords absolutely need spaces to be parsed)
   if (op.type == KW) {
     l_space = true;
