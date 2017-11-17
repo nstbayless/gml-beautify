@@ -151,8 +151,18 @@ void Project::beautify_script(BeautifulConfig bc, bool dry, ResScript& script) {
   raw_script = read_file_contents(root + script.path);
   
   // test
+  std::stringstream ss(raw_script);
+  bool test = perform_tests(ss, bc);
+  
+  if (!test) {
+    throw ParseError("Tests failed on file " script->path);
+  }
   
   // beautify
+  Parser p(raw_script);
+  std::string beautiful p->beautify(bc)->to_string(bc);
+  
+  std::cout<< beautiful<<std::endl;
   
   if (!dry) {
     // write out

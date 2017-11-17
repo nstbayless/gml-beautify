@@ -4,11 +4,9 @@
 
 using namespace std;
 
-Token::Token(const TokenType type, const std::string value, int col, int row):
+Token::Token(const TokenType type, const std::string value):
   type(type),
   value(value),
-  col(col),
-  row(row)
 { }
 
 Token::Token(): Token(ERR,"")
@@ -50,6 +48,9 @@ TokenStream::TokenStream(istream* istream): is(istream), next(END,"")  {
   read();
 }
 
+std::pair<int,int> TokenStream::location() const {
+  return std::pair(row, col);
+}
   
 char TokenStream::read_char() {
   char c = is->get();
@@ -369,6 +370,10 @@ Token LLKTokenStream::peek(unsigned int i) {
     return TokenStream::peek();
   else
     return buffer[i];
+}
+
+std::pair<int,int> LLKTokenStream::location() const {
+  return TokenStream::location();
 }
 
 Token LLKTokenStream::read() {

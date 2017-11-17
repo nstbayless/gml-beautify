@@ -61,7 +61,9 @@ PrStatement* Parser::read_statement() {
       ignoreWS(p, true);
       return p;
     }
-    else return nullptr;
+    else {
+      throw ParseError("keyword " + value + " cannot start a statement.", ts.location());
+    }
   case PUNC:
     if (value == "(") {
       return read_assignment();

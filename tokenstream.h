@@ -41,10 +41,8 @@ static const char* TOKEN_NAME[] = {
 struct Token {
   TokenType type;
   std::string value;
-  unsigned int row;
-  unsigned int col;
   Token();
-  Token(const TokenType type, const std::string value, int row = 0, int col = 0);
+  Token(const TokenType type, const std::string value);
   bool operator==(const Token& other) const;
   bool operator!=(const Token& other) const;
   bool is_op_keyword();
@@ -55,8 +53,16 @@ std::ostream &operator<<(std::ostream &,const Token &);
 class TokenStream {
 public:
   TokenStream(std::istream*);
+  // gobbles the next token, returning it
   virtual Token read();
+  
+  // peeks at next token but does not gobble it
   Token peek() const;
+  
+  // returns (row, column) pair of where the lexer currently is in the input
+  std::pair<int,int> location() const;
+  
+  // end of file has been reached; peek() or read() will fail.
   virtual bool eof();
 private:
   Token next;
@@ -85,6 +91,7 @@ public:
   
   Token peek();
   Token peek(unsigned int skip);
+  std::pair<int,int> location() const;
   Token read();
   bool eof();
   bool has(unsigned int k);

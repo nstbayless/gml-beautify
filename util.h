@@ -93,7 +93,7 @@ static inline std::string read_file_contents(std::string path_to_file) {
   std::ifstream infile(path_to_file);
   while (getline(infile, line))
   {
-      out += line;
+      out += line+"\n";
   }
   
   return out;
@@ -104,7 +104,7 @@ static inline std::string read_file_contents(std::ifstream& infile) {
   std::string line;
   while (getline(infile, line))
   {
-      out += line;
+      out += line+"\n";
   }
   
   return out;
