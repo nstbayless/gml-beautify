@@ -649,18 +649,19 @@ LBString PrCase::beautiful(const BeautifulConfig& config, BeautifulContext conte
     s += renderWS(config, context);
   }
   s += ":"  + LBString(PAD) + renderWS(config, context.as_internal_eol());
-  LBString s2 = LBString(FORCE);
+  LBString s2;
   for (auto p: productions) {
-    s2 += p->beautiful(config, context) + LBString(FORCE);
+    s2 += LBString(FORCE) +  p->beautiful(config, context);
   }
   s.append(s2.indent(true));
+  s += renderWS(config, context);
+  s += LBString(FORCE);
   context.never_semicolon = true;
   return s;
 }
 
 LBString PrInfixWS::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   LBString s;
-  
   
   // pad left (except for postfixes)
   s += " ";
@@ -671,9 +672,8 @@ LBString PrInfixWS::beautiful(const BeautifulConfig& config, BeautifulContext co
   else
     s += val.value;
   
-  context.no_single_newline=false;
-  
   // render nested infixes:
+  context.no_single_newline=false;
   for (int i=0;i<infixes.size();i++)
     if (infixes[i])
       s += infixes[i]->beautiful(config, context);

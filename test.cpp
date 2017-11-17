@@ -54,8 +54,10 @@ bool perform_tests(istream& is, BeautifulConfig& config) {
   if (check_logic_identical(lex_com_pre, lex_com_post))
     return true;
   
-  if (check_idempotent(s_is, config))
+  if (check_idempotent(s_is, config)) {
+    std::cout<<"Idempotence failed."<<std::endl;
     return true;
+  } else std::cout<<"Idempotence test passed."<<std::endl;
   
   return false;
 }
