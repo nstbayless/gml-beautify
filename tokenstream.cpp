@@ -379,13 +379,13 @@ LLKTokenStream::LLKTokenStream(std::string s, int k): TokenStream(s), k(k) {
     buffer.push_back(TokenStream::read());
 }
 
-Token LLKTokenStream::peek() {
+Token LLKTokenStream::peek() const {
   if (buffer.size() == 0)
     return TokenStream::peek();
   return buffer.front();
 }
 
-Token LLKTokenStream::peek(unsigned int i) {
+Token LLKTokenStream::peek(unsigned int i) const {
   if (i == k - 1)
     return TokenStream::peek();
   else

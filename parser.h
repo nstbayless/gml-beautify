@@ -261,6 +261,7 @@ private:
   PrWhile* read_while();
   PrDo* read_do();
   PrSwitch* read_switch();
+  void assert_peek(Token t, std::string message) const;
   
   //! read comments and whitespaces as infixes for p
   void ignoreWS(Production* p, bool as_postfix = false);

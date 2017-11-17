@@ -38,6 +38,22 @@ static const char* TOKEN_NAME[] = {
   "ERR"
 };
 
+static const char* TOKEN_NAME_PLAIN[] = {
+  "punctuation", // (),. etc.
+  "operator", // operator
+  "lr-operator", //++ or --
+  "accessor operator", //accessor operator
+  "number literal",
+  "string literal",
+  "keyword",
+  "identifier",
+  "comment",
+  "whitespace",
+  "end-statement",
+  "end-of-string",
+  "error"
+};
+
 struct Token {
   TokenType type;
   std::string value;
@@ -94,8 +110,8 @@ public:
   LLKTokenStream(std::istream*, const int k);
   LLKTokenStream(std::string, const int k);
   
-  Token peek();
-  Token peek(unsigned int skip);
+  Token peek() const;
+  Token peek(unsigned int skip) const;
   std::pair<int,int> location() const;
   Token read();
   bool eof();

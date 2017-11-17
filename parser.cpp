@@ -1,10 +1,20 @@
 #include "parser.h"
 #include "error.h"
+#include "util.h"
 
 using namespace std;
 
-Parser::Parser(istream* is): ts(is, 4) { }
-Parser::Parser(std::string s): ts(s, 4) { }
+Parser::Parser(istream* is): ts(is, 2) { }
+Parser::Parser(std::string s): ts(s, 2) { }
+
+void Parser::assert_peek(Token t, std::string message) const {
+  if (ts.peek().type != t.type) {
+    throw ParseError(replace_all(message, "%unexpected", "unexpected " + std::string(TOKEN_NAME_PLAIN[ts.peek().type])), ts.location());
+  }
+  if (ts.peek().value != t.value) {
+    throw ParseError(replace_all(message, "%unexpected", "unexpected token \"" + t.value + "\""), ts.location());
+  }
+}
 
 Production* Parser::read() {
   if (ts.peek().type == END || ts.peek().type == ERR)
@@ -75,7 +85,7 @@ PrStatement* Parser::read_statement() {
     if (value == "{") {
       return read_block();
     }
-    return nullptr;
+    throw ParseError("unexpected punctuation \"" + value + "\" where a statement was expected.", ts.location());
   case ID:
     {
       Token t = ts.peek(1);
@@ -96,6 +106,11 @@ PrAssignment* Parser::read_assignment() {
   } else {
     PrExpression* lhs = read_term();
     // check op of correct format:
+    if (ts.peek().type != OPR || ts.peek().type != OP) {
+      throw ParseError("unexpected token \"" + ts.peek().value
+          + "\" where an assignment operator was expected.", ts.location());
+    }
+    // read operator
     Token op = ts.read();
     PrAssignment* p = new PrAssignment(lhs,op,nullptr);
     ignoreWS(p);
@@ -115,15 +130,21 @@ PrExpression* Parser::read_term() {
   Token t(ts.peek());
   if (t == Token(OP,"-")   || t == Token(OP,"!") ||
       t == Token(KW,"not") || t == Token(OP,"~") || t.type == OPR) {
+    // unary operator term
     PrExprArithmetic* p = new PrExprArithmetic(nullptr, ts.read(),read_expression());
     siphonWS(p->rhs,p,true);
     return p;
   } else {
-    if (t.type == NUM || t.type == STR)
+    if (t.type == NUM || t.type == STR) {
+      // literal
       to_return = new PrFinal(ts.read());
-    if (t == Token(PUNC,"("))
+    }
+    if (t == Token(PUNC,"(")) {
+      // parentheses expression
       to_return = read_expression_parentheses();
+    }
     else if (t.type == ID) {
+      // function or identifier
       t = ts.peek(1);
       if (t == Token(PUNC,"("))
         to_return = read_expression_function();
@@ -134,6 +155,7 @@ PrExpression* Parser::read_term() {
     // read postfixes
     ignoreWS(to_return,true);
     
+    // optional right-hand modifiers (array, .)
     return read_possessive(read_accessors(to_return));
   }
 }
@@ -156,6 +178,7 @@ PrExpression* Parser::read_accessors(PrExpression* ds) {
   a->ds = ds;
   ts.read(); // [
   ignoreWS(ds);
+  // TODO: assert valid accessor symbol
   if (ts.peek().type == OPA || ts.peek() == Token(OP,"|"))
     a->acc = ts.read().value;
     
@@ -168,6 +191,7 @@ READ_INDEX:
     goto READ_INDEX;
   }
   
+  assert_peek(Token(PUNC,"["), "%unexpected while parsing accessor; either \",\" or \"]\" expected");
   ts.read(); // ]
   
   return read_accessors(a);
@@ -184,8 +208,8 @@ PrExpression* Parser::read_expression() {
 
 PrExprArithmetic* Parser::read_arithmetic(PrExpression* lhs) {
   //TODO assert ts.peek() is operator
-  if (ts.peek() == Token(OP,"!") || ts.peek() == Token(KW,"not"))
-    return nullptr; // TODO: better error handling
+  if (ts.peek() == Token(OP,"!") || ts.peek() == Token(KW,"not") || ts.peek() == Token(OP,"~"))
+    throw ParseError("unexpected unary operator after expression", ts.location());
   if (ts.peek().type == OPR) {
     new PrExprArithmetic(lhs, ts.read(), nullptr);
   }
@@ -202,7 +226,9 @@ PrExpressionFn* Parser::read_expression_function() {
   PrExpressionFn* pfn = new PrExpressionFn(ts.read());
   
   ignoreWS(pfn);
+  
   // (
+  assert_peek(Token(PUNC,"("),"%unexpected while expecting open-parenthesis \"(\" for function");
   ts.read();  
 
   while (true) {
@@ -220,7 +246,9 @@ PrExpressionFn* Parser::read_expression_function() {
     else break;
   }
   
-  ts.read(); // )
+  // )
+  assert_peek(Token(PUNC,"("),"%unexpected while parsing function; expected \",\" or \")\"");
+  ts.read();
   
   ignoreWS(pfn, true);
   
