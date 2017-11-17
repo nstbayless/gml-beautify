@@ -42,6 +42,9 @@ struct BeautifulConfig {
   //! if a comment starts a line but is not the first line of a body, it must follow a blank line.
   bool blank_before_comment = true;
   
+  //! comments start with a space // like this, not //like this
+  bool comment_space = true;
+  
   //! do not start a line with a binary operator (+-/* etc.)
   bool op_end_line = true;
   
@@ -73,6 +76,9 @@ struct BeautifulContext {
   //! statement must not end with any blank lines (from postfixes)
   //! used at the end of blocks
   bool no_trailing_blanks = false;
+  
+  //! do not render single newlines (disabled for postfixes)
+  bool no_single_newline = true;
   
   // 0: not eol, 1: eol, 2: internal eol
   char eol = 0;

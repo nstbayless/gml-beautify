@@ -145,6 +145,16 @@ LBString Production::renderWS(const BeautifulConfig& config, BeautifulContext co
     return render_internal_eol(config, context, ws);
   }
   
+  if (ws->val.value == "\n" && context.no_single_newline) {
+    // check no non-null infixes
+    bool no_non_null = true;
+    for (int i=0;i<ws->infixes.size();i++)
+      if (ws->infixes[i])
+        no_non_null = false;
+    if (no_non_null)
+      return "";
+  }
+  
   LBString s(ws->beautiful(config, context));
   
   delete(ws);
@@ -153,6 +163,8 @@ LBString Production::renderWS(const BeautifulConfig& config, BeautifulContext co
 
 LBString Production::renderPostfixesTrimmed(const BeautifulConfig& config, BeautifulContext context) {
   LBString s;
+  
+  context.no_single_newline = false;
   
   // expand postfixes
   flattenPostfixes();
@@ -231,7 +243,7 @@ LBString PrStatement::end_statement_beautiful(const BeautifulConfig& config, Bea
   LBString s;
   
   // add semicolon
-  if ((config.semicolons &&! context.never_semicolon) || context.forced_semicolon) {
+  if ((config.semicolons || context.forced_semicolon) &&! context.never_semicolon) {
     s += ";";
   }
   
@@ -291,6 +303,9 @@ LBString PrExprArithmetic::beautiful(const BeautifulConfig& config, BeautifulCon
   if (op == Token(PUNC,"."))
     l_space = r_space = false;
   
+  if (op == Token(OP,"-") && !lhs)
+    r_space = false;
+  
   // (keywords absolutely need spaces to be parsed)
   if (op.type == KW) {
     l_space = true;
@@ -309,6 +324,8 @@ LBString PrExprArithmetic::beautiful(const BeautifulConfig& config, BeautifulCon
         s += " ";
     }
   }
+  
+  s += renderWS(config, context);
   
   s += op.value;
   
@@ -465,15 +482,15 @@ LBString PrStatementIf::beautiful(const BeautifulConfig& config, BeautifulContex
   
   s.extend(result->beautiful(config, context).indent(!hangable(config,result)), !hangable(config, result));
   if (otherwise) {
-    s += renderWS(config, context.trim_leading_blanks());
+    s += renderWS(config, context.trim_leading_blanks().as_internal_eol());
     if (!config.egyptian)
       s += LBString(FORCE);
-    s += LBString(PAD) + "else" + LBString(PAD);
-    s += renderWS(config, context.trim_leading_blanks());
+    s += LBString(PAD) + "else ";
+    s += renderWS(config, context.as_internal_eol().trim_leading_blanks());
     bool append = !hangable(config, otherwise) && !is_a<PrStatementIf>(otherwise);
     if (!hangable(config, otherwise,true) && !is_a<PrStatementIf>(otherwise)) {
       if (!config.egyptian && !is_a<PrStatementIf>(otherwise))
-        s += LBString(FORCE);
+          s.new_line();
     }
     s.extend(otherwise->beautiful(config, context).indent(append), append);
   }
@@ -511,7 +528,7 @@ LBString PrFor::beautiful(const BeautifulConfig& config, BeautifulContext contex
   }
   s += renderWS(config, context.trim_leading_blanks());
   s += ")" + LBString(PAD);
-  s += renderWS(config, context.trim_leading_blanks());
+  s += renderWS(config, context.trim_leading_blanks().as_internal_eol());
   if (!hangable(config, first, true))
     s += LBString(FORCE);
   
@@ -536,6 +553,25 @@ LBString PrWhile::beautiful(const BeautifulConfig& config, BeautifulContext cont
     s += LBString(FORCE);
   s.extend(event->beautiful(config, context).indent(!hangable(config,event)), !hangable(config, event));
   
+  // end of statement
+  context.never_semicolon = true;
+  s += end_statement_beautiful(config, context);
+  return s;
+}
+
+LBString PrDo::beautiful(const BeautifulConfig& config, BeautifulContext context) {
+  LBString s = "do";
+  s += renderWS(config, context.as_internal_eol());
+  s += LBString(PAD);
+  if (!hangable(config, event, true))
+    s += LBString(FORCE);
+  s.extend(event->beautiful(config, context).indent(!hangable(config,event)), !hangable(config, event));
+  s += renderWS(config, context);
+  s += " until";
+  s += LBString(PAD);
+  s += renderWS(config, context);
+  s += paren_wrap(condition,config,context);
+  s += LBString(PAD);
   // end of statement
   context.never_semicolon = true;
   s += end_statement_beautiful(config, context);
@@ -616,27 +652,54 @@ LBString PrCase::beautiful(const BeautifulConfig& config, BeautifulContext conte
     s += renderWS(config, context);
   }
   s += ":"  + LBString(PAD) + renderWS(config, context.as_internal_eol());
-  LBString s2 = LBString(FORCE);
+  LBString s2;
   for (auto p: productions) {
-    s2 += p->beautiful(config, context) + LBString(FORCE);
+    s2 += LBString(FORCE) +  p->beautiful(config, context);
   }
   s.append(s2.indent(true));
+  s += renderWS(config, context);
+  s += LBString(FORCE);
+  context.never_semicolon = true;
   return s;
+}
+
+LBString beautify_comment(std::string in, const BeautifulConfig& config, BeautifulContext context) {
+  if (!config.comment_space)
+    return in;
+    
+  std::string out = in.substr(0,2);
+  
+  // find first meaningful character and prepend a space
+  for (int i=2;i<in.size();i++) {
+    char c = in[i];
+    if (iswspace(c))
+      return in;
+    if (isalnum(c) || c == '$' || c == '.' || c == '?' || c == '<' || c == '>')
+      return out + " " + in.substr(i,in.length()-i);
+    out += c;
+  }
+  
+  return out;
 }
 
 LBString PrInfixWS::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   LBString s;
   
-  // pad left
-  s += LBString(PAD);
-  
+  // pad left (except for postfixes)
+  s += " ";
+   
   // value
   if (val.value == "\n")
     s += LBString(FORCE);
-  else
-    s += val.value;
+  else {
+    if (val.type == COMMENT)
+      s += beautify_comment(val.value, config, context);
+    else
+      s += val.value;
+  }
   
   // render nested infixes:
+  context.no_single_newline=false;
   for (int i=0;i<infixes.size();i++)
     if (infixes[i])
       s += infixes[i]->beautiful(config, context);

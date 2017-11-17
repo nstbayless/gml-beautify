@@ -4,6 +4,7 @@
 #include "beautify.h"
 #include "resource/resource.h"
 #include "resource/script.h"
+#include "resource/object.h"
 
 #ifndef PROJECT_H
 #define PROJECT_H
@@ -84,6 +85,14 @@ private:
   //! helper for beautiy_script_tree
   //! beautifies a single script
   void beautify_script(BeautifulConfig bc, bool dry, ResScript&);
+  
+  //! helper for beautify
+  //! beautifies the object resource tree.
+  void beautify_object_tree(BeautifulConfig bc, bool dry, ResourceTree&);
+  
+  //! helper for beautiy_object_tree
+  //! beautifies a single object
+  void beautify_object(BeautifulConfig bc, bool dry, ResObject&);
 };
 
 #endif /*PROJECT_H*/

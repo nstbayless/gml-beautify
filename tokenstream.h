@@ -53,6 +53,9 @@ std::ostream &operator<<(std::ostream &,const Token &);
 class TokenStream {
 public:
   TokenStream(std::istream*);
+  TokenStream(std::string);
+  ~TokenStream();
+
   // gobbles the next token, returning it
   virtual Token read();
   
@@ -67,6 +70,7 @@ public:
 private:
   Token next;
   std::istream* is;
+  bool istream_mine;
   unsigned int row=1;
   unsigned int col=0;
   
@@ -88,6 +92,7 @@ private:
 class LLKTokenStream: TokenStream {
 public:
   LLKTokenStream(std::istream*, const int k);
+  LLKTokenStream(std::string, const int k);
   
   Token peek();
   Token peek(unsigned int skip);

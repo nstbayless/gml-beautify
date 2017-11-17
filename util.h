@@ -13,7 +13,6 @@ bool is_a(Any* ptr) {
   return !! dynamic_cast<Base*>(ptr);
 }
 
-
 // trim from https://stackoverflow.com/a/217605
 
 // trim from start (in place)
@@ -36,17 +35,7 @@ static inline void trim(std::string &s) {
     rtrim(s);
 }
 
-class ParseError : public std::runtime_error {
-public:
-  ParseError(std::string message);
-  virtual const char* what() const noexcept override {
-    return message.c_str();
-  }
-private:
-  std::string message;
-};
-
-static std::string path_leaf(std:: string path) {
+static std::string path_leaf(std::string path) {
   size_t last_bsl = path.find_last_of("\\");
   size_t last_rsl = path.find_last_of("/");
   
@@ -66,7 +55,7 @@ static std::string path_leaf(std:: string path) {
   return path.substr(sep+1,path.length() - sep-1);
 }
 
-static std::string path_directory(std:: string path) {
+static std::string path_directory(std::string path) {
   size_t last_bsl = path.find_last_of("\\");
   size_t last_rsl = path.find_last_of("/");
   
@@ -86,14 +75,33 @@ static std::string path_directory(std:: string path) {
   return path.substr(0,sep+1);
 }
 
+// from https://stackoverflow.com/a/24315631
+static std::string replace_all(std::string str, const std::string& from, const std::string& to) {
+    size_t start_pos = 0;
+    while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+        str.replace(start_pos, from.length(), to);
+        start_pos += to.length();
+    }
+    return str;
+}
+
+// converts / and \\ to native path separator
+static inline std::string native_path(std::string path) {
+  #ifdef _WIN32
+  return replace_all(path,"/","\\");
+  #elif defined __unix__
+  return replace_all(path,"\\","/");
+  #endif
+}
+
 static inline std::string read_file_contents(std::string path_to_file) {
   std::string line;
   std::string out;
   
-  std::ifstream infile(path_to_file);
+  std::ifstream infile(native_path(path_to_file));
   while (getline(infile, line))
   {
-      out += line+"\n";
+      out += line + "\n";
   }
   
   return out;
@@ -104,10 +112,28 @@ static inline std::string read_file_contents(std::ifstream& infile) {
   std::string line;
   while (getline(infile, line))
   {
-      out += line+"\n";
+      out += line + "\n";
   }
   
   return out;
+}
+
+static std::pair<int,int> first_difference(std::string a, std::string b) {
+  if (a == b)
+    return std::pair<int, int>(-1,-1);
+  
+  int line = 1;
+  for (int x=0;x<std::min(a.size(),b.size());x++) {
+    if (a[x] != b[x])
+      return std::pair<int, int>(x,line);
+    if (a[x] == '\n')
+      line ++;
+  }
+  
+  return std::pair<int, int> (
+    std::min(a.size(),b.size()),
+    line
+  );
 }
 
 #endif /* UTIL_H */

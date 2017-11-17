@@ -1,12 +1,14 @@
 #include <cctype>
+#include <sstream>
 
 #include "tokenstream.h"
+#include "util.h"
 
 using namespace std;
 
 Token::Token(const TokenType type, const std::string value):
   type(type),
-  value(value),
+  value(value)
 { }
 
 Token::Token(): Token(ERR,"")
@@ -44,12 +46,21 @@ std::ostream &operator<<(std::ostream &os,const Token &token) {
   return os << TOKEN_NAME[token.type] << ": " << token.value;
 }
 
-TokenStream::TokenStream(istream* istream): is(istream), next(END,"")  {
+TokenStream::TokenStream(istream* istream): is(istream), next(END,""), istream_mine(false) {
   read();
 }
 
 std::pair<int,int> TokenStream::location() const {
-  return std::pair(row, col);
+  return std::pair<int, int>(row, col);
+}
+
+TokenStream::TokenStream(std::string s): is(new std::stringstream(s)), next(END,""), istream_mine(true) {
+  read();
+}
+
+TokenStream::~TokenStream() {
+  if (istream_mine)
+    delete(is);
 }
   
 char TokenStream::read_char() {
@@ -75,13 +86,11 @@ Token TokenStream::read_string() {
     if (c == terminal) break;
     if (is->eof())
       return Token(ERR,"Unterminated string");    
-    if (c == '\\')
-      c = read_char();
-    if (is->eof())
-      return Token(ERR,"Unterminated string");
     val += c;
   }
-  return Token(STR,val);
+  std::string terminal_str = " ";
+  terminal_str[0] = terminal;
+  return Token(STR,terminal_str + val + terminal_str);
 }
 
 Token TokenStream::read_number() {
@@ -144,6 +153,10 @@ Token TokenStream::read_comment_multiline() {
   while (true) {
     if (is->eof()) break;
     c = read_char();
+    if (c == -1 || is->eof()) {
+      rtrim(val);
+      break;
+    }
     if (c == '*') {
       char c2;
       c2 = read_char();
@@ -212,6 +225,8 @@ const char* KEYWORDS[] = {
   "if",
   "else",
   "while",
+  "do",
+  "until",
   "with",
   "for",
   "switch",
@@ -355,6 +370,11 @@ bool TokenStream::is_punc_char(const
 }
 
 LLKTokenStream::LLKTokenStream(istream* is, int k): TokenStream(is), k(k) {
+  while (buffer.size() < k - 1 && !TokenStream::eof())
+    buffer.push_back(TokenStream::read());
+}
+
+LLKTokenStream::LLKTokenStream(std::string s, int k): TokenStream(s), k(k) {
   while (buffer.size() < k - 1 && !TokenStream::eof())
     buffer.push_back(TokenStream::read());
 }

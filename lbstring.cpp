@@ -1,5 +1,6 @@
 #include "beautify.h"
 #include "lbstring.h"
+#include "util.h"
 
 LBString::LBString(LBTreeType type): type(type) {
   if (type == FORCE)
@@ -163,6 +164,18 @@ void LBString::extend(const LBString& other, bool do_append) {
   }
 }
 
+void LBString::new_line() {
+  if (type != LIST) {
+    if (type != FORCE)
+      extend(FORCE);
+  } else if (list.back().type != FORCE) {
+    if (list.back().type == LIST)
+      list.back().new_line();
+    else
+      extend(FORCE);
+  }
+}
+
 void LBString::arrange(const BeautifulConfig& config, int indent) {
   indent += contents_indented;
   if (config.columns < 0)
@@ -223,8 +236,43 @@ void LBString::arrange_sublist(const BeautifulConfig& config, int indent, int st
 }
 
 std::string LBString::to_string(const BeautifulConfig& config, int indent, bool mark_nesting) { 
+  trim();
   arrange(config, indent);
   return to_string_unarranged(config, indent, mark_nesting);
+}
+
+void LBString::trim(bool left, bool right) {
+  switch (type) {
+    case LIST:
+      if (left) {
+        while (!list.empty()) {
+          if (list.front().type >= PAD)
+            list.erase(list.begin());
+          else {
+            list.front().trim(true, false);
+            break;
+          }
+        }
+      }
+      if (right) {
+        while (!list.empty()) {
+          if (list.back().type >= PAD)
+            list.pop_back();
+          else {
+            list.back().trim(false, true);
+            break;
+          }
+        }
+      }
+      break;
+    case CHUNK:
+      if (left) {
+        ltrim(chunk);
+      }
+      if (right) {
+        rtrim(chunk);
+      }
+  }
 }
 
 std::string LBString::to_string_unarranged(const BeautifulConfig& config, int indent, bool mark_nesting) const {
