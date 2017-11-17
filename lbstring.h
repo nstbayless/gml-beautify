@@ -41,6 +41,7 @@ public:
   void new_line();
   
   void arrange(const BeautifulConfig&, int indent);
+  void trim(bool left = true, bool right = false);
   std::string to_string_unarranged(const BeautifulConfig&, int indent = 0, bool mark_nest = false) const;
   
   // arranges and the returns string

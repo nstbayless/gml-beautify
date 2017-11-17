@@ -3,6 +3,7 @@
 using namespace std;
 
 Parser::Parser(istream* is): ts(is, 4) { }
+Parser::Parser(std::string s): ts(s, 4) { }
 
 Production* Parser::read() {
   if (ts.peek().type == END || ts.peek().type == ERR)

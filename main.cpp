@@ -21,6 +21,7 @@ int main (int argn, char** argv) {
   bool test_suite = false;
   bool mark_nesting = false;
   bool beautify_project = false;
+  bool dry = false;
   const char* filename = "in.gml";
   for (int i=1;i<argn;i++) {
     if (strncmp(argv[i],"--",2) == 0) {
@@ -40,6 +41,9 @@ int main (int argn, char** argv) {
       if (strcmp(arg,"project") == 0) {
         beautify_project = true;
       }
+      if (strcmp(arg,"dry") == 0) {
+        dry = true;
+      }
     } else {
       filename = argv[i];
     }
@@ -54,7 +58,7 @@ int main (int argn, char** argv) {
   if (beautify_project) {
     Project* p = new Project(filename);
     p->read_project_file();
-    p->beautify(config, true);
+    p->beautify(config, dry);
     if (test_suite) {
       p->beautify(config);
     }

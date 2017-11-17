@@ -5,6 +5,7 @@
 #include "test.h"
 #include "resource/script.h"
 #include "error.h"
+#include "parser.h"
 
 #include <iostream>
 #include <fstream>
@@ -133,6 +134,10 @@ void Project::read_resource_tree(ResourceTree& root, void* xml_v, ResourceType t
 
 void Project::beautify(BeautifulConfig bc, bool dry) {
   beautify_script_tree(bc, dry, resourceTree.list[SCRIPT]);
+  
+  if (dry) {
+    std::cout<<"Dry run succeeded."<<std::endl;
+  }
 }
 
 void Project::beautify_script_tree(BeautifulConfig bc, bool dry, ResourceTree& tree) {
@@ -149,10 +154,12 @@ void Project::beautify_script(BeautifulConfig bc, bool dry, ResScript& script) {
   std::string beautified_script;
   std::string raw_script;
   
-  std::cout<<"beautify "<<native_path(root+script.path)<<std::endl;
+  std::string path = native_path(root+script.path);
+  
+  std::cout<<"beautify "<<path<<std::endl;
   
   // read in script
-  raw_script = read_file_contents(root + script.path);
+  raw_script = read_file_contents(path);
   
   // test
   std::stringstream ss(raw_script);
@@ -160,9 +167,14 @@ void Project::beautify_script(BeautifulConfig bc, bool dry, ResScript& script) {
     throw TestError("Error while testing " + script.path);
   
   // beautify
-  
+  Parser p(raw_script);
+  Production* syntree = p.parse();
+  std::string beautiful = syntree->beautiful(bc).to_string(bc);
+  delete(syntree);
   
   if (!dry) {
-    // write out
+    std::ofstream out(path);
+    out << beautiful;
+    std::cout<<"writing output to "<<path<<std::endl;
   }
 }

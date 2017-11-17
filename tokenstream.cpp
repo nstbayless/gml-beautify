@@ -1,4 +1,5 @@
 #include <cctype>
+#include <sstream>
 
 #include "tokenstream.h"
 
@@ -46,10 +47,18 @@ std::ostream &operator<<(std::ostream &os,const Token &token) {
   return os << TOKEN_NAME[token.type] << ": " << token.value;
 }
 
-TokenStream::TokenStream(istream* istream): is(istream), next(END,"")  {
+TokenStream::TokenStream(istream* istream): is(istream), next(END,""), istream_mine(false) {
   read();
 }
 
+TokenStream::TokenStream(std::string s): is(new std::stringstream(s)), next(END,""), istream_mine(true) {
+  read();
+}
+
+TokenStream::~TokenStream() {
+  if (istream_mine)
+    delete(is);
+}
   
 char TokenStream::read_char() {
   char c = is->get();
@@ -354,6 +363,11 @@ bool TokenStream::is_punc_char(const
 }
 
 LLKTokenStream::LLKTokenStream(istream* is, int k): TokenStream(is), k(k) {
+  while (buffer.size() < k - 1 && !TokenStream::eof())
+    buffer.push_back(TokenStream::read());
+}
+
+LLKTokenStream::LLKTokenStream(std::string s, int k): TokenStream(s), k(k) {
   while (buffer.size() < k - 1 && !TokenStream::eof())
     buffer.push_back(TokenStream::read());
 }
