@@ -14,7 +14,8 @@ bool check_comments_identical(TokenStream&, TokenStream&);
 bool check_logic_identical(TokenStream&, TokenStream&);
 bool check_idempotent(std::string, BeautifulConfig& );
 
-bool perform_tests(istream& is, BeautifulConfig& config) {
+bool perform_tests(istream& is, BeautifulConfig config) {
+  BeautifulConfig c2(config);
   std::string s_is;
   std::string line;
   while (getline(is, line)) {
@@ -26,6 +27,7 @@ bool perform_tests(istream& is, BeautifulConfig& config) {
   Production* root = parser.parse();
   config.force_double_equals_comparison = false;
   config.compare_style = 0;
+  config.comment_space = false;
   config.cond_parens = 0;
   string s = root->beautiful(config).to_string(config);
   delete(root);
@@ -54,7 +56,7 @@ bool perform_tests(istream& is, BeautifulConfig& config) {
   if (check_logic_identical(lex_com_pre, lex_com_post))
     return true;
   
-  if (check_idempotent(s_is, config)) {
+  if (check_idempotent(s_is, c2)) {
     std::cout<<"Idempotence failed."<<std::endl;
     return true;
   } else std::cout<<"Idempotence test passed."<<std::endl;
