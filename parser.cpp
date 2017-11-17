@@ -285,7 +285,6 @@ PrStatementIf* Parser::read_statement_if() {
     siphonWS(p->otherwise, p, true);
     read_statement_end();
     ignoreWS(p, true);
-    removeExtraNewline(p);
   }
   return p;
 }
