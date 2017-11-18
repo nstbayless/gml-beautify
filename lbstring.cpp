@@ -235,8 +235,8 @@ void LBString::arrange_sublist(const BeautifulConfig& config, int indent, int st
   }
 }
 
-std::string LBString::to_string(const BeautifulConfig& config, int indent, bool mark_nesting) { 
-  trim();
+std::string LBString::to_string(const BeautifulConfig& config, int indent, bool mark_nesting, bool ltrim, bool rtrim) { 
+  trim(ltrim, rtrim);
   arrange(config, indent);
   return to_string_unarranged(config, indent, mark_nesting);
 }
@@ -250,6 +250,18 @@ void LBString::trim(bool left, bool right) {
             list.erase(list.begin());
           else {
             list.front().trim(true, false);
+            if (list.front().type == LIST) {
+              if (list.front().list.size() == 0) {
+                list.erase(list.begin());
+                continue;
+              }
+            }
+            if (list.front().type == CHUNK) {
+              if (list.front().chunk.size() == 0) {
+                list.erase(list.begin());
+                continue;
+              }
+            }
             break;
           }
         }
@@ -260,6 +272,18 @@ void LBString::trim(bool left, bool right) {
             list.pop_back();
           else {
             list.back().trim(false, true);
+            if (list.back().type == LIST) {
+              if (list.back().list.size() == 0) {
+                list.pop_back();
+                continue;
+              }
+            }
+            if (list.back().type == CHUNK) {
+              if (list.back().chunk.size() == 0) {
+                list.pop_back();
+                continue;
+              }
+            }
             break;
           }
         }

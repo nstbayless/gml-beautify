@@ -403,8 +403,9 @@ LBString PrBody::beautiful(const BeautifulConfig& config, BeautifulContext conte
   }
   
   LBString s2;
-  s2.indent();
-    
+  if (!is_root) {
+    s2.indent();
+  }
   // trim config
   bool l_trim = config.trim_block;
   bool r_trim = config.trim_block;
@@ -666,7 +667,9 @@ LBString PrCase::beautiful(const BeautifulConfig& config, BeautifulContext conte
 LBString beautify_comment(std::string in, const BeautifulConfig& config, BeautifulContext context) {
   if (!config.comment_space)
     return in;
-    
+
+  rtrim(in);
+  
   std::string out = in.substr(0,2);
   
   // find first meaningful character and prepend a space

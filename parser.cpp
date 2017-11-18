@@ -42,7 +42,7 @@ PrDecor* Parser::read_rawtoken() {
   return new PrDecor(ts.read());
 }
 
-PrStatement* Parser::read_statement() {  
+PrStatement* Parser::read_statement() {
   string value(ts.peek().value);
   switch (ts.peek().type) {
   case WS:
@@ -95,6 +95,8 @@ PrStatement* Parser::read_statement() {
     }
   case OPR:
     return read_assignment();
+  default:
+    throw ParseError("unexpected token \"" + value + "\" when a statement was expected instead.", ts.location());
   }
 }
 

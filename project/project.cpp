@@ -197,7 +197,7 @@ void Project::beautify_object_tree(BeautifulConfig bc, bool dry, ResourceTree& t
 void Project::beautify_object(BeautifulConfig bc, bool dry, ResObject& obj) {
   std::string path = native_path(root+obj.path);
   pugi::xml_document doc;
-  pugi::xml_parse_result result = doc.load_file(path.c_str());
+  pugi::xml_parse_result result = doc.load_file(path.c_str(), pugi::parse_default | pugi::parse_escapes);
   
   std::cout<<"beautify "<<path<<std::endl;
   

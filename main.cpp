@@ -75,10 +75,12 @@ int main (int argn, char** argv) {
     if (!test_suite) {
       Parser parser(&inFile);
       Production* p;
+      bool first = true;
       while (p = parser.read()) {
         switch (print_style) {
           case BEAUTIFUL:
-            cout << p->beautiful(config).to_string(config,0,mark_nesting) << "\n";
+            cout << p->beautiful(config).to_string(config,0,mark_nesting,first,false) << "\n";
+            first = false;
             break;
           case PRODUCTIONS:
             cout << p->to_string() + "\n";

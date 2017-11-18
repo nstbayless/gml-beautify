@@ -41,11 +41,11 @@ public:
   void new_line();
   
   void arrange(const BeautifulConfig&, int indent);
-  void trim(bool left = true, bool right = false);
+  void trim(bool left = true, bool right = true);
   std::string to_string_unarranged(const BeautifulConfig&, int indent = 0, bool mark_nest = false) const;
   
   // arranges and the returns string
-  std::string to_string(const BeautifulConfig&, int indent = 0, bool mark_nest = false);
+  std::string to_string(const BeautifulConfig&, int indent = 0, bool mark_nest = false, bool ltrim=true, bool rtrim=true);
 private:
   std::string get_indent_string(const BeautifulConfig&, int indent = 0) const;
   void arrange_sublist(const BeautifulConfig&, int indent, int start_index, int end_index);
