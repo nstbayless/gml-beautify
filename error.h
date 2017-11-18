@@ -11,11 +11,13 @@
 //! when parsing causes an error
 class ParseError : public std::exception {
 public:
-  ParseError(std::string message, std::pair<int,int> location) : message(message), location(location) { }
-  virtual const char* what() const noexcept override {
-    return (message + "\n  at row "
+  ParseError(std::string message, std::pair<int,int> location) :
+  message(message + "\n    at row "
             + std::to_string(location.first)
-            + ", column " + std::to_string(location.second)).c_str();
+            + ", column " + std::to_string(location.second)),
+  location(location) { }
+  virtual const char* what() const noexcept override {
+    return message.c_str();
   }
 private:
   std::string message;

@@ -137,7 +137,7 @@ void Project::read_resource_tree(ResourceTree& root, void* xml_v, ResourceType t
 }
 
 void Project::beautify(BeautifulConfig bc, bool dry) {
-  //beautify_script_tree(bc, dry, resourceTree.list[SCRIPT]);
+  beautify_script_tree(bc, dry, resourceTree.list[SCRIPT]);
   beautify_object_tree(bc, dry, resourceTree.list[OBJECT]);
   
   if (dry) {
