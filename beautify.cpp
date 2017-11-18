@@ -410,6 +410,7 @@ LBString PrBody::beautiful(const BeautifulConfig& config, BeautifulContext conte
   bool l_trim = config.trim_block;
   bool r_trim = config.trim_block;
   
+  bool empty = true;
   // add productions within block
   for (int i=0;i<productions.size();i++) {
     auto p = productions[i];
@@ -433,6 +434,7 @@ LBString PrBody::beautiful(const BeautifulConfig& config, BeautifulContext conte
         continue;
     }
     l_trim = false;
+    empty = false;
      
     // trim blank lines at end [final iteration]
     if (i == productions.size() - 1 && r_trim) {
@@ -447,7 +449,7 @@ LBString PrBody::beautiful(const BeautifulConfig& config, BeautifulContext conte
   }
   
   s.append(s2);
-  if (productions.size() > 0)
+  if (!empty)
     s += LBString(FORCE);
   else
     s += LBString(PAD);
@@ -618,6 +620,7 @@ LBString PrSwitch::beautiful(const BeautifulConfig& config, BeautifulContext con
   s += renderWS(config, context.as_internal_eol());
   
   if (cases.size() == 0 && !config.egyptian) {
+    context.never_semicolon = true;
     return s + LBString(FORCE) + "{ }" + end_statement_beautiful(config, context);
   }
   
