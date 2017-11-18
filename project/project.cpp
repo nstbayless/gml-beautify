@@ -138,7 +138,7 @@ void Project::read_resource_tree(ResourceTree& root, void* xml_v, ResourceType t
 
 void Project::beautify(BeautifulConfig bc, bool dry) {
   beautify_script_tree(bc, dry, resourceTree.list[SCRIPT]);
-  //beautify_object_tree(bc, dry, resourceTree.list[OBJECT]);
+  beautify_object_tree(bc, dry, resourceTree.list[OBJECT]);
   
   if (dry) {
     std::cout<<"Dry run succeeded."<<std::endl;
@@ -174,7 +174,7 @@ void Project::beautify_script(BeautifulConfig bc, bool dry, ResScript& script) {
   // beautify
   Parser p(raw_script);
   Production* syntree = p.parse();
-  std::string beautiful = syntree->beautiful(bc).to_string(bc);
+  std::string beautiful = syntree->beautiful(bc).to_string(bc)+"\n";
   delete(syntree);
   
   if (!dry) {
@@ -225,7 +225,7 @@ void Project::beautify_object(BeautifulConfig bc, bool dry, ResObject& obj) {
         // beautify
         Parser p(raw_code);
         Production* syntree = p.parse();
-        std::string beautiful = syntree->beautiful(bc).to_string(bc);
+        std::string beautiful = syntree->beautiful(bc).to_string(bc)+"\n";
         delete(syntree);
         
         if (!dry) {
