@@ -379,7 +379,8 @@ LBString PrStatementFn::beautiful(const BeautifulConfig& config, BeautifulContex
 }
 
 LBString PrVarDeclaration::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  LBString s = identifier.value;
+  LBString s;
+  s += identifier.value;
   if (definition)
     s += " =" + LBString(PAD) + definition->beautiful(config, context);
   return s;
