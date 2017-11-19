@@ -19,6 +19,7 @@ class LBString {
   LBTreeType type;
   std::vector<LBString> list;
   bool contents_indented = false;
+  float break_cost = 1;
   std::string chunk;
   
   //! true if this is a linebreak
@@ -44,9 +45,11 @@ public:
   void trim(bool left = true, bool right = true);
   std::string to_string_unarranged(const BeautifulConfig&, int indent = 0, bool mark_nest = false) const;
   
-  // arranges and the returns string
+  //! arranges and the returns string
   std::string to_string(const BeautifulConfig&, int indent = 0, bool mark_nest = false, bool ltrim=true, bool rtrim=true);
 private:
+  //! flattens list except for indented sub-lists after newline
+  void flatten_to_indent();
   std::string get_indent_string(const BeautifulConfig&, int indent = 0) const;
   void arrange_sublist(const BeautifulConfig&, int indent, int start_index, int end_index);
 };

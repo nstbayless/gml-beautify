@@ -263,7 +263,7 @@ LBString PrExprParen::beautiful(const BeautifulConfig& config, BeautifulContext 
 
 LBString PrExpressionFn::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   LBString s = identifier.value + renderWS(config, context) + "(";
-  s.extend(join_productions(args, ", ", config, context, this));
+  s.extend(join_productions(args, "," + LBString(PAD), config, context, this));
   s += ")";
   s += renderWS(config, context);
   return s;

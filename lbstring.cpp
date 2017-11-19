@@ -186,6 +186,7 @@ void LBString::arrange(const BeautifulConfig& config, int indent) {
   if (type != LIST)
     return;
   
+  
   // only lists need arranging
   // find indexes of all forced breaks, arrange intervening portions separately
   int previous_break = 0;
@@ -202,12 +203,35 @@ void LBString::arrange(const BeautifulConfig& config, int indent) {
    arrange_sublist(config, indent, previous_break, list.size());
 }
 
+void LBString::flatten_to_indent() {
+  for (int i=0;i<list.size();i++) {
+    if (list[i].type == LIST) {
+      if (list[i].list.empty())
+        list.erase(list.begin() + i);
+      else {
+        // pop element from front
+        if (!list[i].contents_indented || list[i].list.front().type != FORCE) {
+          list.insert(list.begin()+i, list[i].list.front());
+          list[i+1].list.erase(list.begin());
+        }
+      }
+    }
+  }
+}
+
 void LBString::arrange_sublist(const BeautifulConfig& config, int indent, int start, int end) {
+  std::vector<float> opt_break_costs;
+  std::vector<int> opt_next_break;
+  opt_break_costs.push_back(0);
+  opt_next_break.push_back(0);
+  
   // gather data on what break points are available
   std::vector<int> break_indices;
   std::vector<unsigned int> chunk_lengths;
+  break_indices.push_back(0);
+  chunk_lengths.push_back(0);
+
   unsigned int cc = 0;
-  int max_width = config.columns - indent * config.indent_spaces_per_tab;
   for (int i=start;i<end;i++) {
     if (list[i].type == CHUNK)
       cc += list[i].chunk.length();
@@ -216,25 +240,42 @@ void LBString::arrange_sublist(const BeautifulConfig& config, int indent, int st
     if (list[i].type >= PAD) {
       break_indices.push_back(i);
       chunk_lengths.push_back(cc);
+      opt_break_costs.push_back(list[i].break_cost);
+      opt_next_break.push_back(i+1);
       cc = 0;
     }
   }
   
   break_indices.push_back(-1);
   chunk_lengths.push_back(cc);
+  opt_break_costs.push_back(0);
+  opt_next_break.push_back(-1);
+  int max_width_first = config.columns - indent * config.indent_spaces_per_tab;
+  int max_width_etc = max_width_first - config.indent_spaces_per_tab * config.premature_linebreak_indent;
   
-  // assign pads taken
-  int acc_width = 0;
-  int row_start_length = config.indent_spaces_per_tab * config.premature_linebreak_indent;
-  for (int i=0;i<break_indices.size();i++) {
-    if (acc_width > row_start_length) {
-      if (chunk_lengths[i] + acc_width > max_width) {
-        acc_width = row_start_length;
-        list[break_indices[i - 1]].taken = true;
-      }
+  // DP solution for linebreaking
+  for (int i = break_indices.size()-2; i>=0; i--) {
+    int min_next_id = i+1;
+    int nonbreak_width = 0;
+    int max_width = (i == 0)? max_width_first : max_width_etc;
+    // scan over next breakpoints and pick minimum
+    for (int j = i + 1; j < break_indices.size();j++) {
+      // make sure we don't go beyond chunk size
+      nonbreak_width += chunk_lengths[j];
+      if (nonbreak_width > max_width)
+        break;
+      
+      // check how this breakpoint compares as next:
+      if (opt_break_costs[j] <= opt_break_costs[min_next_id])
+        min_next_id = j;
     }
-    
-    acc_width += chunk_lengths[i];
+    opt_break_costs[i] += opt_break_costs[min_next_id];
+    opt_next_break[i] = min_next_id;
+  }
+  
+  // follow DP solution:
+  for (int s=opt_next_break[0];opt_next_break[s] != -1;s = opt_next_break[s]) {
+    list[break_indices[s]].taken = true;
   }
 }
 
@@ -303,6 +344,9 @@ void LBString::trim(bool left, bool right) {
 }
 
 std::string LBString::to_string_unarranged(const BeautifulConfig& config, int indent, bool mark_nesting) const {
+  std::string mts = "";
+  if (mark_nesting)
+    mts = "^";
   switch (type) {
     case LIST: {
       std::string s = "";
@@ -326,10 +370,10 @@ std::string LBString::to_string_unarranged(const BeautifulConfig& config, int in
     case CHUNK:
       return chunk;
     case PAD: 
-      if (!taken) return " ";
+      if (!taken) return mts + " ";
     case NOPAD:
-      if (!taken) return "";
-      return "\n" + get_indent_string(config, indent + config.premature_linebreak_indent);
+      if (!taken) return mts;
+      return mts + "\n" + get_indent_string(config, indent + config.premature_linebreak_indent);
     case FORCE:
       return "\n" + get_indent_string(config, indent);
   }
