@@ -387,7 +387,7 @@ LBString PrVarDeclaration::beautiful(const BeautifulConfig& config, BeautifulCon
 }
 
 LBString PrStatementVar::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  LBString s = "var " + join_productions(declarations, "," + LBString(PAD), config, context);
+  LBString s = "var " + join_productions(declarations, "," + LBString(PAD), config, context, this);
   s += end_statement_beautiful(config, context.force_semicolon());
   return s;
 }
