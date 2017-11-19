@@ -138,6 +138,7 @@ struct PrStatementVar: PrStatement {
   virtual std::string to_string();
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
   
+  std::string type;
   std::vector<PrVarDeclaration*> declarations;
 };
 
