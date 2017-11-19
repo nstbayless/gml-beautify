@@ -62,8 +62,11 @@ void LBString::append(LBString other) {
       
       // glue chunks together
       if (other.type == CHUNK && back == CHUNK) {
-        if (other.chunk.front() == ' ' && chunk.back() == ' ')
-          chunk.pop_back();
+        if (other.chunk == "")
+          return;
+        else if (list.back().chunk != "")
+          if (other.chunk.front() == ' ' && list.back().chunk.back() == ' ')
+            list.back().chunk.pop_back();
         other.chunk = list.back().chunk + other.chunk;
         list.pop_back();
       }
