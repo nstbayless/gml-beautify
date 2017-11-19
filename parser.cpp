@@ -213,7 +213,7 @@ PrExprArithmetic* Parser::read_arithmetic(PrExpression* lhs) {
   if (ts.peek() == Token(OP,"!") || ts.peek() == Token(KW,"not") || ts.peek() == Token(OP,"~"))
     throw ParseError("unexpected unary operator after expression", ts.location());
   if (ts.peek().type == OPR) {
-    new PrExprArithmetic(lhs, ts.read(), nullptr);
+    return new PrExprArithmetic(lhs, ts.read(), nullptr);
   }
   Token op = ts.read();
   PrExprArithmetic* p = new PrExprArithmetic(lhs, op, nullptr);
