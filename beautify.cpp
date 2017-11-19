@@ -303,7 +303,7 @@ LBString PrExprArithmetic::beautiful(const BeautifulConfig& config, BeautifulCon
   if (op == Token(PUNC,"."))
     l_space = r_space = false;
   
-  if (op == Token(OP,"-") && !lhs)
+  if ((op == Token(OP,"-") || op == Token(OP,"+")) && !lhs)
     r_space = false;
   
   // (keywords absolutely need spaces to be parsed)
@@ -708,8 +708,9 @@ LBString PrInfixWS::beautiful(const BeautifulConfig& config, BeautifulContext co
   // render nested infixes:
   context.no_single_newline=false;
   for (int i=0;i<infixes.size();i++)
-    if (infixes[i])
+    if (infixes[i]) {
       s += infixes[i]->beautiful(config, context);
+    }
   
   // pad right
   s += LBString(PAD);

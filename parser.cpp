@@ -130,8 +130,8 @@ PrAssignment* Parser::read_assignment() {
 PrExpression* Parser::read_term() {
   PrExpression* to_return = 0;
   Token t(ts.peek());
-  if (t == Token(OP,"-")   || t == Token(OP,"!") ||
-      t == Token(KW,"not") || t == Token(OP,"~") || t.type == OPR) {
+  if (t == Token(OP,"-")   || t == Token(OP,"!") || t == Token(OP,"+")
+      || t == Token(KW,"not") || t == Token(OP,"~") || t.type == OPR) {
     // unary operator term
     PrExprArithmetic* p = new PrExprArithmetic(nullptr, ts.read(),read_expression());
     siphonWS(p->rhs,p,true);
