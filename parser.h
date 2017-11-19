@@ -177,6 +177,14 @@ struct PrWhile: PrStatement {
   PrStatement* event;
 };
 
+struct PrRepeat: PrStatement {
+  virtual std::string to_string();
+  virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
+  
+  PrExpression* count;
+  PrStatement* event;
+};
+
 struct PrDo: PrStatement {
   virtual std::string to_string();
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
@@ -260,6 +268,7 @@ private:
   PrFor* read_for();
   PrWith* read_with();
   PrWhile* read_while();
+  PrRepeat* read_repeat();
   PrDo* read_do();
   PrSwitch* read_switch();
   void assert_peek(Token t, std::string message) const;

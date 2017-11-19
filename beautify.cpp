@@ -569,6 +569,23 @@ LBString PrWhile::beautiful(const BeautifulConfig& config, BeautifulContext cont
   return s;
 }
 
+LBString PrRepeat::beautiful(const BeautifulConfig& config, BeautifulContext context) {
+  LBString s = "repeat";
+  s += LBString(PAD);
+  s += renderWS(config, context);
+  s += paren_wrap(count,config,context);
+  s += renderWS(config, context.as_internal_eol());
+  s += LBString(PAD);
+  if (!hangable(config, event, true))
+    s += LBString(FORCE);
+  s.extend(event->beautiful(config, context).indent(!hangable(config,event)), !hangable(config, event));
+  
+  // end of statement
+  context.never_semicolon = true;
+  s += end_statement_beautiful(config, context);
+  return s;
+}
+
 LBString PrDo::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   LBString s = "do";
   s += renderWS(config, context.as_internal_eol());

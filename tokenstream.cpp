@@ -226,6 +226,7 @@ const char* KEYWORDS[] = {
   "if",
   "else",
   "while",
+  "repeat",
   "do",
   "until",
   "with",

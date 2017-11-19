@@ -58,6 +58,8 @@ PrStatement* Parser::read_statement() {
       return read_for();
     else if (value == "while")
       return read_while();
+    else if (value == "repeat")
+      return read_repeat();
     else if (value == "do")
       return read_do();
     else if (value == "with")
@@ -485,6 +487,18 @@ PrWhile* Parser::read_while() {
   ignoreWS(p);
   p->condition = read_expression();
   siphonWS(p->condition, p, false, true);
+  p->event = read_statement();
+  siphonWS(p->event, p, true);
+  return p;
+}
+
+PrRepeat* Parser::read_repeat() {
+  PrRepeat* p = new PrRepeat();
+  assert_peek(Token(KW,"repeat"), "%unexpected; expected \"repeat\" statement.");
+  ts.read(); // repeat
+  ignoreWS(p);
+  p->count = read_expression();
+  siphonWS(p->count, p, false, true);
   p->event = read_statement();
   siphonWS(p->event, p, true);
   return p;
