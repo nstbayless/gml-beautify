@@ -282,28 +282,25 @@ PrStatementVar* Parser::read_statement_var() {
   if (ts.peek() != Token(KW,"globvar"))
     assert_peek(Token(KW,"var"),"%unexpected while expecting var declaration");
   p->type = ts.read().value; // read "var"
-  
   while (true) {
-    // read var names:
     ignoreWS(p);
     if (ts.peek().type != ID)
       throw ParseError("Unexpected token \"" + ts.peek().value + "\" while reading var declaration; expected variable name.", ts.location());
     PrVarDeclaration* d = new PrVarDeclaration(ts.read());
-    ignoreWS(p);
+    ignoreWS(d);
     if (ts.peek() == Token(OP,"=")) {
       ts.read();
-      ignoreWS(p);
+      ignoreWS(d);
       d->definition = read_expression();
     }
-    p->declarations.push_back(d);
     ignoreWS(p);
+    p->declarations.push_back(d);
     if (ts.peek() == Token(PUNC,",")) {
       ts.read();
       continue;
     }
     break;
   }
-  
   return p;
 }
 

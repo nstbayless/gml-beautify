@@ -381,13 +381,19 @@ LBString PrStatementFn::beautiful(const BeautifulConfig& config, BeautifulContex
 LBString PrVarDeclaration::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   LBString s;
   s += identifier.value;
-  if (definition)
-    s += " =" + LBString(PAD) + definition->beautiful(config, context);
+  s += renderWS(config, context);
+  if (definition) {
+    s += " =";
+    s += LBString(PAD);
+    s += renderWS(config, context);
+    s += definition->beautiful(config, context);
+  }
   return s;
 }
 
 LBString PrStatementVar::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  LBString s = type + " " + join_productions(declarations, "," + LBString(PAD), config, context, this);
+  LBString s = type + " ";
+  s += join_productions(declarations, "," + LBString(PAD), config, context, this);
   s += end_statement_beautiful(config, context.force_semicolon());
   return s;
 }
