@@ -259,7 +259,8 @@ LBString PrDecor::beautiful(const BeautifulConfig& config, BeautifulContext cont
 
 LBString PrExprParen::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   context.cost_mult *= 3;
-  LBString s = "(" + LBString(NOPAD, 5 * context.cost_mult) + content->beautiful(config, context) + ")";
+  LBString s = "(" + LBString(NOPAD, 5 * context.cost_mult) + renderWS(config, context);
+  s += content->beautiful(config, context) + ")";
   return s + renderWS(config, context);
 }
 

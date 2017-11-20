@@ -271,6 +271,7 @@ PrExprParen* Parser::read_expression_parentheses() {
   
   assert_peek(Token(PUNC,"("),"%unexpected while expecting open parenthesis \"(\"");
   ts.read(); //(
+  ignoreWS(p);
   
   p->content = read_expression();
   
