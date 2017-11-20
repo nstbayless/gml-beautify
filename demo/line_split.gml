@@ -1,6 +1,6 @@
 if (func(long_arg, long_arg_2
-        + long_arg_3, long_arg_444444444444444444444444444444
-            * long_arg_7))
+        + long_arg_3, s * s * s * s *
+        s * s * s * s * s * s * s * s))
 {
     // blah
 }
@@ -11,3 +11,4 @@ a = __________ + __________31;
 a = __________
         + ___________32;
 
+if a if b if c break

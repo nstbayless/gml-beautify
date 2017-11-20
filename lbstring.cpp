@@ -2,7 +2,7 @@
 #include "lbstring.h"
 #include "util.h"
 
-LBString::LBString(LBTreeType type): type(type) {
+LBString::LBString(LBTreeType type, float cost): type(type), break_cost(cost) {
   if (type == FORCE)
     taken = true;
 }
@@ -16,6 +16,7 @@ LBString::LBString(const LBString& other) {
   chunk = other.chunk;
   contents_indented = other.contents_indented;
   taken = other.taken;
+  break_cost = other.break_cost;
 }
 
 void LBString::operator+=(const LBString& other) {
@@ -73,13 +74,15 @@ void LBString::append(LBString other) {
       
       // consecutive no-pads
       if (other.type == NOPAD && back == NOPAD) {
+        list.back().break_cost = std::max(break_cost, other.break_cost);
         return;
       }
       
       // consecutive pads
       if ((other.type == PAD || other.type == NOPAD) && (back == PAD  || back == NOPAD)) {
+        float cost = std::max(list.back().break_cost, other.break_cost);
         list.pop_back();
-        list.push_back(LBString(PAD));
+        list.push_back(LBString(PAD, cost));
         return;
       } 
       

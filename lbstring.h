@@ -26,7 +26,7 @@ class LBString {
   bool taken = false;
   
 public:
-  LBString(LBTreeType type = LIST);
+  LBString(LBTreeType type = LIST, float cost = 1);
   LBString(std::string chunk);
   LBString(const char* chunk);
   LBString(const LBString& other);

@@ -80,6 +80,9 @@ struct BeautifulContext {
   //! do not render single newlines (disabled for postfixes)
   bool no_single_newline = true;
   
+  //! linbreaking cost multiplier
+  float cost_mult = 1;
+  
   // 0: not eol, 1: eol, 2: internal eol
   char eol = 0;
   
