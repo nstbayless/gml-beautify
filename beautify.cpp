@@ -264,7 +264,7 @@ LBString PrExprParen::beautiful(const BeautifulConfig& config, BeautifulContext 
 }
 
 LBString PrExpressionFn::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  LBString s = identifier.value + renderWS(config, context) + "(" + LBString(NOPAD, 2 * context.cost_mult);
+  LBString s = identifier.value + renderWS(config, context) + "(" + LBString(NOPAD, 7 * context.cost_mult);
   s.extend(join_productions(args, "," + LBString(PAD), config, context, this));
   s += ")";
   s += renderWS(config, context);
@@ -274,6 +274,8 @@ LBString PrExpressionFn::beautiful(const BeautifulConfig& config, BeautifulConte
 LBString PrExprArithmetic::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   bool l_space = true;
   bool r_space = true;
+  
+  float break_cost = 3;
   
   // adjust operator for some config options:
   if (op.value == "=" && config.force_double_equals_comparison)
@@ -314,6 +316,11 @@ LBString PrExprArithmetic::beautiful(const BeautifulConfig& config, BeautifulCon
     r_space = true;
   }
   
+  // breaking after or before parentheses looks prettier
+  if (lhs && rhs)
+    if (is_a<PrExpressionFn>(lhs) || is_a<PrExprParen>(lhs) || is_a<PrExprParen>(rhs))
+      break_cost *= 0.5;
+  
   // beautiful string:
   LBString s;   
   
@@ -321,7 +328,7 @@ LBString PrExprArithmetic::beautiful(const BeautifulConfig& config, BeautifulCon
     s += lhs->beautiful(config,context);
     if (l_space) {
       if (rhs && config.op_end_line)
-        s += LBString(PAD,3);
+        s += LBString(PAD, break_cost*context.cost_mult);
       else
         s += " ";
     }
@@ -334,7 +341,7 @@ LBString PrExprArithmetic::beautiful(const BeautifulConfig& config, BeautifulCon
   if (rhs) {
     if (r_space) {
       if (lhs && !config.op_end_line)
-        s += LBString(PAD,3);
+        s += LBString(PAD, break_cost*context.cost_mult);
       else
         s += " ";
     }

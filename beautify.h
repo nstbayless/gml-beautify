@@ -22,7 +22,7 @@ struct BeautifulConfig {
   int indent_spaces_per_tab = 4;
   
   //! column width (-1 means arbitrary)
-  int columns = 80;
+  int columns = 30;
   
   //! number of linebreaks if wrapping
   int premature_linebreak_indent = 2;

@@ -1,6 +1,7 @@
 if (func(long_arg, long_arg_2
         + long_arg_3, s * s * s * s *
-        s * s * s * s * s * s * s * s))
+        func(s * s * s * s * s * s * s * s) * s * s * s * s * s * s
+        * s * s * s * s) + a + b + c + d)
 {
     // blah
 }

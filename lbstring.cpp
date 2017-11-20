@@ -349,7 +349,7 @@ void LBString::trim(bool left, bool right) {
 std::string LBString::to_string_unarranged(const BeautifulConfig& config, int indent, bool mark_nesting) const {
   std::string mts = "";
   if (mark_nesting)
-    mts = "^";
+    mts = "^" + std::to_string((int)(break_cost*10));
   switch (type) {
     case LIST: {
       std::string s = "";
