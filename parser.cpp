@@ -13,15 +13,15 @@ float get_op_priority(const Token& t) {
       t.value == "<" ||
       t.value == ">" ||
       t.value == "=")
-    return 1.5f;
+    return 2.1f;
   if (t.value == "||" ||
       t.value == "or")
-    return 2;
+    return 0.8;
   if (t.value == "&&" ||
       t.value == "^^" ||
       t.value == "and" ||
       t.value == "xor")
-    return 2.5f;
+    return 1.2f;
   if (t.value == "+" ||
     t.value == "-")
       return 4;

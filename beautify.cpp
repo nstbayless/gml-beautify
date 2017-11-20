@@ -265,8 +265,11 @@ LBString PrExprParen::beautiful(const BeautifulConfig& config, BeautifulContext 
 }
 
 LBString PrExpressionFn::beautiful(const BeautifulConfig& config, BeautifulContext context) {
-  LBString s = identifier.value + renderWS(config, context) + "(" + LBString(NOPAD, 7 * context.cost_mult);
-  s.extend(join_productions(args, "," + LBString(PAD), config, context, this));
+  LBString s = identifier.value + renderWS(config, context) + "(";
+  if (args.size() > 0) {
+    s += LBString(NOPAD, 5 * context.cost_mult);
+    s.extend(join_productions(args, "," + LBString(PAD), config, context, this));
+  }
   s += ")";
   s += renderWS(config, context);
   return s;
@@ -374,7 +377,7 @@ LBString PrAssignment::beautiful(const BeautifulConfig& config, BeautifulContext
     s += " ";
   s += op.value;
   if (rhs) {
-    s += LBString(PAD, 8 * context.cost_mult);
+    s += " ";
     s += renderWS(config, context);
     s += rhs->beautiful(config,context);
   }
@@ -636,9 +639,8 @@ LBString PrAccessorExpression::beautiful(const BeautifulConfig& config, Beautifu
   if (acc.length() > 0) {
     s += acc;
     if (config.accessor_space)
-      s += LBString(PAD, 128 * context.cost_mult);
+      s += " ";
   }
-  s += LBString(NOPAD, 256 * context.cost_mult);
   s += join_productions(indices, "," + LBString(PAD, 3 * context.cost_mult), config, context, this);
   s += "]";
   return s;
@@ -679,7 +681,7 @@ LBString PrSwitch::beautiful(const BeautifulConfig& config, BeautifulContext con
 LBString PrCase::beautiful(const BeautifulConfig& config, BeautifulContext context) {
   LBString s;
   if (value) {
-    s += "case" + LBString(PAD, 23 * context.cost_mult);
+    s += "case ";
     s += renderWS(config, context);
     s += value->beautiful(config, context);
     s += renderWS(config, context);
@@ -687,7 +689,7 @@ LBString PrCase::beautiful(const BeautifulConfig& config, BeautifulContext conte
     s += "default";
     s += renderWS(config, context);
   }
-  s += ":"  + LBString(PAD, 4 * context.cost_mult) + renderWS(config, context.as_internal_eol());
+  s += ":" + renderWS(config, context.as_internal_eol());
   LBString s2;
   for (auto p: productions) {
     s2 += LBString(FORCE) +  p->beautiful(config, context);
