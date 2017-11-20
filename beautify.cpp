@@ -276,8 +276,6 @@ LBString PrExprArithmetic::beautiful(const BeautifulConfig& config, BeautifulCon
   bool l_space = true;
   bool r_space = true;
   
-  float break_cost = 3;
-  
   // adjust operator for some config options:
   if (op.value == "=" && config.force_double_equals_comparison)
     op.value = "==";
@@ -297,6 +295,8 @@ LBString PrExprArithmetic::beautiful(const BeautifulConfig& config, BeautifulCon
     op = Token(OP,"||");
   if (op.value == "xor" && config.compare_style == 1)
     op = Token(OP,"^^");
+    
+  float break_cost = get_op_priority(op);
   
   // determine whether to put spacing on side of operator
   if (!config.opr_space && op.type == OPR)

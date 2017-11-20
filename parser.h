@@ -10,6 +10,8 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+float get_op_priority(const Token&);
+
 struct Production {
   friend class Parser;
   virtual ~Production();

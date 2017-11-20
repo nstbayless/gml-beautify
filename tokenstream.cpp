@@ -30,6 +30,8 @@ bool Token::is_op_keyword() {
       return true;
     if (value == "or")
       return true;
+if (value == "xor")
+      return true;
     if (value == "mod")
       return true;
     if (value == "div")
@@ -182,6 +184,7 @@ const char* op_multichar[] = {
   "==",
   "||",
   "&&",
+  "^^",
   "!=",
   "+=",
   "%=",
@@ -241,6 +244,7 @@ const char* KEYWORDS[] = {
   "not",
   "and",
   "or",
+  "xor",
   "mod",
   "div",
 };

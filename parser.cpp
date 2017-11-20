@@ -4,6 +4,30 @@
 
 using namespace std;
 
+float get_op_priority(const Token& t) {
+  if (t.type == OPR)
+    return 5;
+  if (t.value == "==" ||
+      t.value == "<=" ||
+      t.value == ">=" ||
+      t.value == "<" ||
+      t.value == ">" ||
+      t.value == "=")
+    return 1.5f;
+  if (t.value == "||" ||
+      t.value == "or")
+    return 2;
+  if (t.value == "&&" ||
+      t.value == "^^" ||
+      t.value == "and" ||
+      t.value == "xor")
+    return 2.5f;
+  if (t.value == "+" ||
+    t.value == "-")
+      return 4;
+  return 3;
+}
+
 Parser::Parser(istream* is): ts(is, 2) { }
 Parser::Parser(std::string s): ts(s, 2) { }
 
