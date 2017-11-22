@@ -57,7 +57,7 @@ Resource& ResourceTableEntry::get() {
       ptr = new ResScript(path);
       break;
     case OBJECT:
-      ptr = new ResObject(path + ".object.gmx");
+      ptr = new ResObject(path);
       break;
   }
   return *ptr;
@@ -95,6 +95,20 @@ void Project::read_project_file() {
   }
 }
 
+const char* RESOURCE_EXTENSION[] = {
+  ".sprite.gmx",
+  "", //sounds
+  ".background.gmx",
+  "", //paths
+  "", // scripts already have .gml listed in the project file
+  "", //shaders
+  "", //fonts
+  "", //timelines
+  ".object.gmx",
+  ".room.gmx",
+  "" // constants do not have file associations
+};
+
 void Project::read_resource_tree(ResourceTree& root, void* xml_v, ResourceType t) {
   pugi::xml_document& xml = *(pugi::xml_document*)xml_v;
   
@@ -113,7 +127,7 @@ void Project::read_resource_tree(ResourceTree& root, void* xml_v, ResourceType t
       root.list.push_back(ResourceTree());
       root.list.back().type = t;
       std::string value = node.text().get();
-      ResourceTableEntry rte(t,value);
+      ResourceTableEntry rte(t,this->root + value + RESOURCE_EXTENSION[t]);
       std::string name;
       if (t == CONSTANT) {
         // constants are defined directly in the .project.gmx file; no additional cost
@@ -151,36 +165,7 @@ void Project::beautify_script_tree(BeautifulConfig bc, bool dry, ResourceTree& t
       beautify_script_tree(bc, dry, iter);
     }    
   } else {
-    beautify_script(bc, dry, (ResScript&)resourceTable[tree.rtkey].get());
-  }
-}
-
-void Project::beautify_script(BeautifulConfig bc, bool dry, ResScript& script) {
-  std::string beautified_script;
-  std::string raw_script;
-  
-  std::string path = native_path(root+script.path);
-  
-  std::cout<<"beautify "<<path<<std::endl;
-  
-  // read in script
-  raw_script = read_file_contents(path);
-  
-  // test
-  std::stringstream ss(raw_script);
-  if (perform_tests(ss, bc))
-    throw TestError("Error while testing " + script.path);
-  
-  // beautify
-  Parser p(raw_script);
-  Production* syntree = p.parse();
-  std::string beautiful = syntree->beautiful(bc).to_string(bc)+"\n";
-  delete(syntree);
-  
-  if (!dry) {
-    std::ofstream out(path);
-    out << beautiful;
-    std::cout<<"writing output to "<<path<<std::endl;
+    resourceTable[tree.rtkey].get().beautify(bc, dry);
   }
 }
 
@@ -190,71 +175,6 @@ void Project::beautify_object_tree(BeautifulConfig bc, bool dry, ResourceTree& t
       beautify_object_tree(bc, dry, iter);
     }    
   } else {
-    beautify_object(bc, dry, (ResObject&)resourceTable[tree.rtkey].get());
-  }
-}
-
-void Project::beautify_object(BeautifulConfig bc, bool dry, ResObject& obj) {
-  std::string path = native_path(root+obj.path);
-  pugi::xml_document doc;
-  pugi::xml_parse_result result = doc.load_file(path.c_str(), pugi::parse_default | pugi::parse_escapes | pugi::parse_comments);
-  
-  std::cout<<"beautify "<<path<<std::endl;
-  
-  pugi::xml_node node_object = doc.child("object");
-  pugi::xml_node node_events = node_object.child("events");
-  // if no events, skip
-  if (node_events.child("event").empty())
-    return;
-  for (pugi::xml_node event: node_events.children("event")) {
-    std::string event_type = event.attribute("eventtype").value();
-    std::string enumb = event.attribute("enumb").value();
-    int action_n = 0;
-    for (pugi::xml_node action: event.children("action")) {
-      // is code event:
-      if (action.child("kind").text().get() == std::string("7") &&
-          action.child("id").text().get() == std::string("603")) {
-        std::string descriptor = path + ", event type " + event_type + ", enumb " + enumb;
-        std::cout<<"beautify "<<descriptor<<std::endl;
-        // read 
-        auto node_code = action.child("arguments").child("argument").child("string");
-        std::string raw_code = node_code.text().get();
-        
-        // test
-        std::stringstream ss(raw_code);
-        if (perform_tests(ss, bc))
-          throw TestError("Error while testing " + descriptor);
-        
-        // beautify
-        Parser p(raw_code);
-        Production* syntree = p.parse();
-        std::string beautiful = syntree->beautiful(bc).to_string(bc)+"\n";
-        delete(syntree);
-        
-        if (!dry) {
-          node_code.text() = beautiful.c_str();
-        }
-      }
-      action_n ++;
-    }
-  }
-  
-  if (!dry) {
-    // output reformatted object
-    std::stringstream ssf;
-    doc.save(ssf, "  ", pugi::format_default | pugi::format_no_empty_element_tags | pugi::format_no_declaration);
-    std::string sf(ssf.str());
-    
-    // reformat pernicious <PhysicsShapePoints/> tag
-    auto psp_index = sf.rfind("<PhysicsShapePoints>");
-    if (psp_index != std::string::npos) {
-      std::string sf_last(sf.substr(psp_index, sf.size() - psp_index));
-      sf_last = replace_all(sf_last,"<PhysicsShapePoints></PhysicsShapePoints>","<PhysicsShapePoints/>");
-      
-      sf = sf.substr(0,psp_index) + sf_last;
-    }
-    
-    std::ofstream out(path.c_str());
-    out << sf;
+    resourceTable[tree.rtkey].get().beautify(bc, dry);
   }
 }

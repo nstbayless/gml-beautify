@@ -1,4 +1,3 @@
-
 #include "resource.h"
 
 #ifndef RESOURCE_OBJECT_H
@@ -7,6 +6,8 @@
 class ResObject : public Resource {
 public:
   ResObject(std::string path);
+  void beautify(BeautifulConfig bc, bool dry = false);
+  
   std::string path;
 };
 
