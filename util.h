@@ -136,4 +136,10 @@ static std::pair<int,int> first_difference(std::string a, std::string b) {
   );
 }
 
+static bool ends_with(const std::string& full, const std::string& suffix) {
+  if (suffix.length() > full.length())
+    return false;
+  return (full.substr(full.length() - suffix.length(), suffix.length()) == suffix);
+}
+
 #endif /* UTIL_H */

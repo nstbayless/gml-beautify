@@ -7,14 +7,15 @@
 class Resource
 { 
   //! beautifies resource file in-place.
+  //! also returns a string of the beautified text.
   public:
-    virtual void beautify(BeautifulConfig bc, bool dry = false) = 0;
+    virtual std::string beautify(BeautifulConfig bc, bool dry = false) = 0;
 };
 
 class ResConstant : public Resource {
 public:
   std::string value;
-  virtual void beautify(BeautifulConfig bc, bool dry = false) { };
+  virtual std::string beautify(BeautifulConfig bc, bool dry = false) {return value;};
 };
 
 enum ResourceType {

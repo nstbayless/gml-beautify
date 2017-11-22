@@ -9,6 +9,7 @@
 #include "test.h"
 #include "error.h"
 #include "project/project.h"
+#include "project/resource/object.h"
 
 using namespace std;
 
@@ -38,9 +39,6 @@ int main (int argn, char** argv) {
       if (strcmp(arg, "mark-nest") == 0) {
         mark_nesting = true;
       }
-      if (strcmp(arg,"project") == 0) {
-        beautify_project = true;
-      }
       if (strcmp(arg,"dry") == 0) {
         dry = true;
       }
@@ -55,13 +53,21 @@ int main (int argn, char** argv) {
     filename = argv[1];
   }
   
-  if (beautify_project) {
+  // beautify project
+  if (ends_with(filename,".project.gmx")) {
     Project* p = new Project(filename);
     p->read_project_file();
     p->beautify(config, dry);
     if (test_suite) {
       p->beautify(config);
     }
+    return 0;
+  }
+  
+  // beautify object
+  if (ends_with(filename,".object.gmx")) {
+    ResObject obj(filename);
+    std::cout<<obj.beautify(config, dry);
     return 0;
   }
   

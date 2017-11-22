@@ -7,7 +7,7 @@
 class ResScript : public Resource {
 public:
   ResScript(std::string path);
-  void beautify(BeautifulConfig bc, bool dry = false);
+  std::string beautify(BeautifulConfig bc, bool dry = false);
   
   std::string path;
 };

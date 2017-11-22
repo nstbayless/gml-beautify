@@ -9,7 +9,7 @@
 ResScript::ResScript(std::string path): path(path)
 { }
 
-void ResScript::beautify(BeautifulConfig bc, bool dry) {
+std::string ResScript::beautify(BeautifulConfig bc, bool dry) {
   std::string beautified_script;
   std::string raw_script;
 
@@ -36,4 +36,5 @@ void ResScript::beautify(BeautifulConfig bc, bool dry) {
     out << beautiful;
     std::cout<<"writing output to "<<path<<std::endl;
   }
+  return beautiful;
 }
