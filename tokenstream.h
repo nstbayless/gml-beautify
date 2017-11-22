@@ -94,7 +94,7 @@ private:
   
   Token read_next();
   Token read_string();
-  Token read_number();
+  Token read_number(bool hex = false);
   Token read_comment();
   Token read_comment_multiline();
   Token read_operator();

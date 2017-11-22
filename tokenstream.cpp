@@ -95,22 +95,19 @@ Token TokenStream::read_string() {
   return Token(STR,terminal_str + val + terminal_str);
 }
 
-Token TokenStream::read_number() {
+Token TokenStream::read_number(bool hex) {
   unsigned char c;
   string val;
-  val += "";
-  bool encountered_dot = false;;
+  bool encountered_dot = false;
   int position = 0;
+  if (hex)
+    val += read_char(); //$
   while (true) {
     if (is->eof())
       break;
     c = read_char();
-    if (position == 0 && c == '#') {
-      val += c;
-      continue;
-    }
     position += 1;
-    if (c >= '0' && c <= '9') {
+    if ((c >= '0' && c <= '9') || (hex && ((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')))) {
       val += c;
       continue;
     }
@@ -299,12 +296,13 @@ Token TokenStream::read_next() {
     is->putback(in);
     return read_number();
   }
-  if ((in == '.' || in == '#') &&! is->eof()) {
+  if ((in == '.' || in == '$') &&! is->eof()) {
     unsigned char in2;
     in2 = read_char();
     is->putback(in2);
-    if (in2 >= '0' && in2 <= '9') {
-      return read_number();
+    if ((in2 >= '0' && in2 <= '9') || in == '$') {
+      is->putback(in);
+      return read_number(in == '$');
     }
   }
   if (in == '/' &&! is->eof()) {
