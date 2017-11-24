@@ -42,6 +42,9 @@ int main (int argn, char** argv) {
       if (strcmp(arg,"dry") == 0) {
         dry = true;
       }
+      if (strcmp(arg,"dry-run") == 0) {
+        dry = true;
+      }
     } else {
       filename = argv[i];
     }
