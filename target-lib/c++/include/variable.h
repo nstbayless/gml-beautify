@@ -8,6 +8,7 @@ namespace ogm
 { 
   typedef double real;
   typedef unsigned char byte;
+  typedef std::wstring string;
   
   enum VariableType {
     VT_REAL, // real number
@@ -19,29 +20,39 @@ namespace ogm
   class Variable {
   public:
     Variable(real);
-    Variable(std::string);
+    Variable(string);
     Variable(std::vector<Variable>);
     Variable(void*);
     Variable(const Variable&);
     ~Variable();
     
     Variable& set(real);
-    Variable& set(std::string);
+    Variable& set(string);
     Variable& set(const std::vector<Variable>&);
     Variable& set(void*);
     Variable& set(const Variable&);
     
     Variable& operator=(real);
-    Variable& operator=(std::string);
+    Variable& operator=(string);
     Variable& operator=(void*);
     Variable& operator=(const Variable&);
     
+    bool operator==(const Variable&);
+    bool operator>=(const Variable&);
+    bool operator>(const Variable&);
+    bool operator<=(const Variable&);
+    bool operator<(const Variable&);
+    
     real operator+(real);
-    std::string operator+(std::string);
+    string operator+(string);
     Variable operator+(const Variable&);
     Variable& operator+=(real);
-    Variable& operator+=(std::string);
+    Variable& operator+=(string);
     Variable& operator+=(const Variable&);
+    
+    real operator-(real);
+    Variable operator-(const Variable&);
+    Variable& operator-=(const Variable&);
     
     Variable& operator[](int i);
     Variable& operator[](const Variable&);
@@ -49,7 +60,7 @@ namespace ogm
     inline VariableType get_type() {return (VariableType)hdr;}
     
     real get_real() const;
-    std::string get_string() const;
+    string get_string() const;
     std::vector<Variable>& get_vector_ref() const;
     void* get_ptr() const;
     

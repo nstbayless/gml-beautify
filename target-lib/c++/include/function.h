@@ -3,12 +3,19 @@
 #ifndef OGMFN_H
 #define OGMFN_H
 
-namespace ogm {
+namespace ogm
+{
   typedef void* C;
   typedef const Variable V;
   typedef Variable VO;
-  namespace fn {
+  namespace fn
+  {
     #include "fn/fn_math.h"
+    #include "fn/fn_string.h"
+  }
+  namespace prop
+  {
+    #include "fn/prop.h"
   }
 }
 

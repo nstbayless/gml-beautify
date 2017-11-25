@@ -8,7 +8,7 @@ ogm::Variable::Variable(real r)
   set(r);
 }
 
-ogm::Variable::Variable(std::string s)
+ogm::Variable::Variable(string s)
 {
   set(s);
 }
@@ -42,11 +42,11 @@ ogm::Variable& ogm::Variable::set(real r)
   return *this;
 }
 
-ogm::Variable& ogm::Variable::set(std::string s)
+ogm::Variable& ogm::Variable::set(string s)
 {
   cleanup();
   hdr = VT_STRING;
-  *(std::string**)(&val[0]) = new std::string(s);
+  *(string**)(&val[0]) = new string(s);
   return *this;
 }
 
@@ -85,7 +85,7 @@ ogm::Variable& ogm::Variable::operator=(real r)
   return set(r);
 }
 
-ogm::Variable& ogm::Variable::operator=(std::string s)
+ogm::Variable& ogm::Variable::operator=(string s)
 {
   return set(s);
 }
@@ -95,9 +95,47 @@ ogm::Variable& ogm::Variable::operator=(void* ptr)
   return set(ptr);
 }
 
-ogm::Variable& ogm::Variable::operator=(const Variable& other)
+ogm::Variable& ogm::Variable::operator=(const ogm::Variable& other)
 {
   return set(other);
+}
+
+bool ogm::Variable::operator==(const ogm::Variable& other)
+{
+  if (other.get_type() == get_type())
+  switch (get_type())
+  {
+    case VT_REAL:
+      return get_real() == other.get_real();
+    case VT_STRING:
+      return get_string() == other.get_string();
+    case VT_ARRAY:
+      throw TypeError("cannot compare arrays.");
+      return false;
+    case VT_PTR:
+      return get_ptr() == other.get_ptr()
+  }
+  return false;
+}
+
+bool ogm::Variable::operator>=(const ogm::Variable& other)
+{
+  return get_real() >= other.get_real();
+}
+
+bool ogm::Variable::operator>(const ogm::Variable& other)
+{
+  return get_real() > other.get_real();
+}
+
+bool ogm::Variable::operator<=(const ogm::Variable& other)
+{
+  return get_real() <= other.get_real();
+}
+
+bool ogm::Variable::operator<(const ogm::Variable& other)
+{
+  return get_real() < other.get_real();
 }
 
 void ogm::Variable::cleanup()
@@ -117,10 +155,10 @@ real ogm::Variable::get_real() const
   return *(real*)(&val[0]);
 }
 
-std::string& ogm::Variable::get_string() const
+string& ogm::Variable::get_string() const
 {
   check_type(VT_STRING);
-  return **(std::string**)(&val[0]);
+  return **(string**)(&val[0]);
 }
 
 std::vector<ogm::Variable>& ogm::Variable::get_vector_ref() const
@@ -140,12 +178,12 @@ real ogm::Variable::operator+(real r)
   return get_real() + r;
 }
 
-std::string ogm::Variable::operator+(std::string s)
+string ogm::Variable::operator+(string s)
 {
   return string(get_string() + s)
 }
 
-ogm::Variable ogm::Variable::operator+(const Variable& other)
+ogm::Variable ogm::Variable::operator+(const ogm::Variable& other)
 {
   switch (get_type()) {
     case VT_REAL:
@@ -153,6 +191,7 @@ ogm::Variable ogm::Variable::operator+(const Variable& other)
     case VT_STRING:
       return Variable(get_string() + other.get_string());
   }
+  throw TypeError("cannot add non-real / non-string types");
 }
 
 ogm::Variable& ogm::Variable::operator+=(real r)
@@ -161,16 +200,32 @@ ogm::Variable& ogm::Variable::operator+=(real r)
   return *this;
 }
 
-ogm::Variable& ogm::Variable::operator+=(std::string s)
+ogm::Variable& ogm::Variable::operator+=(string s)
 {
   set(get_string() + s);
   return *this;
 }
 
-ogm::Variable& ogm::Variable::operator+=(const Variable& other)
+ogm::Variable& ogm::Variable::operator+=(const ogm::Variable& other)
 {
   auto altvar = *this + other;
   return (*this = altvar);
+}
+
+real operator-(real r)
+{
+  return get_real() - r;
+}
+
+ogm::Variable operator-(const ogm::Variable& other)
+{
+  return get_real() - other.get_real();
+}
+
+ogm::Variable& operator-=(const ogm::Variable& other)
+{
+  get_real() -= other.get_real();
+  return *this;
 }
 
 Variable& operator[](int i)
@@ -178,12 +233,12 @@ Variable& operator[](int i)
   return get_array_ref()[i];
 }
 
-Variable& operator[](const Variable& other)
+Variable& operator[](const ogm::Variable& other)
 {
   return get_array_ref()[(int)other.get_real()];
 }
 
 void check_type(VariableType vt) {
   if (get_type() != vt)
-    throw TypeError("Expected type " + std::to_string(vt)+ ", was type " + std::string(get_type()));
+    throw TypeError("Expected type " + std::to_string(vt)+ ", was type " + string(get_type()));
 }
