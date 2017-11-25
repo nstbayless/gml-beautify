@@ -12,6 +12,7 @@ namespace ogm
   {
     #include "fn/fn_math.h"
     #include "fn/fn_string.h"
+    #include "fn/fn_debug.h"
   }
   namespace prop
   {

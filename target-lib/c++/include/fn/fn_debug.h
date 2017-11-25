@@ -1,0 +1,12 @@
+VO debug_mode(C);
+VO get_integer(C, V& prompt);
+VO get_integer(C, V& prompt, V& def);
+VO get_string(C, V& prompt);
+VO get_string(C, V& prompt, V& def);
+void show_message(C, V& msg);
+VO show_question(C, V& msg);
+void show_debug_message(C, V& msg);
+void show_debug_overlay(C, V& enable);
+VO code_is_compiled(C);
+VO fps(C);
+VO fps_real(C);
