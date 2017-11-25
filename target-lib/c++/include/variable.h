@@ -60,6 +60,8 @@ namespace ogm
     byte hdr = (byte)VT_REAL;
     byte val[8];
   };
+  
+  typedef Variable var;
 }
 
 #endif /*OGM_VARIABLE_H*/

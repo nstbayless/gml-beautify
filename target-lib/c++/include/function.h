@@ -8,7 +8,7 @@ namespace ogm {
   typedef const Variable V;
   typedef Variable VO;
   namespace fn {
-    #include "functionlist.h"
+    #include "fn/fn_math.h"
   }
 }
 
