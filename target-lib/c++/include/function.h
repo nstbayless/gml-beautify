@@ -1,11 +1,12 @@
 #include "variable.h"
+#include "context.h"
 
 #ifndef OGMFN_H
 #define OGMFN_H
 
 namespace ogm
 {
-  typedef void* C;
+  typedef Context& C;
   typedef const Variable V;
   typedef Variable VO;
   namespace fn

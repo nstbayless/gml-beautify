@@ -6,6 +6,7 @@
 
 namespace ogm
 { 
+  typedef unsigned int VariableID;
   typedef double real;
   typedef unsigned char byte;
   typedef std::wstring string;
@@ -15,7 +16,7 @@ namespace ogm
     VT_STRING, // string
     VT_ARRAY, // untyped array
     VT_PTR // other data
-  }
+  };
   
   class Variable {
   public:

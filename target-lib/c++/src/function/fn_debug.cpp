@@ -56,7 +56,7 @@ VO show_question(C, V& msg)
 
 void show_debug_message(C, V& msg)
 {
-  std::cout<<msg.get_string()<<std::endl;
+  std::cout<<string(msg).get_string()<<std::endl;
 }
 
 void show_debug_overlay(C, V& enable)
