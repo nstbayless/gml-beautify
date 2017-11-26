@@ -3,14 +3,14 @@
 
 using namespace ogm;
 
-ogm::Variable::Variable(real r)
+ogm::Variable::Variable(real_t r)
 {
   set(r);
 }
 
 ogm::Variable::Variable(int r)
 {
-  set((real)r);
+  set((real_t)r);
 }
 
 ogm::Variable::Variable(string s)
@@ -43,11 +43,11 @@ ogm::Variable::~Variable()
   cleanup();
 }
 
-ogm::Variable& ogm::Variable::set(real r)
+ogm::Variable& ogm::Variable::set(real_t r)
 {
   cleanup();
   hdr = VT_REAL;
-  *(real*)(&val[0]) = r;
+  *(real_t*)(&val[0]) = r;
 
   return *this;
 }
@@ -95,7 +95,7 @@ ogm::Variable& ogm::Variable::set(const ogm::Variable& other)
   }
 }
 
-ogm::Variable& ogm::Variable::operator=(real r)
+ogm::Variable& ogm::Variable::operator=(real_t r)
 {
   return set(r);
 }
@@ -169,10 +169,10 @@ void ogm::Variable::cleanup()
   return;
 }
 
-real ogm::Variable::get_real() const
+real_t ogm::Variable::get_real() const
 {
   check_type(VT_REAL);
-  return *(real*)(&val[0]);
+  return *(real_t*)(&val[0]);
 }
 
 const string& ogm::Variable::get_string() const
@@ -200,7 +200,7 @@ void* ogm::Variable::get_ptr() const
   return *(void**)(&val[0]);
 }
 
-real ogm::Variable::operator+(real r) const
+real_t ogm::Variable::operator+(real_t r) const
 {
   return get_real() + r;
 }
@@ -218,10 +218,10 @@ ogm::Variable ogm::Variable::operator+(const ogm::Variable& other) const
     case VT_STRING:
       return Variable(get_string() + other.get_string());
   }
-  throw TypeError("cannot add non-real / non-string types");
+  throw TypeError("cannot add non-real_t / non-string types");
 }
 
-ogm::Variable& ogm::Variable::operator+=(real r)
+ogm::Variable& ogm::Variable::operator+=(real_t r)
 {
   set(get_real() + r);
   return *this;
@@ -239,7 +239,7 @@ ogm::Variable& ogm::Variable::operator+=(const ogm::Variable& other)
   return (*this = altvar);
 }
 
-real ogm::Variable::operator-(real r) const
+real_t ogm::Variable::operator-(real_t r) const
 {
   return get_real() - r;
 }
@@ -251,7 +251,7 @@ ogm::Variable ogm::Variable::operator-(const ogm::Variable& other) const
 
 ogm::Variable& ogm::Variable::operator-=(const ogm::Variable& other)
 {
-  *(real*)(&val[0]) -= other.get_real();
+  *(real_t*)(&val[0]) -= other.get_real();
   return *this;
 }
 

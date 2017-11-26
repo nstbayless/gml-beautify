@@ -26,7 +26,7 @@ VO power(C, V& base, V& exponent)
 
 VO sqr(C, V& v)
 {
-  auto _v = v.get_real();
+  real _v = v.get_real();
   return(_v * _v);
 }
 

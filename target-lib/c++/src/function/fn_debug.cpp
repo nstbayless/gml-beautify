@@ -22,7 +22,7 @@ VO get_integer(C c, V& prompt)
 
 VO get_integer(C c, V& prompt, V& def)
 {
-  return round(real(get_string(c, prompt, string(def))));
+  return round(real_t(get_string(c, prompt, string(def))));
 }
 
 VO get_string(C c, V& prompt)

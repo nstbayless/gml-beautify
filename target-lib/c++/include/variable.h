@@ -7,12 +7,12 @@
 namespace ogm
 { 
   typedef unsigned int VariableID;
-  typedef double real;
+  typedef double real_t;
   typedef unsigned char byte;
   typedef std::wstring string;
   
   enum VariableType {
-    VT_REAL, // real number
+    VT_REAL, // real_t number
     VT_STRING, // string
     VT_ARRAY, // untyped array
     VT_PTR // other data
@@ -20,7 +20,7 @@ namespace ogm
   
   class Variable {
   public:
-    Variable(real);
+    Variable(real_t);
     Variable(int);
     Variable(string);
     Variable(const char*);
@@ -29,14 +29,14 @@ namespace ogm
     Variable(const Variable&);
     ~Variable();
     
-    Variable& set(real);
+    Variable& set(real_t);
     Variable& set(string);
     Variable& set(const char*);
     Variable& set(const std::vector<Variable>&);
     Variable& set(void*);
     Variable& set(const Variable&);
     
-    Variable& operator=(real);
+    Variable& operator=(real_t);
     Variable& operator=(string);
     Variable& operator=(const char*);
     Variable& operator=(void*);
@@ -48,14 +48,14 @@ namespace ogm
     bool operator<=(const Variable&) const;
     bool operator<(const Variable&) const;
     
-    real operator+(real) const;
+    real_t operator+(real_t) const;
     string operator+(string) const;
     Variable operator+(const Variable&) const;
-    Variable& operator+=(real);
+    Variable& operator+=(real_t);
     Variable& operator+=(string);
     Variable& operator+=(const Variable&);
     
-    real operator-(real) const ;
+    real_t operator-(real_t) const ;
     Variable operator-(const Variable&) const;
     Variable& operator-=(const Variable&);
     
@@ -66,7 +66,7 @@ namespace ogm
     
     inline VariableType get_type() const {return (VariableType)hdr;}
     
-    real get_real() const;
+    real_t get_real() const;
     const string& get_string() const;
     const std::vector<Variable>& get_vector_ref() const;
     std::vector<Variable>& get_vector_ref();

@@ -8,7 +8,7 @@
 using namespace ogm;
 using namespace ogm::fn;
 
-const real PI = 3.1415926535897;
+const real_t PI = 3.1415926535897;
 
 VO arccos(C, V& v)
 {

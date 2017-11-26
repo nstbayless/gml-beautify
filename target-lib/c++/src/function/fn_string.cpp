@@ -37,7 +37,7 @@ VO chr(C, V& v)
 
 VO ord(C, V& v)
 {
-  return (real)(unsigned wchar_t)_v(v.get_string()[0]);
+  return (real_t)(unsigned wchar_t)_v(v.get_string()[0]);
 }
 
 VO real(C, V& v)
@@ -67,7 +67,7 @@ VO string(C, V& v)
     }
     if (v.get_real() < 0)
       s = "-" + s;
-    real d = frac(v.get_real());
+    real_t d = frac(v.get_real());
     if (d!=0)
     {
       s += ".";
@@ -107,7 +107,7 @@ VO string(C, V& v)
 VO string_byte_at(C, V& v, V& pos)
 {
   std::string s = v.get_string();
-  return (real)s[(unsigned int)pos.get_real() - 1];
+  return (real_t)s[(unsigned int)pos.get_real() - 1];
 }
 
 VO string_byte_length(C, V& v)
