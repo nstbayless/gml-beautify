@@ -1,5 +1,6 @@
 #include "function.h"
 #include "variable.h"
+#include "error.h"
 
 #include <cassert>
 #include <cmath>
@@ -15,7 +16,7 @@ VO exp(C, V& v)
 
 VO ln(C, V& v)
 {
-  return ln(v.get_real());
+  return log(v.get_real());
 }
 
 VO power(C, V& base, V& exponent)
@@ -25,7 +26,7 @@ VO power(C, V& base, V& exponent)
 
 VO sqr(C, V& v)
 {
-  real _v = v.get_real();
+  auto _v = v.get_real();
   return(_v * _v);
 }
 
@@ -52,5 +53,5 @@ VO logn(C, V& v, V& n)
 VO int64(C, V& v)
 {
   throw NotImplementedError();
-  return floor(v);
+  return floor(v.get_real());
 }

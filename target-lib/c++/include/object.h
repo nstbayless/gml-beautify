@@ -13,7 +13,7 @@ namespace ogm
   {
   public:
     virtual const char* get_name() = 0;
-  }
+  };
 
   /**
     An instance of an object

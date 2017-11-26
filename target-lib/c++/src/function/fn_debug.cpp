@@ -1,5 +1,6 @@
 #include "function.h"
 #include "variable.h"
+#include "error.h"
 
 #include <string>
 #include <cassert>
@@ -14,19 +15,19 @@ VO debug_mode(C)
   return false;
 }
 
-VO get_integer(C, V& prompt)
+VO get_integer(C c, V& prompt)
 {
-  return get_integer(prompt, 0);
+  return get_integer(c, prompt, 0);
 }
 
-VO get_integer(C, V& prompt, V& def)
+VO get_integer(C c, V& prompt, V& def)
 {
-  return round(real(get_string(C, prompt, string(def))));
+  return round(real(get_string(c, prompt, string(def))));
 }
 
-VO get_string(C, V& prompt)
+VO get_string(C c, V& prompt)
 {
-  return get_string(prompt, "");
+  return get_string(c, prompt, "");
 }
 
 VO get_string(C, V& prompt, V& def)

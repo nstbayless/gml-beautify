@@ -28,10 +28,10 @@ VO frac(C, V&);
 VO abs(C, V&);
 VO sign(C, V&);
 VO ceil(C, V&);
-VO max(C, byte n, V&*);
-VO mean(C, byte n, V&*);
-VO median(C, byte n, V&*);
-VO min(C, byte n, V&*);
+VO max(C, byte n, V*);
+VO mean(C, byte n, V*);
+VO median(C, byte n, V*);
+VO min(C, byte n, V*);
 VO lerp(C, V& a, V& b, V& amt);
 VO clamp(C, V& val, V& min, V& max);
 

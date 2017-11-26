@@ -13,7 +13,7 @@ namespace ogm
 
   class __ObjGlobal: public Object
   {
-    const char* get_name() {return "?global"}
+    const char* get_name() {return "?global";}
   } ObjGlobal;
 
   /**

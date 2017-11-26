@@ -9,12 +9,12 @@ using namespace ogm::fn;
 
 VO round(C c, V& v)
 {
-  return std::round(v.get_real());
+  return round(v.get_real());
 }
 
 VO floor(C c, V& v)
 {
-  return std::floor(v.get_real());
+  return floor(v.get_real());
 }
 
 VO frac(C c, V& v)
@@ -24,12 +24,17 @@ VO frac(C c, V& v)
 
 VO abs(C c, V& v)
 {
-  return std::abs(v.get_real());
+  return abs(v.get_real());
 }
 
 VO sign(C c, V& v)
 {
-  return std::sign(v.get_real());
+  auto _v =  v.get_real();
+  if (_v == 0)
+    return 0;
+  if (_v < 0)
+    return -1;
+  return 1;
 }
 
 VO ceil(C c, V& v)
@@ -37,36 +42,36 @@ VO ceil(C c, V& v)
   return std::ceil(v.get_real());
 }
 
-VO max(C c, byte n, V&* v)
+VO max(C c, byte n, V* v)
 {
   assert(n >= 1);
-  real to_return = v[0].get_real();
+  auto to_return = v[0].get_real();
   for (byte i=1; i<n; i++)
   {
-    if (v[j].get_real() >= to_return)
-      to_return = v[j].get_real();
+    if (v[i].get_real() >= to_return)
+      to_return = v[i].get_real();
   }
   return to_return;
 }
 
-VO mean(C, byte n, V&* v)
+VO mean(C, byte n, V* v)
 {
   assert(n >= 1);
-  real sum = 0;
+  auto sum = 0;
   for (byte i=0; i < n; i++)
   {
-    sum += v[i];
+    sum += v[i].get_real();
   }
   return sum/(double)n;
 }
 
-VO median(C, byte n, V&*)
+VO median(C, byte n, V* v)
 {
   assert(n >= 1);
   byte req = n/2;
   for (byte i=0;i<n;i++)
   {
-    real cmp = v[i].get_real();
+    auto cmp = v[i].get_real();
     byte found = 0;
     for (byte j=0;j<n;j++)
     {
@@ -79,27 +84,36 @@ VO median(C, byte n, V&*)
   assert(false);
 }
 
-VO min(C, byte n, V&*)
+VO min(C, byte n, V* v)
 {
   assert(n >= 1);
-  real to_return = v[0].get_real();
+  auto to_return = v[0].get_real();
   for (byte i=1; i<n; i++)
   {
-    if (v[j].get_real() < to_return)
-      to_return = v[j].get_real();
+    if (v[i].get_real() < to_return)
+      to_return = v[i].get_real();
   }
   return to_return;
 }
 
 VO clamp(C c, V& val, V& min, V& max)
 {
-  return std::clamp(val.get_real(), min.get_real(), max.get_real());
+  if (val < min)
+    return min;
+  if (val >= max)
+    return max;
+  return val;
 }
 
 VO lerp(C c, V& a, V& b, V& amt)
 {
-  real _a = a.get_real();
-  real _b = b.get_real();
-  real _amt = std::clamp(amt.get_real(), 0, 1);
+  if (amt < 0)
+    return a;
+  if (amt >= b)
+    return b;
+   
+  auto _a = a.get_real();
+  auto _b = b.get_real();   
+  auto _amt = amt.get_real();
   return _amt * (_b - _a) + _a;
 }

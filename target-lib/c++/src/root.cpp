@@ -1,10 +1,11 @@
 #include "root.h"
+#include "context.h"
 
 using namespace ogm;
 
 class __ObjLaunchObject: public Object
 {
-  const char* get_name() {return "?instance"}
+  const char* get_name() {return "?instance";}
 } ObjLaunchObject;
 
 Root::Root(): global(ObjGlobal)

@@ -21,7 +21,9 @@ namespace ogm
   class Variable {
   public:
     Variable(real);
+    Variable(int);
     Variable(string);
+    Variable(const char*);
     Variable(std::vector<Variable>);
     Variable(void*);
     Variable(const Variable&);
@@ -29,45 +31,50 @@ namespace ogm
     
     Variable& set(real);
     Variable& set(string);
+    Variable& set(const char*);
     Variable& set(const std::vector<Variable>&);
     Variable& set(void*);
     Variable& set(const Variable&);
     
     Variable& operator=(real);
     Variable& operator=(string);
+    Variable& operator=(const char*);
     Variable& operator=(void*);
     Variable& operator=(const Variable&);
     
-    bool operator==(const Variable&);
-    bool operator>=(const Variable&);
-    bool operator>(const Variable&);
-    bool operator<=(const Variable&);
-    bool operator<(const Variable&);
+    bool operator==(const Variable&) const;
+    bool operator>=(const Variable&) const;
+    bool operator>(const Variable&) const;
+    bool operator<=(const Variable&) const;
+    bool operator<(const Variable&) const;
     
-    real operator+(real);
-    string operator+(string);
-    Variable operator+(const Variable&);
+    real operator+(real) const;
+    string operator+(string) const;
+    Variable operator+(const Variable&) const;
     Variable& operator+=(real);
     Variable& operator+=(string);
     Variable& operator+=(const Variable&);
     
-    real operator-(real);
-    Variable operator-(const Variable&);
+    real operator-(real) const ;
+    Variable operator-(const Variable&) const;
     Variable& operator-=(const Variable&);
     
+    const Variable& operator[](int i) const;
+    const Variable& operator[](const Variable&) const;
     Variable& operator[](int i);
     Variable& operator[](const Variable&);
     
-    inline VariableType get_type() {return (VariableType)hdr;}
+    inline VariableType get_type() const {return (VariableType)hdr;}
     
     real get_real() const;
-    string get_string() const;
-    std::vector<Variable>& get_vector_ref() const;
+    const string& get_string() const;
+    const std::vector<Variable>& get_vector_ref() const;
+    std::vector<Variable>& get_vector_ref();
     void* get_ptr() const;
     
   private:
     void cleanup();
-    void check_type(VariableType);
+    void check_type(VariableType) const;
 
     byte hdr = (byte)VT_REAL;
     byte val[8];

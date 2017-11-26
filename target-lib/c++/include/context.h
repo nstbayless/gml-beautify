@@ -14,6 +14,7 @@ namespace ogm
   */
   class Context
   {
+  public:
     Instance* instance = nullptr;
     Root* root = nullptr;
   };

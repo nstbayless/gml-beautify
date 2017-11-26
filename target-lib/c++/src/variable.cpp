@@ -8,7 +8,17 @@ ogm::Variable::Variable(real r)
   set(r);
 }
 
+ogm::Variable::Variable(int r)
+{
+  set((real)r);
+}
+
 ogm::Variable::Variable(string s)
+{
+  set(s);
+}
+
+ogm::Variable::Variable(const char* s)
 {
   set(s);
 }
@@ -48,6 +58,11 @@ ogm::Variable& ogm::Variable::set(string s)
   hdr = VT_STRING;
   *(string**)(&val[0]) = new string(s);
   return *this;
+}
+
+ogm::Variable& ogm::Variable::set(const char* s)
+{
+  set((wchar_t*)s);
 }
 
 ogm::Variable& ogm::Variable::set(const std::vector<ogm::Variable>& v)
@@ -90,6 +105,11 @@ ogm::Variable& ogm::Variable::operator=(string s)
   return set(s);
 }
 
+ogm::Variable& ogm::Variable::operator=(const char* s)
+{
+  return set(s);
+}
+
 ogm::Variable& ogm::Variable::operator=(void* ptr)
 {
   return set(ptr);
@@ -100,7 +120,7 @@ ogm::Variable& ogm::Variable::operator=(const ogm::Variable& other)
   return set(other);
 }
 
-bool ogm::Variable::operator==(const ogm::Variable& other)
+bool ogm::Variable::operator==(const ogm::Variable& other) const
 {
   if (other.get_type() == get_type())
   switch (get_type())
@@ -113,27 +133,27 @@ bool ogm::Variable::operator==(const ogm::Variable& other)
       throw TypeError("cannot compare arrays.");
       return false;
     case VT_PTR:
-      return get_ptr() == other.get_ptr()
+      return get_ptr() == other.get_ptr();
   }
   return false;
 }
 
-bool ogm::Variable::operator>=(const ogm::Variable& other)
+bool ogm::Variable::operator>=(const ogm::Variable& other) const
 {
   return get_real() >= other.get_real();
 }
 
-bool ogm::Variable::operator>(const ogm::Variable& other)
+bool ogm::Variable::operator>(const ogm::Variable& other) const
 {
   return get_real() > other.get_real();
 }
 
-bool ogm::Variable::operator<=(const ogm::Variable& other)
+bool ogm::Variable::operator<=(const ogm::Variable& other) const
 {
   return get_real() <= other.get_real();
 }
 
-bool ogm::Variable::operator<(const ogm::Variable& other)
+bool ogm::Variable::operator<(const ogm::Variable& other) const
 {
   return get_real() < other.get_real();
 }
@@ -144,7 +164,7 @@ void ogm::Variable::cleanup()
     case VT_STRING:
       delete(&get_string());
     case VT_ARRAY:
-      delete(&get_array());
+      delete(&get_vector_ref());
   }
   return;
 }
@@ -155,17 +175,24 @@ real ogm::Variable::get_real() const
   return *(real*)(&val[0]);
 }
 
-string& ogm::Variable::get_string() const
+const string& ogm::Variable::get_string() const
 {
   check_type(VT_STRING);
   return **(string**)(&val[0]);
 }
 
-std::vector<ogm::Variable>& ogm::Variable::get_vector_ref() const
+std::vector<ogm::Variable>& ogm::Variable::get_vector_ref()
 {
   check_type(VT_ARRAY);
   return **(std::vector<ogm::Variable>**)(&val[0]);
 }
+
+const std::vector<ogm::Variable>& ogm::Variable::get_vector_ref() const
+{
+  check_type(VT_ARRAY);
+  return **(const std::vector<ogm::Variable>**)(&val[0]);
+}
+
 
 void* ogm::Variable::get_ptr() const
 {
@@ -173,17 +200,17 @@ void* ogm::Variable::get_ptr() const
   return *(void**)(&val[0]);
 }
 
-real ogm::Variable::operator+(real r)
+real ogm::Variable::operator+(real r) const
 {
   return get_real() + r;
 }
 
-string ogm::Variable::operator+(string s)
+string ogm::Variable::operator+(string s) const
 {
-  return string(get_string() + s)
+  return string(get_string() + s);
 }
 
-ogm::Variable ogm::Variable::operator+(const ogm::Variable& other)
+ogm::Variable ogm::Variable::operator+(const ogm::Variable& other) const
 {
   switch (get_type()) {
     case VT_REAL:
@@ -212,33 +239,45 @@ ogm::Variable& ogm::Variable::operator+=(const ogm::Variable& other)
   return (*this = altvar);
 }
 
-real operator-(real r)
+real ogm::Variable::operator-(real r) const
 {
   return get_real() - r;
 }
 
-ogm::Variable operator-(const ogm::Variable& other)
+ogm::Variable ogm::Variable::operator-(const ogm::Variable& other) const
 {
   return get_real() - other.get_real();
 }
 
-ogm::Variable& operator-=(const ogm::Variable& other)
+ogm::Variable& ogm::Variable::operator-=(const ogm::Variable& other)
 {
-  get_real() -= other.get_real();
+  *(real*)(&val[0]) -= other.get_real();
   return *this;
 }
 
-Variable& operator[](int i)
+const Variable& ogm::Variable::operator[](int i) const
 {
-  return get_array_ref()[i];
+  return get_vector_ref()[i];
 }
 
-Variable& operator[](const ogm::Variable& other)
+const Variable& ogm::Variable::operator[](const ogm::Variable& other) const
 {
-  return get_array_ref()[(int)other.get_real()];
+  return (*this)[(int)other.get_real()];
 }
 
-void check_type(VariableType vt) {
-  if (get_type() != vt)
-    throw TypeError("Expected type " + std::to_string(vt)+ ", was type " + string(get_type()));
+Variable& ogm::Variable::operator[](int i)
+{
+  return get_vector_ref()[i];
+}
+
+Variable& ogm::Variable::operator[](const ogm::Variable& other)
+{
+  return (*this)[(int)other.get_real()];
+}
+
+void ogm::Variable::check_type(VariableType vt) const {
+  if (get_type() != vt) {
+    std::string s = "Expected type " + std::to_string(vt) + ", was type " + std::to_string(get_type());
+    throw TypeError(s);
+  }
 }
