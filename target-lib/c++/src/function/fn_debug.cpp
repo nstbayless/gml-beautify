@@ -5,78 +5,86 @@
 #include <string>
 #include <cassert>
 #include <locale>
+#include <iostream>
 
 using namespace ogm;
 using namespace ogm::fn;
 
-VO debug_mode(C)
+VO ogm::fn::debug_mode(C)
 {
   throw NotImplementedError();
   return false;
 }
 
-VO get_integer(C c, V& prompt)
+VO ogm::fn::get_integer(C c, V& prompt)
 {
   return get_integer(c, prompt, 0);
 }
 
-VO get_integer(C c, V& prompt, V& def)
+VO ogm::fn::get_integer(C c, V& prompt, V& def)
 {
-  return round(real_t(get_string(c, prompt, string(def))));
+  var str = string(c, def);
+  var in = get_string(c, prompt, str);
+  return round(c, real(c, in));
 }
 
-VO get_string(C c, V& prompt)
+VO ogm::fn::get_string(C c, V& prompt)
 {
   return get_string(c, prompt, "");
 }
 
-VO get_string(C, V& prompt, V& def)
+VO ogm::fn::get_string(C, V& prompt, V& def)
 {
-  std::cout<<prompt.get_string()<<"> ";
-  string s;
-  std::cin>>s;
+  std::wcout<<prompt.get_string()<<"> ";
+  string_t s;
+  std::wcin>>s;
   return s;
 }
 
-VO show_message(C, V& msg)
+void ogm::fn::show_message(C, V& msg)
 {
-  std::cout<<msg.get_string()<<std::endl;
+  std::wcout<<msg.get_string()<<std::endl;
 }
 
-VO show_question(C, V& msg)
+VO ogm::fn::show_question(C c, V& msg)
 {
-  while (true)
+  throw NotImplementedError();
+  /*while (true)
   {
-    string in(show_message(C, msg + string(" [y/n]")).get_string());
+    string_t prompt = msg.get_string();
+    prompt += (wchar_t*) " [y/n]";
+    var prompt_v(prompt);
+    string_t in(get_string(c, prompt_v).get_string());
     if (in == "y" || in == "Y")
       return true;
     if (in == "n" || in == "N")
       return false;
-  }
+  }*/
+  return 0;
 }
 
-void show_debug_message(C, V& msg)
+void ogm::fn::show_debug_message(C c, V& msg)
 {
-  std::cout<<string(msg).get_string()<<std::endl;
+  std::wcout<<string(c, msg).get_string()<<std::endl;
 }
 
-void show_debug_overlay(C, V& enable)
+void ogm::fn::show_debug_overlay(C, V& enable)
 {
   throw NotImplementedError();
 }
 
-VO code_is_compiled(C)
+VO ogm::fn::code_is_compiled(C)
 {
   return true;
 }
 
-VO fps(C)
+VO ogm::fn::fps(C)
 {
   throw NotImplementedError();
   return 60;
 }
 
-VO fps_real(C)
+VO ogm::fn::fps_real(C)
 {
   throw NotImplementedError();
   return 60;

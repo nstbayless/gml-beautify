@@ -13,7 +13,7 @@ ogm::Variable::Variable(int r)
   set((real_t)r);
 }
 
-ogm::Variable::Variable(string s)
+ogm::Variable::Variable(string_t s)
 {
   set(s);
 }
@@ -52,17 +52,17 @@ ogm::Variable& ogm::Variable::set(real_t r)
   return *this;
 }
 
-ogm::Variable& ogm::Variable::set(string s)
+ogm::Variable& ogm::Variable::set(string_t s)
 {
   cleanup();
   hdr = VT_STRING;
-  *(string**)(&val[0]) = new string(s);
+  *(string_t**)(&val[0]) = new string_t(s);
   return *this;
 }
 
 ogm::Variable& ogm::Variable::set(const char* s)
 {
-  set((wchar_t*)s);
+  set(string_t((wchar_t*)s));
 }
 
 ogm::Variable& ogm::Variable::set(const std::vector<ogm::Variable>& v)
@@ -100,7 +100,7 @@ ogm::Variable& ogm::Variable::operator=(real_t r)
   return set(r);
 }
 
-ogm::Variable& ogm::Variable::operator=(string s)
+ogm::Variable& ogm::Variable::operator=(string_t s)
 {
   return set(s);
 }
@@ -175,10 +175,10 @@ real_t ogm::Variable::get_real() const
   return *(real_t*)(&val[0]);
 }
 
-const string& ogm::Variable::get_string() const
+const string_t& ogm::Variable::get_string() const
 {
   check_type(VT_STRING);
-  return **(string**)(&val[0]);
+  return **(string_t**)(&val[0]);
 }
 
 std::vector<ogm::Variable>& ogm::Variable::get_vector_ref()
@@ -205,9 +205,9 @@ real_t ogm::Variable::operator+(real_t r) const
   return get_real() + r;
 }
 
-string ogm::Variable::operator+(string s) const
+string_t ogm::Variable::operator+(string_t s) const
 {
-  return string(get_string() + s);
+  return string_t(get_string() + s);
 }
 
 ogm::Variable ogm::Variable::operator+(const ogm::Variable& other) const
@@ -227,7 +227,7 @@ ogm::Variable& ogm::Variable::operator+=(real_t r)
   return *this;
 }
 
-ogm::Variable& ogm::Variable::operator+=(string s)
+ogm::Variable& ogm::Variable::operator+=(string_t s)
 {
   set(get_string() + s);
   return *this;

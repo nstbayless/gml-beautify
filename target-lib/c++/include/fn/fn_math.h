@@ -3,14 +3,14 @@
 VO arccos(C, V&);
 VO arcsin(C, V&);
 VO arctan(C, V&);
-VO arctan2(C, V& a);
+VO arctan2(C, V& x, V& y);
 VO sin(C, V&);
 VO tan(C, V&);
 VO cos(C, V&);
 VO darccos(C, V&);
 VO darcsin(C, V&);
 VO darctan(C, V&);
-VO darctan2(C, V& a);
+VO darctan2(C, V& x, V& y);
 VO dsin(C, V&);
 VO dtan(C, V&);
 VO dcos(C, V&);

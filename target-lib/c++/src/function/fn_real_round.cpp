@@ -7,27 +7,27 @@
 using namespace ogm;
 using namespace ogm::fn;
 
-VO round(C c, V& v)
+VO ogm::fn::round(C c, V& v)
 {
-  return round(v.get_real());
+  return floor(c, v.get_real() + .5);
 }
 
-VO floor(C c, V& v)
+VO ogm::fn::floor(C c, V& v)
 {
-  return floor(v.get_real());
+  return std::floor(v.get_real());
 }
 
-VO frac(C c, V& v)
+VO ogm::fn::frac(C c, V& v)
 {
   return fmod(v.get_real(),1.0);
 }
 
-VO abs(C c, V& v)
+VO ogm::fn::abs(C c, V& v)
 {
-  return abs(v.get_real());
+  return std::abs(v.get_real());
 }
 
-VO sign(C c, V& v)
+VO ogm::fn::sign(C c, V& v)
 {
   auto _v =  v.get_real();
   if (_v == 0)
@@ -37,12 +37,12 @@ VO sign(C c, V& v)
   return 1;
 }
 
-VO ceil(C c, V& v)
+VO ogm::fn::ceil(C c, V& v)
 {
   return std::ceil(v.get_real());
 }
 
-VO max(C c, byte n, V* v)
+VO ogm::fn::max(C c, byte n, V* v)
 {
   assert(n >= 1);
   auto to_return = v[0].get_real();
@@ -54,7 +54,7 @@ VO max(C c, byte n, V* v)
   return to_return;
 }
 
-VO mean(C, byte n, V* v)
+VO ogm::fn::mean(C, byte n, V* v)
 {
   assert(n >= 1);
   auto sum = 0;
@@ -65,7 +65,7 @@ VO mean(C, byte n, V* v)
   return sum/(double)n;
 }
 
-VO median(C, byte n, V* v)
+VO ogm::fn::median(C, byte n, V* v)
 {
   assert(n >= 1);
   byte req = n/2;
@@ -84,7 +84,7 @@ VO median(C, byte n, V* v)
   assert(false);
 }
 
-VO min(C, byte n, V* v)
+VO ogm::fn::min(C, byte n, V* v)
 {
   assert(n >= 1);
   auto to_return = v[0].get_real();
@@ -96,7 +96,7 @@ VO min(C, byte n, V* v)
   return to_return;
 }
 
-VO clamp(C c, V& val, V& min, V& max)
+VO ogm::fn::clamp(C c, V& val, V& min, V& max)
 {
   if (val < min)
     return min;
@@ -105,7 +105,7 @@ VO clamp(C c, V& val, V& min, V& max)
   return val;
 }
 
-VO lerp(C c, V& a, V& b, V& amt)
+VO ogm::fn::lerp(C c, V& a, V& b, V& amt)
 {
   if (amt < 0)
     return a;

@@ -9,49 +9,43 @@
 using namespace ogm;
 using namespace ogm::fn;
 
-VO exp(C, V& v)
+VO ogm::fn::exp(C, V& v)
 {
-  return exp(v.get_real());
+  return std::exp(v.get_real());
 }
 
-VO ln(C, V& v)
+VO ogm::fn::ln(C, V& v)
 {
-  return log(v.get_real());
+  return std::log(v.get_real());
 }
 
-VO power(C, V& base, V& exponent)
+VO ogm::fn::power(C, V& base, V& exponent)
 {
-  return pow(base.get_real(), exponent.get_real());
+  return std::pow(base.get_real(), exponent.get_real());
 }
 
-VO sqr(C, V& v)
+VO ogm::fn::sqr(C, V& v)
 {
-  real _v = v.get_real();
+  real_t _v = v.get_real();
   return(_v * _v);
 }
 
-VO sqrt(C, V& v)
+VO ogm::fn::sqrt(C, V& v)
 {
-  return sqrt(v.get_real());
+  return std::sqrt(v.get_real());
 }
 
-VO log2(C, V& v)
+VO ogm::fn::log2(C, V& v)
 {
-  return log2(v.get_real());
+  return std::log2(v.get_real());
 }
 
-VO log10(C, V& v)
+VO ogm::fn::log10(C, V& v)
 {
-  return log10(v.get_real());
+  return std::log10(v.get_real());
 }
 
-VO logn(C, V& v, V& n)
+VO ogm::fn::logn(C, V& v, V& n)
 {
-  return log2(v.get_real()) / log2(n.get_real());
-}
-
-VO int64(C, V& v)
-{
-  throw NotImplementedError();
-  return floor(v.get_real());
+  return std::log2(v.get_real()) / std::log2(n.get_real());
 }

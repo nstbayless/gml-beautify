@@ -11,7 +11,7 @@ namespace ogm
 {
   class Context;
 
-  class __ObjGlobal: public Object
+  static class __ObjGlobal: public Object
   {
     const char* get_name() {return "?global";}
   } ObjGlobal;

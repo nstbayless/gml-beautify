@@ -1,16 +1,22 @@
 #include "function.h"
 #include "variable.h"
+#include "error.h"
 
 #include <string>
 #include <cassert>
 #include <locale>
+#include <cctype>
 
 using namespace ogm;
 using namespace ogm::fn;
 
 unsigned int _char_index(V& s, V& v)
 {
-  return (unsigned int)std::clamp((int) v.get_real() - 1, 0, (int) s.get_string().length() - 1);
+  if (v.get_real() < 1)
+    return 0;
+  if (v.get_real() >= s.get_string().length())
+    return s.get_string().length() - 1;
+  return (unsigned int)(v.get_real() - 1);
 }
 
 wchar_t _char_at(V& s, V& v)
@@ -18,63 +24,63 @@ wchar_t _char_at(V& s, V& v)
   return s.get_string()[_char_index(s, v)];
 }
 
-VO ansi_char(C, V& v)
+VO ogm::fn::ansi_char(C, V& v)
 {
   throw NotImplementedError();
   char _v(v.get_real());
-  string s;
+  string_t s;
   s.push_back(_v);
   return s;
 }
 
-VO chr(C, V& v)
+VO ogm::fn::chr(C, V& v)
 {
   wchar_t _v(v.get_real());
-  string s;
+  string_t s;
   s.push_back(_v);
   return s;
 }
 
-VO ord(C, V& v)
+VO ogm::fn::ord(C, V& v)
 {
-  return (real_t)(unsigned wchar_t)_v(v.get_string()[0]);
+  return (real_t)(unsigned wchar_t)(v.get_string()[0]);
 }
 
-VO real(C, V& v)
+VO ogm::fn::real(C, V& v)
 {
-  return std::stod(v.get_value());
+  return std::stod(v.get_string());
 }
 
-VO is_string(C, V& v)
+VO ogm::fn::is_string(C, V& v)
 {
   return v.get_type() == VT_STRING;
 }
 
-VO string(C, V& v)
+VO ogm::fn::string(C c, V& v)
 {
   if (v.get_type() == VT_REAL)
   {
     std::string s;
-    unsigned long _v_dec = floor(abs(v)).get_real();
+    unsigned long _v_dec = floor(c, abs(c, v)).get_real();
     if (_v_dec == 0)
       s = "0";
     else while (_v_dec != 0)
     {
-      vc = '0' + (_v_dec % 10);
+      char vc = '0' + (_v_dec % 10);
       std::string sp;
       sp.push_back(vc);
       s = sp + s;
     }
     if (v.get_real() < 0)
       s = "-" + s;
-    real_t d = frac(v.get_real());
+    real_t d = frac(c, v).get_real();
     if (d!=0)
     {
       s += ".";
       for (int i=0;i<2;i++)
       {
         d *= 10;
-        vc = '0' + (d % 10);
+        char vc = '0' + (((int)floor(c, d).get_real()) % 10);
         s.push_back(vc);
       }
     }
@@ -85,16 +91,19 @@ VO string(C, V& v)
   }
   else if (v.get_type() == VT_ARRAY)
   {
-    std::string s = "[";
+    string_t s;
+    s.push_back('[');
     bool first = true;
     for (auto vit : v.get_vector_ref())
     {
-      if (!first)
-        s += ", ";
+      if (!first) {
+        s.push_back(',');
+        s.push_back(' ');
+      }
       first = false;
-      s += string(vit);
+      s += ogm::fn::string(c, vit).get_string();
     }
-    s += "]";
+    s.push_back(']');
     return s;
   }
   else
@@ -104,67 +113,72 @@ VO string(C, V& v)
   }
 }
 
-VO string_byte_at(C, V& v, V& pos)
+VO ogm::fn::string_byte_at(C, V& v, V& pos)
 {
-  std::string s = v.get_string();
+  std::string s = (char*)v.get_string().data();
   return (real_t)s[(unsigned int)pos.get_real() - 1];
 }
 
-VO string_byte_length(C, V& v)
+VO ogm::fn::string_byte_length(C, V& v)
 {
-  std::string s = v.get_string();
-  return s.size();
+  std::string s = (char*)v.get_string().data();
+  return (real_t)s.length();
 }
 
-VO string_set_byte_at(C, V& v, V& pos, V& b)
+VO ogm::fn::string_set_byte_at(C, V& v, V& pos, V& b)
 {
-  string s = v.get_string();
+  std::string s = (char*)v.get_string().data();
   char* cs = (char*)s.data();
   cs[(unsigned int)pos.get_real()] = (char) b.get_real();
-  return s;
+  return (wchar_t*)s.c_str();
 }
 
-VO string_char_at(C, V& v, V& pos)
+VO ogm::fn::string_char_at(C, V& v, V& pos)
 {
-  string s;
+  string_t s;
   s.push_back(_char_at(v, pos));
   return s;
 }
 
-VO string_ord_at(C, V& v, V& pos)
+VO ogm::fn::string_ord_at(C c, V& v, V& pos)
 {
-  return ord(string_char_at(v, pos));
+  var ch = ogm::fn::string_char_at(c, v, pos);
+  return ogm::fn::ord(c, ch);
 }
 
-VO string_copy(C, V& str)
+VO ogm::fn::string_copy(C, V& str)
 {
-  return return str;
+  return str;
 }
 
-VO string_copy(C, V& str, v& pos)
+VO ogm::fn::string_copy(C, V& str, V& pos)
 {
   return str.get_string().substr(_char_index(str, pos));
 }
 
-VO string_copy(C, V& str, v& pos, v& len)
+VO ogm::fn::string_copy(C c, V& str, V& pos, V& len)
 {
-  return str.get_string().substr(_char_index(str, pos), clamp(_char_index(str, pos + len) - _char_index(str, pos), 0, str.get_string().length() - pos.get_real() + 1));
+  if (len.get_real() + pos.get_real() >= str.get_string().length())
+    return ogm::fn::string_copy(c, str, pos);
+  if (len <= var(0))
+    return (wchar_t*)"";
+  return str.get_string().substr(_char_index(str, pos), (int)len.get_real());
 }
 
-VO string_count(C, V& substr, V& str)
+VO ogm::fn::string_count(C, V& substr, V& str)
 {
   throw NotImplementedError();
   return 0;
 }
 
-VO string_delete(C, V& str, V& pos, V& count)
+VO ogm::fn::string_delete(C c, V& str, V& pos, V& count)
 {
-  return string_copy(C, str, 1, pos) + string_copy(C, str, pos + count);
+  return ogm::fn::string_copy(c, str, 1, pos) + ogm::fn::string_copy(c, str, pos + count);
 }
 
-VO string_digits(C, V& str)
+VO ogm::fn::string_digits(C, V& str)
 {
-  std::string sanitized = "";
+  string_t sanitized;
   for (int i = 0;i < str.get_string().size(); i++)
   {
     wchar_t c = str.get_string().at(i);
@@ -174,25 +188,25 @@ VO string_digits(C, V& str)
   return sanitized;
 }
 
-VO string_format(C, V& r, V& tot, v& dec)
+VO ogm::fn::string_format(C c, V& r, V& tot, V& dec)
 {
   throw NotImplementedError();
-  return string(r);
+  return ogm::fn::string(c, r);
 }
 
-VO string_insert(C, V& substr, V& str, v& pos)
+VO ogm::fn::string_insert(C c, V& substr, V& str, V& pos)
 {
-  return string_copy(C, str, 1, pos).get_string() + substr.get_string() + string_copy(C, str, pos).get_string();
+  return ogm::fn::string_copy(c, str, 1, pos).get_string() + substr.get_string() + ogm::fn::string_copy(c, str, pos).get_string();
 }
 
-VO string_length(C, V& str)
+VO ogm::fn::string_length(C, V& str)
 {
-  return str.get_string().length();
+  return (int)str.get_string().length();
 }
 
-VO string_letters(C, V& str)
+VO ogm::fn::string_letters(C, V& str)
 {
-  std::string sanitized = "";
+  string_t sanitized;
   for (int i = 0;i < str.get_string().size(); i++)
   {
     wchar_t c = str.get_string().at(i);
@@ -202,9 +216,9 @@ VO string_letters(C, V& str)
   return sanitized;
 }
 
-VO string_lettersdigits(C, V& str)
+VO ogm::fn::string_lettersdigits(C, V& str)
 {
-  std::string sanitized = "";
+  string_t sanitized;
   for (int i = 0;i < str.get_string().size(); i++)
   {
     wchar_t c = str.get_string().at(i);
@@ -214,20 +228,21 @@ VO string_lettersdigits(C, V& str)
   return sanitized;
 }
 
-VO string_lower(C, V& str)
+VO ogm::fn::string_lower(C, V& str)
 {
-  return std::tolower(str.get_string());
+  throw NotImplementedError();
+  return str;
 }
 
-VO string_pos(C, V& str, V& substr)
+VO ogm::fn::string_pos(C, V& str, V& substr)
 {
   throw NotImplementedError();
   return 0;
 }
 
-VO string_repeat(C, V& str, V& count);
+VO ogm::fn::string_repeat(C, V& str, V& count)
 {
-  string to_return = "";
+  string_t to_return;
   for (int i = 0; i < count.get_real(); i++)
   {
     to_return += str.get_string();
@@ -235,54 +250,55 @@ VO string_repeat(C, V& str, V& count);
   return to_return;
 }
 
-VO string_replace(C, V& str, V& old, V& new)
+VO ogm::fn::string_replace(C, V& str, V& old, V& _new)
 {
   throw NotImplementedError();
   return str;
 }
 
-VO string_replace_all(C, V& str, V& old, V& new)
+VO ogm::fn::string_replace_all(C, V& str, V& old, V& _new)
 {
   throw NotImplementedError();
   return str;
 }
 
-VO string_upper(C c, V& str)
+VO ogm::fn::string_upper(C c, V& str)
 {
-  return std::toupper(str.get_string());
+  throw NotImplementedError();
+  return str;
 }
 
-VO string_height(C c, V& str)
+VO ogm::fn::string_height(C c, V& str)
 {
   throw NotImplementedError();
 }
 
-VO string_height_ext(C c, V& str, V& sep, V& w)
+VO ogm::fn::string_height_ext(C c, V& str, V& sep, V& w)
 {
   throw NotImplementedError();
 }
 
-VO string_width(C c, V& str)
+VO ogm::fn::string_width(C c, V& str)
 {
   throw NotImplementedError();
 }
 
-VO string_height(C c, V& str, V& sep, V& w)
+VO ogm::fn::string_height(C c, V& str, V& sep, V& w)
 {
   throw NotImplementedError();
 }
 
-VO clipboard_has_text(C)
+VO ogm::fn::clipboard_has_text(C)
 {
   throw NotImplementedError();
 }
 
-VO clipboard_get_text(C)
+VO ogm::fn::clipboard_get_text(C)
 {
   throw NotImplementedError();
 }
 
-VO clipboard_set_text(C)
+VO ogm::fn::clipboard_set_text(C)
 {
   throw NotImplementedError();
 }
