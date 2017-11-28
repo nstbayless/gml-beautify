@@ -19,7 +19,7 @@ unsigned int _char_index(V& s, V& v)
   return (unsigned int)(v.get_real() - 1);
 }
 
-wchar_t _char_at(V& s, V& v)
+char_t _char_at(V& s, V& v)
 {
   return s.get_string()[_char_index(s, v)];
 }
@@ -35,7 +35,7 @@ VO ogm::fn::ansi_char(C, V& v)
 
 VO ogm::fn::chr(C, V& v)
 {
-  wchar_t _v(v.get_real());
+  char_t _v(v.get_real());
   string_t s;
   s.push_back(_v);
   return s;
@@ -43,7 +43,7 @@ VO ogm::fn::chr(C, V& v)
 
 VO ogm::fn::ord(C, V& v)
 {
-  return (real_t)(unsigned wchar_t)(v.get_string()[0]);
+  return (real_t)(unsigned char_t)(v.get_string()[0]);
 }
 
 VO ogm::fn::real(C, V& v)
@@ -130,7 +130,7 @@ VO ogm::fn::string_set_byte_at(C, V& v, V& pos, V& b)
   std::string s = (char*)v.get_string().data();
   char* cs = (char*)s.data();
   cs[(unsigned int)pos.get_real()] = (char) b.get_real();
-  return (wchar_t*)s.c_str();
+  return (char_t*)s.c_str();
 }
 
 VO ogm::fn::string_char_at(C, V& v, V& pos)
@@ -161,7 +161,7 @@ VO ogm::fn::string_copy(C c, V& str, V& pos, V& len)
   if (len.get_real() + pos.get_real() >= str.get_string().length())
     return ogm::fn::string_copy(c, str, pos);
   if (len <= var(0))
-    return (wchar_t*)"";
+    return (char_t*)"";
   return str.get_string().substr(_char_index(str, pos), (int)len.get_real());
 }
 
@@ -181,7 +181,7 @@ VO ogm::fn::string_digits(C, V& str)
   string_t sanitized;
   for (int i = 0;i < str.get_string().size(); i++)
   {
-    wchar_t c = str.get_string().at(i);
+    char_t c = str.get_string().at(i);
     if (c >= '0' && c <= '9')
       sanitized.push_back(c);
   }
@@ -209,7 +209,7 @@ VO ogm::fn::string_letters(C, V& str)
   string_t sanitized;
   for (int i = 0;i < str.get_string().size(); i++)
   {
-    wchar_t c = str.get_string().at(i);
+    char_t c = str.get_string().at(i);
     if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z')
       sanitized.push_back(c);
   }
@@ -221,7 +221,7 @@ VO ogm::fn::string_lettersdigits(C, V& str)
   string_t sanitized;
   for (int i = 0;i < str.get_string().size(); i++)
   {
-    wchar_t c = str.get_string().at(i);
+    char_t c = str.get_string().at(i);
     if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9')
       sanitized.push_back(c);
   }

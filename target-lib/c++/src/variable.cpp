@@ -62,7 +62,7 @@ ogm::Variable& ogm::Variable::set(string_t s)
 
 ogm::Variable& ogm::Variable::set(const char* s)
 {
-  set(string_t((wchar_t*)s));
+  set(string_t((char_t*)s));
 }
 
 ogm::Variable& ogm::Variable::set(const std::vector<ogm::Variable>& v)

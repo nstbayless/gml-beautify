@@ -9,7 +9,8 @@ namespace ogm
   typedef unsigned int VariableID;
   typedef double real_t;
   typedef unsigned char byte;
-  typedef std::wstring string_t;
+  typedef char char_t;
+  typedef std::string string_t;
   
   enum VariableType {
     VT_REAL, // real number

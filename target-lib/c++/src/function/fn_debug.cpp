@@ -35,15 +35,15 @@ VO ogm::fn::get_string(C c, V& prompt)
 
 VO ogm::fn::get_string(C, V& prompt, V& def)
 {
-  std::wcout<<prompt.get_string()<<"> ";
+  std::cout<<prompt.get_string()<<"> ";
   string_t s;
-  std::wcin>>s;
+  std::cin>>s;
   return s;
 }
 
 void ogm::fn::show_message(C, V& msg)
 {
-  std::wcout<<msg.get_string()<<std::endl;
+  std::cout<<msg.get_string()<<std::endl;
 }
 
 VO ogm::fn::show_question(C c, V& msg)
@@ -52,7 +52,7 @@ VO ogm::fn::show_question(C c, V& msg)
   /*while (true)
   {
     string_t prompt = msg.get_string();
-    prompt += (wchar_t*) " [y/n]";
+    prompt += (char_t*) " [y/n]";
     var prompt_v(prompt);
     string_t in(get_string(c, prompt_v).get_string());
     if (in == "y" || in == "Y")
@@ -65,7 +65,7 @@ VO ogm::fn::show_question(C c, V& msg)
 
 void ogm::fn::show_debug_message(C c, V& msg)
 {
-  std::wcout<<string(c, msg).get_string()<<std::endl;
+  std::cout<<string(c, msg).get_string()<<std::endl;
 }
 
 void ogm::fn::show_debug_overlay(C, V& enable)
