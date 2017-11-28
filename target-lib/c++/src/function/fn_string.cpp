@@ -70,6 +70,7 @@ VO ogm::fn::string(C c, V& v)
       std::string sp;
       sp.push_back(vc);
       s = sp + s;
+      _v_dec /= 10l;
     }
     if (v.get_real() < 0)
       s = "-" + s;
@@ -84,6 +85,7 @@ VO ogm::fn::string(C c, V& v)
         s.push_back(vc);
       }
     }
+    return s;
   }
   else if (v.get_type() == VT_STRING)
   {

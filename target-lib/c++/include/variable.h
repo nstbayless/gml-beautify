@@ -68,7 +68,7 @@ namespace ogm
     inline VariableType get_type() const {return (VariableType)hdr;}
     
     real_t get_real() const;
-    const string_t& get_string() const;
+    const string_t get_string() const;
     const std::vector<Variable>& get_vector_ref() const;
     std::vector<Variable>& get_vector_ref();
     void* get_ptr() const;

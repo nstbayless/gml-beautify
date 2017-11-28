@@ -56,7 +56,8 @@ ogm::Variable& ogm::Variable::set(string_t s)
 {
   cleanup();
   hdr = VT_STRING;
-  *(string_t**)(&val[0]) = new string_t(s);
+  string_t* sp = new string_t(s);
+  *(string_t**)(val) = sp;
   return *this;
 }
 
@@ -162,9 +163,11 @@ void ogm::Variable::cleanup()
 {
   switch (get_type()) {
     case VT_STRING:
-      delete(&get_string());
+      delete [] *(char**)(&val[0]);
+      break;
     case VT_ARRAY:
       delete(&get_vector_ref());
+      break;
   }
   return;
 }
@@ -175,10 +178,10 @@ real_t ogm::Variable::get_real() const
   return *(real_t*)(&val[0]);
 }
 
-const string_t& ogm::Variable::get_string() const
+const string_t ogm::Variable::get_string() const
 {
   check_type(VT_STRING);
-  return **(string_t**)(&val[0]);
+  return **(const string_t**)(&val[0]);
 }
 
 std::vector<ogm::Variable>& ogm::Variable::get_vector_ref()
@@ -275,9 +278,21 @@ Variable& ogm::Variable::operator[](const ogm::Variable& other)
   return (*this)[(int)other.get_real()];
 }
 
+const char* TYPE_NAMES[] = {
+  "real",
+  "string",
+  "array",
+  "pointer",
+  "undefined"
+};
+
 void ogm::Variable::check_type(VariableType vt) const {
+  if (get_type() > 4)
+  {
+    throw TypeError("Expected type \"" + std::string(TYPE_NAMES[vt]) + ",\" was unknown type.");
+  }
   if (get_type() != vt) {
-    std::string s = "Expected type " + std::to_string(vt) + ", was type " + std::to_string(get_type());
+    std::string s = "Expected type \"" + std::string(TYPE_NAMES[vt]) + ",\" was type \"" + std::string(TYPE_NAMES[get_type()]) + "\"";
     throw TypeError(s);
   }
 }
