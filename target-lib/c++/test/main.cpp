@@ -6,7 +6,7 @@ using namespace ogm;
 
 void launcher(C c)
 {
-  var x = 4.549;
+  var x = 4.529;
   ogm::fn::show_debug_message(c, "Hello, world!");
   ogm::fn::show_debug_message(c, x);
 }

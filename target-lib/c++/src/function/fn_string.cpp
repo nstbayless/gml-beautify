@@ -78,6 +78,7 @@ VO ogm::fn::string(C c, V& v)
     if (d!=0)
     {
       s += ".";
+      d = std::round(d*100)/100.0;
       for (int i=0;i<2;i++)
       {
         d *= 10;
