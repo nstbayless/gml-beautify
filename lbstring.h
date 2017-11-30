@@ -31,8 +31,8 @@ public:
   LBString(const char* chunk);
   LBString(const LBString& other);
   
+  // indents string, and returns reference to self
   LBString& indent(bool do_indent = true);
-  
   
   //! alias for extend
   void operator+=(const LBString&);

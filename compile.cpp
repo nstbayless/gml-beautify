@@ -21,11 +21,10 @@ LBString PrExprParen::compile(const CompilerContext& cc) const {
 }
 
 LBString PrExpressionFn::compile(const CompilerContext& cc) const {
-  LBString s = identifier.value + "(";
+  LBString s = "ogm::fn::" + identifier.value + "(" + cc.runtime_context;
   for (int i=0;i<args.size();i++)
   {
-    if (i > 0)
-      s += ",";
+    s += ",";
     s += args[i]->compile(cc);
   }
   s += ")";
@@ -149,7 +148,7 @@ LBString PrBody::compile(const CompilerContext& cc) const {
     s2 += productions[i]->compile(cc);
     s2 += LBString(FORCE);
   }
-  s.append(s2);
+  s.append(s2.indent(true).indent(true));
   s += "}";
   return s;
 }
@@ -208,11 +207,11 @@ LBString PrRepeat::compile(const CompilerContext& cc) const {
   LBString s;
   s += "{" + LBString(FORCE);
   LBString s2;
-  s2 += "_max" + varname + " = " + count->compile(cc_internal) + ";\n";
+  s2 += "int _max" + varname + " = Variable(" + count->compile(cc_internal) + ").get_real();" + LBString(FORCE);
   s2 += "for (int " + varname + " = 0; " + varname + " < _max" + varname + "; " + varname + "++)";
   s2 += LBString(FORCE);
   s2 += event->compile(cc_internal);
-  s.append(s2);
+  s.append(s2.indent(true));
   s += LBString(FORCE);
   s += "}";
   return s;
@@ -263,13 +262,14 @@ LBString PrSwitch::compile(const CompilerContext& cc) const {
 
 LBString PrCase::compile(const CompilerContext& cc) const {
   LBString s;
+  s += "case " + value->compile(cc) + ":";
   s += "{";
   LBString s2;
   for (int i=0;i<productions.size();i++) {
     s2 += productions[i]->compile(cc);
     s2 += LBString(FORCE);
   }
-  s.append(s2);
+  s.append(s2.indent(true));
   s += "}";
   return s;
 }
