@@ -10,6 +10,7 @@
 #include "error.h"
 #include "project/project.h"
 #include "project/resource/object.h"
+#include "compile.h"
 
 using namespace std;
 
@@ -23,6 +24,7 @@ int main (int argn, char** argv) {
   bool mark_nesting = false;
   bool beautify_project = false;
   bool dry = false;
+  bool build = false;
   const char* filename = "in.gml";
   for (int i=1;i<argn;i++) {
     if (strncmp(argv[i],"--",2) == 0) {
@@ -44,6 +46,9 @@ int main (int argn, char** argv) {
       }
       if (strcmp(arg,"dry-run") == 0) {
         dry = true;
+      }
+      if (strcmp(arg,"compile") == 0 || strcmp(arg, "build") == 0) {
+        build = true;
       }
     } else {
       filename = argv[i];
@@ -81,7 +86,11 @@ int main (int argn, char** argv) {
     cout << "Could not open file " << filename;
     exit(1);
   } else {
-    if (!test_suite) {
+    if (build) {
+      Parser parser(&inFile);
+      PrBody* p(parser.parse());
+      std::cout<<compileModule(*p).to_string(config,0)<<std::endl;
+    } else if (!test_suite) {
       Parser parser(&inFile);
       Production* p;
       bool first = true;
