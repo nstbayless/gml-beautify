@@ -258,6 +258,50 @@ ogm::Variable& ogm::Variable::operator-=(const ogm::Variable& other)
   return *this;
 }
 
+real_t ogm::Variable::operator*(real_t v) const 
+{
+  return get_real() * v;
+}
+
+ogm::Variable ogm::Variable::operator*(const ogm::Variable& other) const
+{
+  return get_real() * other.get_real();
+}
+
+ogm::Variable& ogm::Variable::operator*=(real_t v)
+{
+  *(real_t*)(&val[0]) *= v;
+  return *this;
+}
+
+ogm::Variable& ogm::Variable::operator*=(const ogm::Variable& v)
+{
+  *(real_t*)(&val[0]) *= v.get_real();
+  return *this;
+}
+
+real_t ogm::Variable::operator/(real_t v) const
+{
+  return get_real() / v;
+}
+
+ogm::Variable ogm::Variable::operator/(const ogm::Variable& v) const
+{
+  return get_real() / v.get_real();
+}
+
+ogm::Variable& ogm::Variable::operator/=(real_t v)
+{
+  *(real_t*)(&val[0]) /= v;
+  return *this;
+}
+
+ogm::Variable& ogm::Variable::operator/=(const ogm::Variable& v)
+{
+  *(real_t*)(&val[0]) /= v.get_real();
+  return *this;
+}
+
 const Variable& ogm::Variable::operator[](int i) const
 {
   return get_vector_ref()[i];

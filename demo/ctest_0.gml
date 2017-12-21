@@ -11,4 +11,18 @@ repeat (y)
 
 y -= x + 90.434253
 
+var q = 2;
+repeat(10)
+  q *= 2
+  
+var rz = 256
+do
+  rz /= 2
+until rz <= 40
+
+show_debug_message(q);
+show_debug_message(rz);
 show_debug_message(y);
+show_debug_message("test");
+var r = "blah";
+show_debug_message(r);

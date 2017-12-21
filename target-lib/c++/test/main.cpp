@@ -6,12 +6,43 @@ using namespace ogm;
 
 void launcher(C c)
 {
-  var x = 4.529;
-  ogm::fn::show_debug_message(c, "Hello, world!");
-  ogm::fn::show_debug_message(c, x);
+    var x = 0;
+    var y = - 4;
+    if (y < x)
+    x += 1;
+    if (y < x)
+    x += 1;
+    {
+        int _max_i = Variable((17)).get_real();
+        for (int _i = 0; _i < _max_i; _i++)
+        y += 1;
+    }
+    {
+        int _max_i = Variable((y)).get_real();
+        for (int _i = 0; _i < _max_i; _i++)
+        x += y;
+    }
+    y -= x + 90.434253;
+    var q = 2;
+    {
+        int _max_i = Variable((10)).get_real();
+        for (int _i = 0; _i < _max_i; _i++)
+        q *= 2;
+    }
+    var rz = 256;
+    do
+    rz /= 2;
+    while (!(rz <= 40));
+    ogm::fn::show_debug_message(c,q);
+    ogm::fn::show_debug_message(c,rz);
+    ogm::fn::show_debug_message(c,y);
+    ogm::fn::show_debug_message(c,"test");
+    var r = "blah";
+    ogm::fn::show_debug_message(c,r);
 }
 
-int main (int argn, char** argv) {
+int main (int argn, char** argv)
+{
   Root root;
   root.run(launcher);
 }

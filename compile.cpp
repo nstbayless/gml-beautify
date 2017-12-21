@@ -194,13 +194,13 @@ LBString PrFor::compile(const CompilerContext& cc) const {
   return s;
 }
 
-const char* varlist = "ijkqp";
+const char* varlist = "pijkq";
 
 LBString PrRepeat::compile(const CompilerContext& cc) const {
   std::string varname = "_";
   CompilerContext cc_internal = cc;
   int varl = ++(cc_internal.varl);
-  while (varl > 5) {
+  while (varl > 0) {
     varname.push_back(varlist[varl % 5]);
     varl /= 5;
   }
@@ -223,9 +223,9 @@ LBString PrDo::compile(const CompilerContext& cc) const {
   s += LBString(FORCE);
   s.append(event->compile(cc));
   s += LBString(FORCE);
-  s += "while (!";
+  s += "while (!(";
   s += condition->compile(cc);
-  s += ")";
+  s += "));";
   return s;
 }
 

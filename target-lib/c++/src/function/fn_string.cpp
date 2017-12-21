@@ -74,15 +74,14 @@ VO ogm::fn::string(C c, V& v)
     }
     if (v.get_real() < 0)
       s = "-" + s;
-    real_t d = frac(c, v).get_real();
+    real_t d = std::abs(frac(c, v).get_real());
     if (d!=0)
     {
       s += ".";
-      d = std::round(d*100)/100.0;
       for (int i=0;i<2;i++)
       {
         d *= 10;
-        char vc = '0' + (((int)floor(c, d).get_real()) % 10);
+        char vc = '0' + (((int)(std::floor(d))) % 10);
         s.push_back(vc);
       }
     }

@@ -60,6 +60,16 @@ namespace ogm
     Variable operator-(const Variable&) const;
     Variable& operator-=(const Variable&);
     
+    real_t operator*(real_t) const ;
+    Variable operator*(const Variable&) const;
+    Variable& operator*=(real_t);
+    Variable& operator*=(const Variable&);
+    
+    real_t operator/(real_t) const ;
+    Variable operator/(const Variable&) const;
+    Variable& operator/=(real_t);
+    Variable& operator/=(const Variable&);
+    
     const Variable& operator[](int i) const;
     const Variable& operator[](const Variable&) const;
     Variable& operator[](int i);
