@@ -6,6 +6,8 @@ using namespace ogm;
 
 void launcher(C c)
 {
+    z = 0;
+    ogm::fn::show_debug_message(c,z);
     var x = 0;
     var y = - 4;
     if (y < x)
@@ -23,7 +25,7 @@ void launcher(C c)
         x += y;
     }
     y -= x + 90.434253;
-    var q = 2;
+    var q = 1;
     {
         int _max_i = Variable((10)).get_real();
         for (int _i = 0; _i < _max_i; _i++)
@@ -33,6 +35,8 @@ void launcher(C c)
     do
     rz /= 2;
     while (!(rz <= 40));
+    var abh = ogm::fn::angle_difference(c, - 94,32);
+    ogm::fn::show_debug_message(c,abh);
     ogm::fn::show_debug_message(c,q);
     ogm::fn::show_debug_message(c,rz);
     ogm::fn::show_debug_message(c,y);

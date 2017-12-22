@@ -1,3 +1,5 @@
+z = 0;
+show_debug_message(z);
 var x = 0;
 var y = -4;
 if y < x
@@ -11,14 +13,17 @@ repeat (y)
 
 y -= x + 90.434253
 
-var q = 2;
+var q = 1;
 repeat(10)
-  q *= 2
+  q *= 2;
   
 var rz = 256
 do
   rz /= 2
 until rz <= 40
+
+var abh = angle_difference(-94, 32);
+show_debug_message(abh);
 
 show_debug_message(q);
 show_debug_message(rz);
