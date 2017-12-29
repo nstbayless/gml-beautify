@@ -4,8 +4,7 @@
 #ifndef OGMFN_H
 #define OGMFN_H
 
-#define BIVAR = -1 * (__LINE__ - 1),
-#define BIVAR_END = -1 * (__LINE__ - 1);
+#define DEF(...) constexpr VariableID __VA_ARGS__ = -1 * __LINE__;
 
 namespace ogm
 {
@@ -24,9 +23,10 @@ namespace ogm
   }
   namespace varn
   {
-    constexpr VariableID
     #include "fn/var.h"
   }
 }
+
+#undef DEF
 
 #endif /*OGMFN_H*/

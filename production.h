@@ -17,7 +17,7 @@ struct Production {
   virtual ~Production();
   
   virtual std::string to_string();
-  virtual LBString compile(const CompilerContext& cc) const = 0;
+  virtual LBString compile(CompilerContext& cc) const = 0;
   virtual LBString beautiful(const BeautifulConfig&,
     BeautifulContext bc = DEFAULT_CONTEXT);
   
@@ -37,7 +37,7 @@ struct Production {
 struct PrInfixWS: Production {
   PrInfixWS(Token);
   virtual std::string to_string();
-  virtual LBString compile(const CompilerContext& cc) const {return "";};
+  virtual LBString compile(CompilerContext& cc) const {return "";};
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
   
   Token val;
@@ -46,7 +46,7 @@ struct PrInfixWS: Production {
 
 struct PrDecor: Production {
   virtual std::string to_string();
-  virtual LBString compile(const CompilerContext& cc) const {return "";};
+  virtual LBString compile(CompilerContext& cc) const {return "";};
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext bc);
   
   PrDecor(Token rawToken);
@@ -59,7 +59,7 @@ struct PrExpression: Production {
 // parentheses are important to remember for beautifier
 struct PrExprParen: PrExpression {
   virtual std::string to_string();
-  virtual LBString compile(const CompilerContext& cc) const;
+  virtual LBString compile(CompilerContext& cc) const;
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext bc);
   
   PrExpression* content;
@@ -68,7 +68,7 @@ struct PrExprParen: PrExpression {
 struct PrExpressionFn: PrExpression{
   PrExpressionFn(Token identifier);
   virtual std::string to_string();
-  virtual LBString compile(const CompilerContext& cc) const;
+  virtual LBString compile(CompilerContext& cc) const;
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
   
   Token identifier;
@@ -78,7 +78,7 @@ struct PrExpressionFn: PrExpression{
 struct PrExprArithmetic: PrExpression {
   PrExprArithmetic(PrExpression* lhs, Token op, PrExpression* rhs);
   virtual std::string to_string();
-  virtual LBString compile(const CompilerContext& cc) const;
+  virtual LBString compile(CompilerContext& cc) const;
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
   
   PrExpression* lhs;
@@ -94,7 +94,7 @@ struct PrEmptyStatement: PrStatement {
   PrEmptyStatement();
   PrEmptyStatement(Token enx);
   virtual std::string to_string();
-  virtual LBString compile(const CompilerContext& cc) const;
+  virtual LBString compile(CompilerContext& cc) const;
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
   
   bool hastoken;
@@ -103,7 +103,7 @@ struct PrEmptyStatement: PrStatement {
 
 struct PrFinal: PrExpression {
   virtual std::string to_string();
-  virtual LBString compile(const CompilerContext& cc) const;
+  virtual LBString compile(CompilerContext& cc) const;
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
   PrFinal(Token t);
   
@@ -112,7 +112,7 @@ struct PrFinal: PrExpression {
 
 struct PrIdentifier: PrExpression {
   virtual std::string to_string();
-  virtual LBString compile(const CompilerContext& cc) const;
+  virtual LBString compile(CompilerContext& cc) const;
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
   
   PrIdentifier(Token t);
@@ -123,7 +123,7 @@ struct PrIdentifier: PrExpression {
 struct PrAssignment: PrStatement {
   PrAssignment(PrExpression* lhs, Token op, PrExpression* rhs);
   virtual std::string to_string();
-  virtual LBString compile(const CompilerContext& cc) const;
+  virtual LBString compile(CompilerContext& cc) const;
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
   
   PrExpression* lhs;
@@ -133,7 +133,7 @@ struct PrAssignment: PrStatement {
 
 struct PrStatementFn: PrStatement {
   virtual std::string to_string();
-  virtual LBString compile(const CompilerContext& cc) const;
+  virtual LBString compile(CompilerContext& cc) const;
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
   
   PrExpressionFn* fn;
@@ -142,7 +142,7 @@ struct PrStatementFn: PrStatement {
 struct PrVarDeclaration: Production {
   PrVarDeclaration(Token ident,  PrExpression* def = nullptr);
   virtual std::string to_string();
-  virtual LBString compile(const CompilerContext& cc) const;
+  virtual LBString compile(CompilerContext& cc) const;
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
   
   Token identifier;
@@ -151,7 +151,7 @@ struct PrVarDeclaration: Production {
 
 struct PrStatementVar: PrStatement {
   virtual std::string to_string();
-  virtual LBString compile(const CompilerContext& cc) const;
+  virtual LBString compile(CompilerContext& cc) const;
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
   
   std::string type;
@@ -160,7 +160,7 @@ struct PrStatementVar: PrStatement {
 
 struct PrBody: PrStatement {
   virtual std::string to_string();
-  virtual LBString compile(const CompilerContext& cc) const;
+  virtual LBString compile(CompilerContext& cc) const;
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
   bool is_root = false;
   
@@ -169,7 +169,7 @@ struct PrBody: PrStatement {
 
 struct PrStatementIf: PrStatement {
   virtual std::string to_string();
-  virtual LBString compile(const CompilerContext& cc) const;
+  virtual LBString compile(CompilerContext& cc) const;
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
   
   PrExpression* condition;
@@ -179,7 +179,7 @@ struct PrStatementIf: PrStatement {
 
 struct PrFor: PrStatement {
   virtual std::string to_string();
-  virtual LBString compile(const CompilerContext& cc) const;
+  virtual LBString compile(CompilerContext& cc) const;
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
   
   PrStatement* init;
@@ -190,7 +190,7 @@ struct PrFor: PrStatement {
 
 struct PrWhile: PrStatement {
   virtual std::string to_string();
-  virtual LBString compile(const CompilerContext& cc) const;
+  virtual LBString compile(CompilerContext& cc) const;
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
   
   PrExpression* condition;
@@ -199,7 +199,7 @@ struct PrWhile: PrStatement {
 
 struct PrRepeat: PrStatement {
   virtual std::string to_string();
-  virtual LBString compile(const CompilerContext& cc) const;
+  virtual LBString compile(CompilerContext& cc) const;
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
   
   PrExpression* count;
@@ -208,7 +208,7 @@ struct PrRepeat: PrStatement {
 
 struct PrDo: PrStatement {
   virtual std::string to_string();
-  virtual LBString compile(const CompilerContext& cc) const;
+  virtual LBString compile(CompilerContext& cc) const;
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
   
   PrExpression* condition;
@@ -217,7 +217,7 @@ struct PrDo: PrStatement {
 
 struct PrWith: PrStatement {
   virtual std::string to_string();
-  virtual LBString compile(const CompilerContext& cc) const;
+  virtual LBString compile(CompilerContext& cc) const;
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
   
   PrExpression* objid;
@@ -226,7 +226,7 @@ struct PrWith: PrStatement {
 
 struct PrAccessorExpression: PrExpression {
   virtual std::string to_string();
-  virtual LBString compile(const CompilerContext& cc) const;
+  virtual LBString compile(CompilerContext& cc) const;
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
   
   std::string acc = "";
@@ -238,7 +238,7 @@ struct PrCase;
 
 struct PrSwitch: PrStatement {
   virtual std::string to_string();
-  virtual LBString compile(const CompilerContext& cc) const;
+  virtual LBString compile(CompilerContext& cc) const;
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
   
   PrExpression* condition;
@@ -247,7 +247,7 @@ struct PrSwitch: PrStatement {
 
 struct PrCase: PrStatement {
   virtual std::string to_string();
-  virtual LBString compile(const CompilerContext& cc) const;
+  virtual LBString compile(CompilerContext& cc) const;
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
   
   PrExpression* value;
@@ -257,7 +257,7 @@ struct PrCase: PrStatement {
 struct PrControl: PrStatement {
   PrControl(Token,PrExpression* val = nullptr);
   virtual std::string to_string();
-  virtual LBString compile(const CompilerContext& cc) const;
+  virtual LBString compile(CompilerContext& cc) const;
   virtual LBString beautiful(const BeautifulConfig&, BeautifulContext);
   
   Token kw;

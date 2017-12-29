@@ -1,37 +1,37 @@
-id BIVAR
-solid BIVAR
-visible BIVAR
-persistent BIVAR
-alarm BIVAR
-x BIVAR
-y BIVAR
-xprevious BIVAR
-yprevious BIVAR
-xstart BIVAR
-ystart BIVAR
-sprite_index BIVAR
-image_angle BIVAR
-image_blend BIVAR
-image_index BIVAR
-image_alpha BIVAR
-image_number BIVAR
-image_speed BIVAR
-image_xscale BIVAR
-image_yscale BIVAR
-mask_index BIVAR
-friction BIVAR
-gravity BIVAR
-gravity_direction BIVAR
-hspeed BIVAR
-vspeed BIVAR
-path_position BIVAR
-path_positionprevious BIVAR
-path_speed BIVAR
-path_scale BIVAR
-path_orientation BIVAR
-path_endaction BIVAR
-timeline_index BIVAR
-timeline_running BIVAR
-timeline_speed BIVAR
-timeline_position BIVAR
-timeline_loop BIVAR_END
+DEF(id)
+DEF(solid)
+DEF(visible)
+DEF(persistent)
+DEF(alarm)
+DEF(x)
+DEF(y)
+DEF(xprevious)
+DEF(yprevious)
+DEF(xstart)
+DEF(ystart)
+DEF(sprite_index)
+DEF(image_angle)
+DEF(image_blend)
+DEF(image_index)
+DEF(image_alpha)
+DEF(image_number)
+DEF(image_speed)
+DEF(image_xscale)
+DEF(image_yscale)
+DEF(mask_index)
+DEF(friction)
+DEF(gravity)
+DEF(gravity_direction)
+DEF(hspeed)
+DEF(vspeed)
+DEF(path_position)
+DEF(path_positionprevious)
+DEF(path_speed)
+DEF(path_scale)
+DEF(path_orientation)
+DEF(path_endaction)
+DEF(timeline_index)
+DEF(timeline_running)
+DEF(timeline_speed)
+DEF(timeline_position)
+DEF(timeline_loop)

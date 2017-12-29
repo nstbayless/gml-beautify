@@ -6,7 +6,7 @@
 
 namespace ogm
 { 
-  typedef unsigned int VariableID;
+  typedef int VariableID;
   typedef double real_t;
   typedef unsigned char byte;
   typedef char char_t;

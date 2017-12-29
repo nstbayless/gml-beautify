@@ -3,24 +3,47 @@
 #include "util.h"
 #include "error.h"
 
+#include <set>
+
+LBString compileInstanceVariableDeclarations(const CompilerGlobalContext& gc)
+{
+  LBString out;
+  out += "namespace ogm { namespace var {";
+  int var_n = 0;
+  for (auto vn : gc.instvars)
+  {
+    if (gc.builtin.find(vn) == gc.builtin.end())
+    {
+      out += LBString(FORCE);
+      out += "constexpr VariableID " + vn + " = " + std::to_string(var_n);
+    }
+  }
+  out += LBString(FORCE);
+  out += "}}";
+  return out;
+}
+
 LBString compileModule(const PrBody& body) {
   LBString out;
   out += "#include \"root.h\"\n#include \"variable.h\"\n#include \"function.h\"\n\nusing namespace ogm;\n\nvoid launcher(C c)";
   out += LBString(FORCE);
   
   CompilerContext cc;
-  out += body.compile(cc);
+  LBString lb_comp = body.compile(cc);
+  out += compileInstanceVariableDeclarations(*cc.global);
+  out += LBString(FORCE) + LBString(FORCE);
+  out += lb_comp;
   
   out += LBString(FORCE) + LBString(FORCE);
   out += "int main (int argn, char** argv)\n{\n  Root root;\n  root.run(launcher);\n}\n";
   return out;
 }
 
-LBString PrExprParen::compile(const CompilerContext& cc) const {
+LBString PrExprParen::compile(CompilerContext& cc) const {
   return "(" + content->compile(cc) + ")";
 }
 
-LBString PrExpressionFn::compile(const CompilerContext& cc) const {
+LBString PrExpressionFn::compile(CompilerContext& cc) const {
   LBString s = "ogm::fn::" + identifier.value + "(" + cc.runtime_context;
   for (int i=0;i<args.size();i++)
   {
@@ -45,7 +68,7 @@ std::string c_op(Token t) {
   return t.value;
 }
 
-LBString PrExprArithmetic::compile(const CompilerContext& cc) const {
+LBString PrExprArithmetic::compile(CompilerContext& cc) const {
   LBString s;
   // div has no direct C analogue:
   if (op.value == "div") {
@@ -64,7 +87,7 @@ LBString PrExprArithmetic::compile(const CompilerContext& cc) const {
   s += rhs->compile(cc);
 }
 
-LBString PrEmptyStatement::compile(const CompilerContext& cc) const {
+LBString PrEmptyStatement::compile(CompilerContext& cc) const {
   return ";";
 }
 
@@ -79,7 +102,7 @@ std::string sanitize_string(std::string val)
   return "\"" + val + "\"";
 }
 
-LBString PrFinal::compile(const CompilerContext& cc) const {
+LBString PrFinal::compile(CompilerContext& cc) const {
   std::string val = this->final.value;
   
   // strings use double quotes
@@ -95,11 +118,22 @@ LBString PrFinal::compile(const CompilerContext& cc) const {
   return val;
 }
 
-LBString PrIdentifier::compile(const CompilerContext& cc) const {
-  return identifier.value;
+LBString PrIdentifier::compile(CompilerContext& cc) const {
+  // variable -- handle local / instance separately
+  if (cc.localvars.find(identifier.value) == cc.localvars.end())
+  {
+    // not found as a local var
+    cc.global->instvars.insert(identifier.value);
+    return cc.runtime_context + ".instance.local[ogm::varn::" + identifier.value + "]";
+  }
+  else
+  {
+    // local variable
+    return identifier.value;
+  }
 }
 
-LBString PrAssignment::compile(const CompilerContext& cc) const {
+LBString PrAssignment::compile(CompilerContext& cc) const {
   LBString s;
   if (lhs)
     s += lhs->compile(cc);
@@ -111,19 +145,20 @@ LBString PrAssignment::compile(const CompilerContext& cc) const {
   return s;
 }
 
-LBString PrStatementFn::compile(const CompilerContext& cc) const {
+LBString PrStatementFn::compile(CompilerContext& cc) const {
   return fn->compile(cc) + ";";
 }
 
-LBString PrVarDeclaration::compile(const CompilerContext& cc) const {
+LBString PrVarDeclaration::compile(CompilerContext& cc) const {
   LBString s;
   s += identifier.value;
+  cc.global->instvars.insert(identifier.value);
   if (definition)
     s += " = " + definition->compile(cc);
   return s;
 }
 
-LBString PrStatementVar::compile(const CompilerContext& cc) const {
+LBString PrStatementVar::compile(CompilerContext& cc) const {
   LBString s;
   if (type == "var") {
     s += "var ";
@@ -139,7 +174,7 @@ LBString PrStatementVar::compile(const CompilerContext& cc) const {
   return s;
 }
 
-LBString PrBody::compile(const CompilerContext& cc) const {
+LBString PrBody::compile(CompilerContext& cc) const {
   LBString s;
   if (productions.empty()) return "{ }";
   s += "{" + LBString(FORCE);
@@ -153,7 +188,7 @@ LBString PrBody::compile(const CompilerContext& cc) const {
   return s;
 }
 
-LBString PrStatementIf::compile(const CompilerContext& cc) const {
+LBString PrStatementIf::compile(CompilerContext& cc) const {
   LBString s;
   s += "if (";
   s += condition->compile(cc);
@@ -168,7 +203,7 @@ LBString PrStatementIf::compile(const CompilerContext& cc) const {
   return s;
 }
 
-LBString PrWhile::compile(const CompilerContext& cc) const {
+LBString PrWhile::compile(CompilerContext& cc) const {
   LBString s;
   s += "while (";
   s += condition->compile(cc);
@@ -177,7 +212,7 @@ LBString PrWhile::compile(const CompilerContext& cc) const {
   return s;
 }
 
-LBString PrFor::compile(const CompilerContext& cc) const {
+LBString PrFor::compile(CompilerContext& cc) const {
   LBString s;
   s += "for (";
   if (init)
@@ -196,7 +231,7 @@ LBString PrFor::compile(const CompilerContext& cc) const {
 
 const char* varlist = "pijkq";
 
-LBString PrRepeat::compile(const CompilerContext& cc) const {
+LBString PrRepeat::compile(CompilerContext& cc) const {
   std::string varname = "_";
   CompilerContext cc_internal = cc;
   int varl = ++(cc_internal.varl);
@@ -217,7 +252,7 @@ LBString PrRepeat::compile(const CompilerContext& cc) const {
   return s;
 }
 
-LBString PrDo::compile(const CompilerContext& cc) const {
+LBString PrDo::compile(CompilerContext& cc) const {
   LBString s;
   s += "do";
   s += LBString(FORCE);
@@ -229,11 +264,11 @@ LBString PrDo::compile(const CompilerContext& cc) const {
   return s;
 }
 
-LBString PrWith::compile(const CompilerContext& cc) const {
+LBString PrWith::compile(CompilerContext& cc) const {
   throw LanguageFeatureNotImplementedError("with statements");
 }
 
-LBString PrAccessorExpression::compile(const CompilerContext& cc) const {
+LBString PrAccessorExpression::compile(CompilerContext& cc) const {
   if (acc != "")
     throw LanguageFeatureNotImplementedError("accessor \"" + acc + "\"");
   else {
@@ -244,7 +279,7 @@ LBString PrAccessorExpression::compile(const CompilerContext& cc) const {
   }
 }
 
-LBString PrSwitch::compile(const CompilerContext& cc) const {
+LBString PrSwitch::compile(CompilerContext& cc) const {
   LBString s;
   s += "switch (";
   s += condition->compile(cc);
@@ -260,7 +295,7 @@ LBString PrSwitch::compile(const CompilerContext& cc) const {
   return s;
 }
 
-LBString PrCase::compile(const CompilerContext& cc) const {
+LBString PrCase::compile(CompilerContext& cc) const {
   LBString s;
   s += "case " + value->compile(cc) + ":";
   s += "{";
@@ -274,5 +309,5 @@ LBString PrCase::compile(const CompilerContext& cc) const {
   return s;
 }
 
-LBString PrControl::compile(const CompilerContext& cc) const {
+LBString PrControl::compile(CompilerContext& cc) const {
 }
