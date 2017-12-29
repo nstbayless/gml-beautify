@@ -4,6 +4,9 @@
 #ifndef OGMFN_H
 #define OGMFN_H
 
+#define BIVAR = -1 * (__LINE__ - 1),
+#define BIVAR_END = -1 * (__LINE__ - 1);
+
 namespace ogm
 {
   typedef Context& C;
@@ -18,6 +21,11 @@ namespace ogm
   namespace prop
   {
     #include "fn/prop.h"
+  }
+  namespace varn
+  {
+    constexpr VariableID
+    #include "fn/var.h"
   }
 }
 
