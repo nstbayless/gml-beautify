@@ -1,4 +1,4 @@
-z = 0;
+z = "the value of z";
 show_debug_message(z);
 var x = 0;
 var y = -4;

@@ -16,11 +16,13 @@ namespace ogm
     VT_REAL, // real number
     VT_STRING, // string
     VT_ARRAY, // untyped array
-    VT_PTR // other data
+    VT_PTR, // other data
+    VT_UNDEFINED // not defined
   };
   
   class Variable {
   public:
+    Variable();
     Variable(real_t);
     Variable(int);
     Variable(string_t);
@@ -31,6 +33,7 @@ namespace ogm
     ~Variable();
     
     Variable& set(real_t);
+    Variable& set(int);
     Variable& set(string_t);
     Variable& set(const char*);
     Variable& set(const std::vector<Variable>&);
@@ -41,6 +44,7 @@ namespace ogm
     Variable& operator=(string_t);
     Variable& operator=(const char*);
     Variable& operator=(void*);
+    Variable& operator=(int);
     Variable& operator=(const Variable&);
     
     bool operator==(const Variable&) const;

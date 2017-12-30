@@ -8,14 +8,14 @@
 LBString compileInstanceVariableDeclarations(const CompilerGlobalContext& gc)
 {
   LBString out;
-  out += "namespace ogm { namespace var {";
+  out += "namespace ogm { namespace varn {";
   int var_n = 0;
   for (auto vn : gc.instvars)
   {
     if (gc.builtin.find(vn) == gc.builtin.end())
     {
       out += LBString(FORCE);
-      out += "constexpr VariableID " + vn + " = " + std::to_string(var_n);
+      out += ("constexpr VariableID " + vn + " = " + std::to_string(var_n++)) + ";";
     }
   }
   out += LBString(FORCE);
@@ -25,13 +25,15 @@ LBString compileInstanceVariableDeclarations(const CompilerGlobalContext& gc)
 
 LBString compileModule(const PrBody& body) {
   LBString out;
-  out += "#include \"root.h\"\n#include \"variable.h\"\n#include \"function.h\"\n\nusing namespace ogm;\n\nvoid launcher(C c)";
+  out += "#include \"root.h\"\n#include \"variable.h\"\n#include \"function.h\"\n";
   out += LBString(FORCE);
   
-  CompilerContext cc;
+  CompilerGlobalContext cgc;
+  CompilerContext cc(&cgc);
   LBString lb_comp = body.compile(cc);
-  out += compileInstanceVariableDeclarations(*cc.global);
+  out += compileInstanceVariableDeclarations(cgc);
   out += LBString(FORCE) + LBString(FORCE);
+  out += "using namespace ogm;\n\nvoid launcher(C c)\n";
   out += lb_comp;
   
   out += LBString(FORCE) + LBString(FORCE);
@@ -124,7 +126,7 @@ LBString PrIdentifier::compile(CompilerContext& cc) const {
   {
     // not found as a local var
     cc.global->instvars.insert(identifier.value);
-    return cc.runtime_context + ".instance.local[ogm::varn::" + identifier.value + "]";
+    return cc.runtime_context + ".instance->local[ogm::varn::" + identifier.value + "]";
   }
   else
   {
@@ -152,9 +154,9 @@ LBString PrStatementFn::compile(CompilerContext& cc) const {
 LBString PrVarDeclaration::compile(CompilerContext& cc) const {
   LBString s;
   s += identifier.value;
-  cc.global->instvars.insert(identifier.value);
+  cc.localvars.insert(identifier.value);
   if (definition)
-    s += " = " + definition->compile(cc);
+    s += "(" + definition->compile(cc) + ")";
   return s;
 }
 

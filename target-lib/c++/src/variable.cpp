@@ -3,6 +3,11 @@
 
 using namespace ogm;
 
+ogm::Variable::Variable()
+{
+  hdr = VT_UNDEFINED;
+}
+
 ogm::Variable::Variable(real_t r)
 {
   set(r);
@@ -52,6 +57,11 @@ ogm::Variable& ogm::Variable::set(real_t r)
   return *this;
 }
 
+ogm::Variable& ogm::Variable::set(int r)
+{
+  return set((real_t)r);
+}
+
 ogm::Variable& ogm::Variable::set(string_t s)
 {
   cleanup();
@@ -63,7 +73,7 @@ ogm::Variable& ogm::Variable::set(string_t s)
 
 ogm::Variable& ogm::Variable::set(const char* s)
 {
-  set(string_t((char_t*)s));
+  return set(string_t((char_t*)s));
 }
 
 ogm::Variable& ogm::Variable::set(const std::vector<ogm::Variable>& v)
@@ -99,6 +109,11 @@ ogm::Variable& ogm::Variable::set(const ogm::Variable& other)
 ogm::Variable& ogm::Variable::operator=(real_t r)
 {
   return set(r);
+}
+
+ogm::Variable& ogm::Variable::operator=(int r)
+{
+  return set((real_t)r);
 }
 
 ogm::Variable& ogm::Variable::operator=(string_t s)

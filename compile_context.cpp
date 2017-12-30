@@ -3,6 +3,8 @@
 #include "util.h"
 #include "error.h"
 
+#include <iostream>
+
 #define DEF(...) builtin.insert(ext_trim(#__VA_ARGS__));
 
 CompilerGlobalContext::CompilerGlobalContext()
@@ -15,12 +17,5 @@ CompilerGlobalContext::CompilerGlobalContext()
 
 #undef DEF
 
-CompilerContext::CompilerContext()
-{
-  global = new CompilerGlobalContext();
-}
-
-CompilerContext::~CompilerContext()
-{
-  delete(global);
-}
+CompilerContext::CompilerContext(CompilerGlobalContext* global): global(global)
+{ }

@@ -24,8 +24,7 @@ public:
   
   CompilerGlobalContext* global;
   
-  CompilerContext();
-  ~CompilerContext();
+  CompilerContext(CompilerGlobalContext*);
 };
 
 LBString compileModule(const PrBody& p);
