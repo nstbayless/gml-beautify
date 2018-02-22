@@ -42,6 +42,13 @@ static inline std::string ext_trim(std::string s)
   return s;
 }
 
+// trim from end (not in place)
+static inline std::string ext_rtrim(std::string s)
+{
+  rtrim(s);
+  return s;
+}
+
 static std::string path_leaf(std::string path) {
   size_t last_bsl = path.find_last_of("\\");
   size_t last_rsl = path.find_last_of("/");
