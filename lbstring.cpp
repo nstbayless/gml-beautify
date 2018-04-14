@@ -72,6 +72,21 @@ void LBString::append(LBString other) {
         list.pop_back();
       }
       
+      // force adjacent to pad
+      if ((other.type == FORCE && back >= PAD) || (other.type >= PAD && back == FORCE)) {
+        list.pop_back();
+        list.push_back(LBString(FORCE));
+        return;
+      }
+      
+      // forced internal linebreak
+      if ((other.type == INFORCE && back >= PAD))
+      {
+        list.pop_back();
+        list.push_back(LBString(INFORCE));
+        return;
+      }
+      
       // consecutive no-pads
       if (other.type == NOPAD && back == NOPAD) {
         list.back().break_cost = std::max(break_cost, other.break_cost);
@@ -89,13 +104,6 @@ void LBString::append(LBString other) {
       // consecutive forces
       if (other.type == FORCE && back == FORCE) {
         list.push_back(other);
-        return;
-      }
-       
-      // force adjacent to pad
-      if ((other.type == FORCE && back >= PAD) || (other.type >= PAD && back == FORCE)) {
-        list.pop_back();
-        list.push_back(LBString(FORCE));
         return;
       }
                        
@@ -188,7 +196,6 @@ void LBString::arrange(const BeautifulConfig& config, int indent) {
     return;
   if (type != LIST)
     return;
-  
   
   // only lists need arranging
   // find indexes of all forced breaks, arrange intervening portions separately
@@ -349,7 +356,11 @@ void LBString::trim(bool left, bool right) {
 std::string LBString::to_string_unarranged(const BeautifulConfig& config, int indent, bool mark_nesting) const {
   std::string mts = "";
   if (mark_nesting)
+  {
     mts = "^" + std::to_string((int)(break_cost*10));
+    if (type == INFORCE)
+      mts = "%";
+  }
   switch (type) {
     case LIST: {
       std::string s = "";
@@ -376,6 +387,7 @@ std::string LBString::to_string_unarranged(const BeautifulConfig& config, int in
       if (!taken) return mts + " ";
     case NOPAD:
       if (!taken) return mts;
+    case INFORCE:
       return mts + "\n" + get_indent_string(config, indent + config.premature_linebreak_indent);
     case FORCE:
       return "\n" + get_indent_string(config, indent);

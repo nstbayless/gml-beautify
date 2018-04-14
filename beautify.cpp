@@ -92,7 +92,7 @@ LBString render_internal_eol(const BeautifulConfig& config, BeautifulContext con
   pes.flattenPostfixes();
   auto& postfixes = pes.infixes;
   
-  // trim postfixes at start and end:
+  // trim newlines at start and end:
   while (!postfixes.empty()) {
     if (postfixes.front()) {
       if (postfixes.front()->val.value == "\n") {
@@ -119,7 +119,7 @@ LBString render_internal_eol(const BeautifulConfig& config, BeautifulContext con
     if (postfixes[i]) {
       bool render = true;
       if (postfixes[i]->val.value == "\n") {
-        render = blanks_seen == 0;
+        render = (blanks_seen == 0);
         if (context.eol == 3)
           render = true;
         blanks_seen += 1;
@@ -152,8 +152,14 @@ LBString Production::renderWS(const BeautifulConfig& config, BeautifulContext co
     for (int i=0;i<ws->infixes.size();i++)
       if (ws->infixes[i])
         no_non_null = false;
-    if (no_non_null)
-      return "";
+    if (no_non_null) {
+      // preserve line-endings?
+      if (config.columns == -2) {
+        return LBString(INFORCE);
+      } else {
+        return "";
+      }
+    }
   }
   
   LBString s(ws->beautiful(config, context));

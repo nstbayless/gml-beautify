@@ -21,11 +21,11 @@ struct BeautifulConfig {
   //! number of spaces to indent with
   int indent_spaces_per_tab = 4;
   
-  //! column width (-1 means arbitrary)
-  int columns = 80;
+  //! column width (-1 means infinite, -2 means preserve line endings)
+  int columns = -2;
   
   //! number of linebreaks if wrapping
-  int premature_linebreak_indent = 2;
+  int premature_linebreak_indent = 1;
   
   //! remove blank lines from start and end of blocks {}
   bool trim_block = true;

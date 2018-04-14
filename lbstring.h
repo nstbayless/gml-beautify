@@ -11,6 +11,7 @@ enum LBTreeType {
   CHUNK,
   PAD,
   NOPAD,
+  INFORCE,
   FORCE
 };
 
