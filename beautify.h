@@ -30,11 +30,11 @@ struct BeautifulConfig {
   //! remove blank lines from start and end of blocks {}
   bool trim_block = true;
   
+  //! put spacing around div/mult 
+  bool divmult_space = true;
+  
   //! put spacing around ++/-- operator
   bool opr_space = false;
-  
-  //! put spacing after ! and ~ operators
-  bool not_space = false;
   
   //! put spacing after accessor symbol, e.g. array[@ index]
   bool accessor_space = true;

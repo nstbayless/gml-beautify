@@ -308,16 +308,16 @@ LBString PrExprArithmetic::beautiful(const BeautifulConfig& config, BeautifulCon
   float break_cost = get_op_priority(op);
   
   // determine whether to put spacing on side of operator
-  if (!config.opr_space && op.type == OPR)
-    l_space = r_space = false;
+  if (op.type == OPR)
+    l_space = r_space = config.opr_space;
   
-  if (!config.not_space && op == Token(OP,"!"))
-    l_space = r_space = false;
+  if (op == Token(OP,"*") || op == Token(OP,"/"))
+    l_space = r_space = config.divmult_space;
   
   if (op == Token(PUNC,"."))
     l_space = r_space = false;
   
-  if ((op == Token(OP,"-") || op == Token(OP,"+")) && !lhs)
+  if (!lhs)
     r_space = false;
   
   // (keywords absolutely need spaces to be parsed)
@@ -713,6 +713,20 @@ LBString beautify_comment(std::string in, const BeautifulConfig& config, Beautif
 
   rtrim(in);
   
+  // ending:
+  if (ends_with(in, "*/")) {
+    for (int i = 3; i < in.size(); i++) {
+      char c = in[in.length() - i];
+      if (iswspace(c))
+        break;
+      if (isalnum(c) || c == '$' || c == '.' || c == '?' || c == '<' || c == '>')
+      {
+        in = in.substr(0, in.length() - i + 1) + " " + in.substr(in.length() - i + 1);
+        break;
+      }
+    }
+  }
+  
   std::string out = in.substr(0,2);
   
   // find first meaningful character and prepend a space
@@ -724,7 +738,7 @@ LBString beautify_comment(std::string in, const BeautifulConfig& config, Beautif
       return out + " " + in.substr(i,in.length()-i);
     out += c;
   }
-  
+
   return out;
 }
 
