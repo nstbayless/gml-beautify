@@ -9,3 +9,4 @@ Makefile
 *.gml
 !demo/
 !demo/*
+!tests/**
