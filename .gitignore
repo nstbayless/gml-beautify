@@ -1,9 +1,12 @@
 *.o
 CMakeFiles/
 CMakeCache.txt
-GMLBeautify
+libGMLTools.*
+gml-tools
+gml-tools-test
 Makefile
 *.cmake
 *.gml
 !demo/
 !demo/*
+!tests/**

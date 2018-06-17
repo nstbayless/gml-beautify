@@ -1,0 +1,6 @@
+*.o
+CMakeFiles/
+CMakeCache.txt
+OGMTest
+Makefile
+*.cmake

@@ -1,0 +1,37 @@
+VO ansi_char(C, V&);
+VO chr(C, V&);
+VO ord(C, V&);
+VO real(C, V&);
+VO is_string(C, V&);
+VO string(C, V&);
+VO string_byte_at(C, V& str, V& pos);
+VO string_byte_length(C, V& str);
+VO string_set_byte_at(C, V& str, V& pos, V& b);
+VO string_char_at(C, V& str, V& pos);
+VO string_ord_at(C, V& str, V& pos);
+VO string_copy(C, V& str);
+VO string_copy(C, V& str, V& pos);
+VO string_copy(C, V& str, V& pos, V& len);
+VO string_count(C, V& substr, V& str);
+VO string_delete(C, V& str, V& pos, V& count);
+VO string_digits(C, V& str);
+VO string_format(C, V& r, V& tot, V& dec);
+VO string_insert(C, V& substr, V& str, V& pos);
+VO string_length(C, V& str);
+VO string_letters(C, V& str);
+VO string_lettersdigits(C, V& str);
+VO string_lower(C, V& str);
+VO string_pos(C, V& str, V& substr);
+VO string_repeat(C, V& str, V& count);
+VO string_replace(C, V& str, V& old, V& new_);
+VO string_replace_all(C, V& str, V& old, V& new_);
+VO string_upper(C, V& str);
+VO string_height(C, V& str);
+VO string_height_ext(C, V& str, V& sep, V& w);
+VO string_width(C, V& str);
+VO string_height(C, V& str, V& sep, V& w);
+
+// Windows-only
+VO clipboard_has_text(C);
+VO clipboard_get_text(C);
+VO clipboard_set_text(C);

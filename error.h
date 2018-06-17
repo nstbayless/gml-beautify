@@ -46,4 +46,14 @@ private:
   std::string message;
 };
 
+class LanguageFeatureNotImplementedError : public std::exception {
+public:
+  LanguageFeatureNotImplementedError(std::string message) : message("Not implemented in compiler: " + message) { }
+  virtual const char* what() const noexcept override {
+    return message.c_str();
+  }
+private:
+  std::string message;
+}; 
+
 #endif /*ERROR_H*/

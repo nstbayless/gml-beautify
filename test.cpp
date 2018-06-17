@@ -59,7 +59,7 @@ bool perform_tests(istream& is, BeautifulConfig config) {
   if (check_idempotent(s_is, c2)) {
     std::cout<<"Idempotence failed."<<std::endl;
     return true;
-  } else std::cout<<"Idempotence test passed."<<std::endl;
+  }
   
   return false;
 }
@@ -109,7 +109,6 @@ bool check_logic_identical(TokenStream& lex_com_pre, TokenStream& lex_com_post) 
     }
     
     if (eof_pre && eof_post) {
-      std::cout<< "Logic tokens are the same in post and pre"<<endl;
       return false;
     }
     
@@ -173,7 +172,6 @@ bool check_comments_identical(TokenStream& lex_logic_pre, TokenStream& lex_logic
     }
     
     if (eof_pre && eof_post) {
-      std::cout<< "Comments are the same in post and pre"<<endl;
       return false;
     }
     
