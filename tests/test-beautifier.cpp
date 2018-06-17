@@ -19,7 +19,7 @@ std::string linertrim(std::string s)
   return out;
 }
 
-void verify(std::string filebasename)
+void verify(std::string filebasename, bool negate = false)
 {
   BeautifulConfig config;
   config.egyptian = false;
@@ -33,15 +33,17 @@ void verify(std::string filebasename)
   std::string in = read_file_contents(file_src);
   
   inFile.open(file_src);
-  CHECK(!perform_tests(inFile, config));
+  bool testResult = !perform_tests(inFile, config);
+  CHECK(testResult);
   
   Parser parser(in);
   Production* root = parser.parse();
   std::string s = root->beautiful(config).to_string(config);
   delete(root);
-  
+    
   CHECK(s.length() > 0);
-  CHECK(linertrim(ext_rtrim(read_file_contents(file_cmp))) == linertrim(ext_rtrim(s)));
+  bool stringCheck = (linertrim(ext_rtrim(read_file_contents(file_cmp))) == linertrim(ext_rtrim(s))) ^ negate;
+  CHECK(stringCheck);
 }
 
 TEST_CASE("Beautifier correctly beautifies some standard files", "[beautifier]")
@@ -66,4 +68,8 @@ TEST_CASE("Beautifier correctly beautifies some standard files", "[beautifier]")
   verify("switch");
   verify("unfinished_comment");
   verify("varspacing");
+  verify("spacingA");
+  verify("spacingB");
+  verify("spacingC");
+  verify("negate", true);
 }
