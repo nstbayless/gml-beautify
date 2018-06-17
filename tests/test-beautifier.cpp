@@ -72,4 +72,5 @@ TEST_CASE("Beautifier correctly beautifies some standard files", "[beautifier]")
   verify("spacingB");
   verify("spacingC");
   verify("negate", true);
+  //verify("regression/mlfn", true);
 }

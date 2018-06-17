@@ -94,7 +94,8 @@ bool check_logic_identical(TokenStream& lex_com_pre, TokenStream& lex_com_post) 
     
     if (eof_pre ^ eof_post) {
       std::cout<< "Test failed!" <<endl;
-      std::cout<< "Difference in logic tokens " <<endl;
+      auto location = lex_com_pre.location();
+      std::cout<< "Difference in logic tokens @col " << location.first << ", row " << location.second <<endl;
       if (eof_pre)
         std::cout<< "pre-beautiful";
       else
@@ -116,8 +117,9 @@ bool check_logic_identical(TokenStream& lex_com_pre, TokenStream& lex_com_post) 
     trim(pre.value);
     
     if (post != pre) {
+      auto location = lex_com_pre.location();
       std::cout<< "Test failed!" <<endl;
-      std::cout<< "Difference in logic " <<endl;
+      std::cout<< "Difference in logic @ source file row " << location.first << ", col " << location.second <<endl;
       std::cout<< "Pre:  " << pre.value << endl;
       std::cout<< "Post: " << post.value << endl;
       return true;
