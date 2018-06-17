@@ -84,4 +84,5 @@ TEST_CASE("Beautifier correctly beautifies some standard files", "[beautifier]")
   //verify("regression/mlfn");
   verify("regression/fnacc");
   verify("regression/fnacc2");
+  //verify("regression/plusplusmod");
 }
