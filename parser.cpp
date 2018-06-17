@@ -190,10 +190,7 @@ PrExpression* Parser::read_term() {
 
 PrExpression* Parser::read_possessive(PrExpression* owner) {
   if (ts.peek() == Token(PUNC, ".")) {
-    PrExprArithmetic* p = new PrExprArithmetic(owner, ts.read(), nullptr);
-    siphonWS(owner,p,true);
-    ignoreWS(p);
-    p->rhs = read_term();
+    PrExprArithmetic* p = new PrExprArithmetic(owner,ts.read(),read_term());
     siphonWS(p->rhs,p,true);
     return p;
   } else
@@ -322,10 +319,8 @@ PrStatementVar* Parser::read_statement_var() {
       ts.read();
       ignoreWS(d);
       d->definition = read_expression();
-      ignoreWS(d, true);
-      siphonWS(d->definition, d, true);
     }
-    siphonWS(d, p, true);
+    ignoreWS(p);
     p->declarations.push_back(d);
     if (ts.peek() == Token(PUNC,",")) {
       ts.read();
@@ -333,8 +328,6 @@ PrStatementVar* Parser::read_statement_var() {
     }
     break;
   }
-  read_statement_end();
-  ignoreWS(p, true);
   return p;
 }
 
@@ -446,6 +439,9 @@ void Parser::siphonWS(Production* src, Production* dst, bool as_postfix, bool co
   }
 }
 
+// statements generally are followed by a newline.
+// This function discards exactly one newline from the end of the
+// whitespace postfixes.
 void Parser::removeExtraNewline(Production* p) {
   //TODO: rewrite this to use iterators
   auto& infixes = p->infixes;

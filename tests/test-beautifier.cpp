@@ -23,7 +23,7 @@ void verify(std::string filebasename, bool negate = false)
 {
   BeautifulConfig config;
   config.egyptian = false;
-  config.columns = -2;
+  config.columns = 80;
   
   std::ifstream inFile;
   

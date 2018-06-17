@@ -53,7 +53,7 @@ LBString& LBString::indent(bool t) {
 
 void LBString::append(LBString other) {
   if (type == LIST) {
-    // empty chunks are not allowed in lists.which reminds me, the engine really does need a name...
+    // empty chunks are not allowed in lists.
     if (other.type == CHUNK) {
       if (other.chunk.length() == 0)
         return;
@@ -70,6 +70,14 @@ void LBString::append(LBString other) {
             list.back().chunk.pop_back();
         other.chunk = list.back().chunk + other.chunk;
         list.pop_back();
+      }
+      
+      // double FORCE
+      
+      if (other.type == FORCE && back == FORCE)
+      {
+        list.push_back(LBString(FORCE));
+        return;
       }
       
       // force adjacent to pad
