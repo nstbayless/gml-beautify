@@ -649,6 +649,7 @@ LBString PrAccessorExpression::beautiful(const BeautifulConfig& config, Beautifu
   }
   s += join_productions(indices, "," + LBString(PAD, 3 * context.cost_mult), config, context, this);
   s += "]";
+  s += renderWS(config, context);
   return s;
 }
 

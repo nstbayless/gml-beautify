@@ -181,7 +181,7 @@ PrExpression* Parser::read_term() {
     }
     
     // read postfixes
-    ignoreWS(to_return,true);
+    ignoreWS(to_return, true);
     
     // optional right-hand modifiers (array, .)
     return read_possessive(read_accessors(to_return));
@@ -205,15 +205,15 @@ PrExpression* Parser::read_accessors(PrExpression* ds) {
   siphonWS(ds, a, false, true);
   a->ds = ds;
   ts.read(); // [
-  ignoreWS(ds);
+  ignoreWS(a);
   // TODO: assert valid accessor symbol
   if (ts.peek().type == OPA || ts.peek() == Token(OP,"|"))
     a->acc = ts.read().value;
     
 READ_INDEX:
-  ignoreWS(ds);
+  ignoreWS(a);
   a->indices.push_back(read_expression());
-  ignoreWS(ds);
+  ignoreWS(a);
   if (ts.peek() == Token(PUNC,",")) {
     ts.read();
     goto READ_INDEX;
@@ -221,6 +221,8 @@ READ_INDEX:
   
   assert_peek(Token(PUNC,"]"), "%unexpected while parsing accessor; either \",\" or \"]\" expected");
   ts.read(); // ]
+  
+  ignoreWS(a, true);
   
   return read_accessors(a);
 }
@@ -265,7 +267,7 @@ PrExpressionFn* Parser::read_expression_function() {
     if (next == Token(PUNC,")"))
       break;
     pfn->args.push_back(read_expression());
-    siphonWS(pfn->args.back(), pfn);
+    ignoreWS(pfn);
     next = ts.peek();
     if (next == Token(PUNC,",")) {
       ts.read();
