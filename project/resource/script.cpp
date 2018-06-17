@@ -19,6 +19,11 @@ std::string ResScript::beautify(BeautifulConfig bc, bool dry) {
 
   // read in script
   raw_script = read_file_contents(_path);
+  
+  // skip @noformat
+  if (raw_script.find("@noformat") != std::string::npos) {
+    return raw_script;
+  }
 
   // test
   std::stringstream ss(raw_script);

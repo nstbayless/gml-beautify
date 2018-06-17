@@ -39,6 +39,9 @@ std::string ResObject::beautify(BeautifulConfig bc, bool dry) {
         auto node_code = action.child("arguments").child("argument").child("string");
         std::string raw_code = node_code.text().get();
         
+        // skip @noformat
+        bool skip = raw_code.find("@noformat") != std::string::npos;
+        
         // test
         std::stringstream ss(raw_code);
         if (perform_tests(ss, bc))
@@ -50,7 +53,7 @@ std::string ResObject::beautify(BeautifulConfig bc, bool dry) {
         std::string beautiful = syntree->beautiful(bc).to_string(bc)+"\n";
         delete(syntree);
         
-        if (!dry) {
+        if (!dry && !skip) {
           node_code.text() = beautiful.c_str();
         }
       }
