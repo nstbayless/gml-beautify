@@ -268,7 +268,7 @@ PrExpressionFn* Parser::read_expression_function() {
     if (next == Token(PUNC,")"))
       break;
     pfn->args.push_back(read_expression());
-    ignoreWS(pfn);
+    siphonWS(pfn->args.back(), pfn);
     next = ts.peek();
     if (next == Token(PUNC,",")) {
       ts.read();
