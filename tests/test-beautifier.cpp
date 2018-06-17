@@ -23,6 +23,7 @@ void verify(std::string filebasename, bool negate = false)
 {
   BeautifulConfig config;
   config.egyptian = false;
+  config.columns = -2;
   
   std::ifstream inFile;
   
@@ -42,8 +43,16 @@ void verify(std::string filebasename, bool negate = false)
   delete(root);
     
   CHECK(s.length() > 0);
-  bool stringCheck = (linertrim(ext_rtrim(read_file_contents(file_cmp))) == linertrim(ext_rtrim(s))) ^ negate;
-  CHECK(stringCheck);
+  std::string cmpFile = linertrim(ext_rtrim(read_file_contents(file_cmp)));
+  std::string genFile = linertrim(ext_rtrim(s));
+  if (!negate)
+  {
+    CHECK(genFile == cmpFile);
+  }
+  else
+  {
+    CHECK(genFile != cmpFile);
+  }
 }
 
 TEST_CASE("Beautifier correctly beautifies some standard files", "[beautifier]")
