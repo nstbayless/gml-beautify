@@ -45,6 +45,8 @@ The commands below assume the executable is called `./gml-tools` and `./gml-tool
 
 ### Beautification:
 
+*(On Windows, type `gml-tools.exe` in the command line instead of `./gml-tools`)*
+
 After building, run `./gml-tools path/to/file`. If the file is a script (.gml file) then the script will be beautified and printed out to the console. If the file is a project file, then the whole project at that directory will be beautified in-place. **Back up your project before beautifying! Use version control. Although there are unit tests, it's always possible there is a bug in the code and the beautifier could malfunction and delete everything.** 
 
 Include the comment `//@noformat` somewhere in a code action / file to prevent that action / file from being formatted.
