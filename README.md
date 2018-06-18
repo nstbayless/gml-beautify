@@ -2,7 +2,7 @@
 
 *Compatible with Game Maker Studio 1.4.x*
 
-Yes, that's right, you no longer have to fiddle with use a javascript beautifier that doesn't support all of GML syntax!
+Yes, that's right, you no longer have to fiddle with a javascript beautifier that doesn't support all of GML syntax!
 
 The beautifier works by parsing the file into a (comment-decorated) syntax tree and printing out.
 
