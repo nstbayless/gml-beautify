@@ -20,6 +20,10 @@ The beautifier works by parsing the file into a (comment-decorated) syntax tree 
   - standardizing blank lines before comments
   - use parentheses with if, while, with, repeat, do..until statements: `if cond` <-> `if (cond)`
 
+## Download
+
+[Check the releases](https://github.com/nstbayless/gml-beautify/releases) to see if there is a recent build for your operating system. If not, the build instructions are below.
+
 ## Build Instructions
 
 ### Linux
