@@ -193,7 +193,8 @@ const char* op_multichar[] = {
   "*=",
   "~="
   "<<",
-  ">>"
+  ">>",
+  "<>"
 };
 
 Token TokenStream::read_operator() {
