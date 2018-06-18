@@ -4,6 +4,7 @@ CMakeCache.txt
 libGMLTools.*
 gml-tools
 gml-tools-test
+*.exe
 Makefile
 *.cmake
 *.gml

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.0)
+cmake_minimum_required(VERSION 3.0)
 project (GMLBeautify)
 
 set(CMAKE_BUILD_TYPE Debug)
