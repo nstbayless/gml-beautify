@@ -156,4 +156,10 @@ static bool ends_with(const std::string& full, const std::string& suffix) {
   return (full.substr(full.length() - suffix.length(), suffix.length()) == suffix);
 }
 
+static bool starts_with(const std::string& full, const std::string& prefix) {
+  if (prefix.length() > full.length())
+    return false;
+  return (full.substr(0, prefix.length()) == prefix);
+}
+
 #endif /* UTIL_H */

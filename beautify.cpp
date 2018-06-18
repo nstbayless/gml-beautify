@@ -714,6 +714,10 @@ LBString beautify_comment(std::string in, const BeautifulConfig& config, Beautif
 
   rtrim(in);
   
+  // # directives are left as-is
+  if (starts_with(in, "#"))
+    return in;
+  
   // ending:
   if (ends_with(in, "*/")) {
     for (int i = 3; i < in.size(); i++) {
@@ -734,6 +738,8 @@ LBString beautify_comment(std::string in, const BeautifulConfig& config, Beautif
   for (int i=2;i<in.size();i++) {
     char c = in[i];
     if (iswspace(c))
+      return in;
+    if (c == '@')
       return in;
     if (isalnum(c) || c == '$' || c == '.' || c == '?' || c == '<' || c == '>')
       return out + " " + in.substr(i,in.length()-i);
