@@ -400,7 +400,7 @@ void Parser::ignoreWS(Production* p, bool as_postfix) {
 //! takes all postfixes from src and inserts them into dst
 void Parser::siphonWS(Production* src, Production* dst, bool as_postfix, bool condense) {
   int N = src->postfix_n;
-  PrInfixWS* infixes[max(N,1)];
+  PrInfixWS** infixes = new PrInfixWS*[max(N,1)];
   
   // remove infixes from src
   while (src->postfix_n > 0) {
@@ -439,6 +439,8 @@ void Parser::siphonWS(Production* src, Production* dst, bool as_postfix, bool co
     dst->infixes.push_back(infixes[i]);
     dst->postfix_n += as_postfix;
   }
+  
+  delete[] infixes;
 }
 
 // statements generally are followed by a newline.
