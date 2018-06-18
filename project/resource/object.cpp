@@ -40,7 +40,10 @@ std::string ResObject::beautify(BeautifulConfig bc, bool dry) {
         std::string raw_code = node_code.text().get();
         
         // skip @noformat
-        bool skip = raw_code.find("@noformat") != std::string::npos;
+        if (raw_code.find("@noformat") != std::string::npos)
+        {
+          continue;
+        }
         
         // test
         std::stringstream ss(raw_code);
@@ -53,7 +56,7 @@ std::string ResObject::beautify(BeautifulConfig bc, bool dry) {
         std::string beautiful = syntree->beautiful(bc).to_string(bc)+"\n";
         delete(syntree);
         
-        if (!dry && !skip) {
+        if (!dry) {
           node_code.text() = beautiful.c_str();
         }
       }
