@@ -1,10 +1,10 @@
 # include "catch.hpp"
-# include "tokenstream.h"
+# include "Lexer.h"
 # include <sstream>
 
 TEST_CASE("Lexer reading empty string", "[lexer]")
 {
-  TokenStream ts("");
+  Lexer ts("");
   CHECK(ts.eof());
   CHECK(ts.peek().type == END);
   CHECK(ts.read().type == END);
@@ -13,16 +13,16 @@ TEST_CASE("Lexer reading empty string", "[lexer]")
 TEST_CASE("Lexer can parse a variety of standard tokens", "[lexer]")
 {
   std::stringstream ss;
-  TokenStream* tsp = nullptr;
+  Lexer* tsp = nullptr;
   
   for (int cat = 1; cat >= 0; cat--)
   {
     if (!cat)
     {
-      tsp = new TokenStream(&ss);
+      tsp = new Lexer(&ss);
     }
     
-    TokenStream& ts = *tsp;
+    Lexer& ts = *tsp;
      
     //  token
     if (cat)

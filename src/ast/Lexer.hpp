@@ -3,8 +3,8 @@
 #include <istream>
 #include <queue>
 
-#ifndef TOKENSTREAM_H
-#define TOKENSTREAM_H
+#ifndef LEXER_H
+#define LEXER_H
 
 enum TokenType {
   PUNC,
@@ -66,11 +66,11 @@ struct Token {
 
 std::ostream &operator<<(std::ostream &,const Token &);
 
-class TokenStream {
+class Lexer {
 public:
-  TokenStream(std::istream*);
-  TokenStream(std::string);
-  ~TokenStream();
+  Lexer(std::istream*);
+  Lexer(std::string);
+  ~Lexer();
 
   // gobbles the next token, returning it
   virtual Token read();
@@ -105,10 +105,10 @@ private:
   bool is_punc_char(const unsigned char);
 };
 
-class LLKTokenStream: TokenStream {
+class LLKLexer: Lexer {
 public:
-  LLKTokenStream(std::istream*, const int k);
-  LLKTokenStream(std::string, const int k);
+  LLKLexer(std::istream*, const int k);
+  LLKLexer(std::string, const int k);
   
   Token peek() const;
   Token peek(unsigned int skip) const;
@@ -122,4 +122,4 @@ private:
   std::deque<Token> buffer;
 };
 
-#endif /* TOKENSTREAM_H */
+#endif /* LEXER_H */

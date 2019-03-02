@@ -4,14 +4,14 @@
 #include <sstream>
 
 #include "test.h"
-#include "tokenstream.h"
+#include "Lexer.h"
 #include "parser.h"
 #include "util.h"
 
 using namespace std;
 
-bool check_comments_identical(TokenStream&, TokenStream&);
-bool check_logic_identical(TokenStream&, TokenStream&);
+bool check_comments_identical(Lexer&, Lexer&);
+bool check_logic_identical(Lexer&, Lexer&);
 bool check_idempotent(std::string, BeautifulConfig& );
 
 bool perform_tests(istream& is, BeautifulConfig config) {
@@ -40,8 +40,8 @@ bool perform_tests(istream& is, BeautifulConfig config) {
   std::stringstream log_ss_post(s);
   
   // check if any comments were deleted or re-ordered
-  TokenStream lex_logic_pre(&log_ss_pre);
-  TokenStream lex_logic_post(&log_ss_post);
+  Lexer lex_logic_pre(&log_ss_pre);
+  Lexer lex_logic_post(&log_ss_post);
   
   if (check_comments_identical(lex_logic_pre,lex_logic_post))
     return true;
@@ -50,8 +50,8 @@ bool perform_tests(istream& is, BeautifulConfig config) {
   std::stringstream log_ssl_pre(s_is);
   std::stringstream log_ssl_post(s);
   
-  TokenStream lex_com_pre(&log_ssl_pre);
-  TokenStream lex_com_post(&log_ssl_post);
+  Lexer lex_com_pre(&log_ssl_pre);
+  Lexer lex_com_post(&log_ssl_post);
   
   if (check_logic_identical(lex_com_pre, lex_com_post))
     return true;
@@ -64,7 +64,7 @@ bool perform_tests(istream& is, BeautifulConfig config) {
   return false;
 }
 
-bool check_logic_identical(TokenStream& lex_com_pre, TokenStream& lex_com_post) {
+bool check_logic_identical(Lexer& lex_com_pre, Lexer& lex_com_post) {
   while (true) {
     Token pre, post;
     bool eof_pre = false, eof_post = false;
@@ -129,7 +129,7 @@ bool check_logic_identical(TokenStream& lex_com_pre, TokenStream& lex_com_post) 
   return false;
 }
 
-bool check_comments_identical(TokenStream& lex_logic_pre, TokenStream& lex_logic_post) {
+bool check_comments_identical(Lexer& lex_logic_pre, Lexer& lex_logic_post) {
   while (true) {
     Token pre, post;
     bool eof_pre = false, eof_post = false;

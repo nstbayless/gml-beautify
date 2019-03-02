@@ -3,7 +3,7 @@
 #include <typeinfo>
 #include <deque>
 
-#include "tokenstream.h"
+#include "Lexer.h"
 #include "beautify.h"
 #include "lbstring.h"
 

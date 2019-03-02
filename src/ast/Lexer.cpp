@@ -1,8 +1,8 @@
 #include <cctype>
 #include <sstream>
 
-#include "tokenstream.h"
-#include "util.h"
+#include "lexer.hpp"
+#include "util.hpp"
 
 using namespace std;
 
@@ -48,24 +48,24 @@ std::ostream &operator<<(std::ostream &os,const Token &token) {
   return os << TOKEN_NAME[token.type] << ": " << token.value;
 }
 
-TokenStream::TokenStream(istream* istream): is(istream), next(END,""), istream_mine(false) {
+Lexer::Lexer(istream* istream): is(istream), next(END,""), istream_mine(false) {
   read();
 }
 
-std::pair<int,int> TokenStream::location() const {
+std::pair<int,int> Lexer::location() const {
   return std::pair<int, int>(row, col);
 }
 
-TokenStream::TokenStream(std::string s): is(new std::stringstream(s)), next(END,""), istream_mine(true) {
+Lexer::Lexer(std::string s): is(new std::stringstream(s)), next(END,""), istream_mine(true) {
   read();
 }
 
-TokenStream::~TokenStream() {
+Lexer::~Lexer() {
   if (istream_mine)
     delete(is);
 }
   
-char TokenStream::read_char() {
+char Lexer::read_char() {
   char c = is->get();
   if (c=='\n') {
     col = 0;
@@ -76,7 +76,7 @@ char TokenStream::read_char() {
   return c;
 }
 
-Token TokenStream::read_string() {
+Token Lexer::read_string() {
   unsigned char c;
   unsigned char terminal;
   string val;
@@ -95,7 +95,7 @@ Token TokenStream::read_string() {
   return Token(STR,terminal_str + val + terminal_str);
 }
 
-Token TokenStream::read_number(bool hex) {
+Token Lexer::read_number(bool hex) {
   unsigned char c;
   string val;
   bool encountered_dot = false;
@@ -122,7 +122,7 @@ Token TokenStream::read_number(bool hex) {
   return Token(NUM, val);
 }
 
-Token TokenStream::read_comment() {
+Token Lexer::read_comment() {
   string val;
   char c;
   c = read_char();
@@ -143,7 +143,7 @@ Token TokenStream::read_comment() {
   return Token(COMMENT,val);
 }
 
-Token TokenStream::read_comment_multiline() {
+Token Lexer::read_comment_multiline() {
   string val;
   char c;
   c = read_char();
@@ -197,7 +197,7 @@ const char* op_multichar[] = {
   "<>"
 };
 
-Token TokenStream::read_operator() {
+Token Lexer::read_operator() {
   char c1;
   c1 = read_char();
   if (is_opa_char(c1)) {
@@ -247,7 +247,7 @@ const char* KEYWORDS[] = {
   "div",
 };
 
-Token TokenStream::read_ident() {
+Token Lexer::read_ident() {
   int index = -1;
   unsigned char c;
   string val;
@@ -275,7 +275,7 @@ Token TokenStream::read_ident() {
   return Token(ID,val);
 }
 
-Token TokenStream::read_next() {
+Token Lexer::read_next() {
   unsigned char in;
   if (is->eof())
     return Token(END,"");
@@ -331,17 +331,17 @@ Token TokenStream::read_next() {
   return read_ident();
 }
 
-Token TokenStream::read() {
+Token Lexer::read() {
   Token to_return = next;
   next = read_next();
   return to_return;
 }
 
-Token TokenStream::peek() const {
+Token Lexer::peek() const {
   return next;
 }
 
-bool TokenStream::eof() {
+bool Lexer::eof() {
   return peek().type == END || peek().type == ERR;
 }
 
@@ -349,7 +349,7 @@ const char ops[] = "+-*/<>=&|!%^~";
 const char opas[] = "?#@";
 const char punc[] = "(){}.,[]:";
 
-bool TokenStream::is_op_char(const unsigned char c) {
+bool Lexer::is_op_char(const unsigned char c) {
   for (int i=0;i<sizeof(ops);i++) {
     if (ops[i] == c)
       return true;
@@ -357,7 +357,7 @@ bool TokenStream::is_op_char(const unsigned char c) {
   return false;
 }
 
-bool TokenStream::is_opa_char(const unsigned char c) {
+bool Lexer::is_opa_char(const unsigned char c) {
   for (int i=0;i<sizeof(opas);i++) {
     if (opas[i] == c)
       return true;
@@ -365,7 +365,7 @@ bool TokenStream::is_opa_char(const unsigned char c) {
   return false;
 }
 
-bool TokenStream::is_punc_char(const
+bool Lexer::is_punc_char(const
  unsigned char c) {
   for (int i=0;i<sizeof(ops);i++) {
     if (punc[i] == c)
@@ -374,45 +374,45 @@ bool TokenStream::is_punc_char(const
   return false;
 }
 
-LLKTokenStream::LLKTokenStream(istream* is, int k): TokenStream(is), k(k) {
-  while (buffer.size() < k - 1 && !TokenStream::eof())
-    buffer.push_back(TokenStream::read());
+LLKLexer::LLKLexer(istream* is, int k): Lexer(is), k(k) {
+  while (buffer.size() < k - 1 && !Lexer::eof())
+    buffer.push_back(Lexer::read());
 }
 
-LLKTokenStream::LLKTokenStream(std::string s, int k): TokenStream(s), k(k) {
-  while (buffer.size() < k - 1 && !TokenStream::eof())
-    buffer.push_back(TokenStream::read());
+LLKLexer::LLKLexer(std::string s, int k): Lexer(s), k(k) {
+  while (buffer.size() < k - 1 && !Lexer::eof())
+    buffer.push_back(Lexer::read());
 }
 
-Token LLKTokenStream::peek() const {
+Token LLKLexer::peek() const {
   if (buffer.size() == 0)
-    return TokenStream::peek();
+    return Lexer::peek();
   return buffer.front();
 }
 
-Token LLKTokenStream::peek(unsigned int i) const {
+Token LLKLexer::peek(unsigned int i) const {
   if (i == k - 1)
-    return TokenStream::peek();
+    return Lexer::peek();
   else
     return buffer[i];
 }
 
-std::pair<int,int> LLKTokenStream::location() const {
-  return TokenStream::location();
+std::pair<int,int> LLKLexer::location() const {
+  return Lexer::location();
 }
 
-Token LLKTokenStream::read() {
-  if (!TokenStream::eof())
-    buffer.push_back(TokenStream::read());
+Token LLKLexer::read() {
+  if (!Lexer::eof())
+    buffer.push_back(Lexer::read());
   Token to_return = buffer.front();
   buffer.pop_front();
   return to_return;
 }
 
-bool LLKTokenStream::eof() {
+bool LLKLexer::eof() {
   return buffer.size() == 0;
 }
 
-bool LLKTokenStream::has(unsigned int k) {
+bool LLKLexer::has(unsigned int k) {
   return buffer.size() > k;
 }
