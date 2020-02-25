@@ -5486,11 +5486,11 @@ namespace detail {
         using ReturnType = ReturnT;
     };
 
-    class Lexer;
+    class TokenStream;
 
     // Transport for raw args (copied from main args, or supplied via init list for testing)
     class Args {
-        friend Lexer;
+        friend TokenStream;
         std::string m_exeName;
         std::vector<std::string> m_args;
 
@@ -5530,7 +5530,7 @@ namespace detail {
     }
 
     // Abstracts iterators into args as a stream of tokens, with option arguments uniformly handled
-    class Lexer {
+    class TokenStream {
         using Iterator = std::vector<std::string>::const_iterator;
         Iterator it;
         Iterator itEnd;
@@ -5568,9 +5568,9 @@ namespace detail {
         }
 
     public:
-        explicit Lexer( Args const &args ) : Lexer( args.m_args.begin(), args.m_args.end() ) {}
+        explicit TokenStream( Args const &args ) : TokenStream( args.m_args.begin(), args.m_args.end() ) {}
 
-        Lexer( Iterator it, Iterator itEnd ) : it( it ), itEnd( itEnd ) {
+        TokenStream( Iterator it, Iterator itEnd ) : it( it ), itEnd( itEnd ) {
             loadBuffer();
         }
 
@@ -5590,7 +5590,7 @@ namespace detail {
             return &m_tokenBuffer.front();
         }
 
-        auto operator++() -> Lexer & {
+        auto operator++() -> TokenStream & {
             if( m_tokenBuffer.size() >= 2 ) {
                 m_tokenBuffer.erase( m_tokenBuffer.begin() );
             } else {
@@ -5716,17 +5716,17 @@ namespace detail {
     class ParseState {
     public:
 
-        ParseState( ParseResultType type, Lexer const &remainingTokens )
+        ParseState( ParseResultType type, TokenStream const &remainingTokens )
         : m_type(type),
           m_remainingTokens( remainingTokens )
         {}
 
         auto type() const -> ParseResultType { return m_type; }
-        auto remainingTokens() const -> Lexer { return m_remainingTokens; }
+        auto remainingTokens() const -> TokenStream { return m_remainingTokens; }
 
     private:
         ParseResultType m_type;
-        Lexer m_remainingTokens;
+        TokenStream m_remainingTokens;
     };
 
     using Result = BasicResult<void>;
@@ -5886,11 +5886,11 @@ namespace detail {
     public:
         virtual ~ParserBase() = default;
         virtual auto validate() const -> Result { return Result::ok(); }
-        virtual auto parse( std::string const& exeName, Lexer const &tokens) const -> InternalParseResult  = 0;
+        virtual auto parse( std::string const& exeName, TokenStream const &tokens) const -> InternalParseResult  = 0;
         virtual auto cardinality() const -> size_t { return 1; }
 
         auto parse( Args const &args ) const -> InternalParseResult {
-            return parse( args.exeName(), Lexer( args ) );
+            return parse( args.exeName(), TokenStream( args ) );
         }
     };
 
@@ -5979,7 +5979,7 @@ namespace detail {
         }
 
         // The exe name is not parsed out of the normal tokens, but is handled specially
-        auto parse( std::string const&, Lexer const &tokens ) const -> InternalParseResult override {
+        auto parse( std::string const&, TokenStream const &tokens ) const -> InternalParseResult override {
             return InternalParseResult::ok( ParseState( ParseResultType::NoMatch, tokens ) );
         }
 
@@ -6003,7 +6003,7 @@ namespace detail {
     public:
         using ParserRefImpl::ParserRefImpl;
 
-        auto parse( std::string const &, Lexer const &tokens ) const -> InternalParseResult override {
+        auto parse( std::string const &, TokenStream const &tokens ) const -> InternalParseResult override {
             auto validationResult = validate();
             if( !validationResult )
                 return InternalParseResult( validationResult );
@@ -6080,7 +6080,7 @@ namespace detail {
 
         using ParserBase::parse;
 
-        auto parse( std::string const&, Lexer const &tokens ) const -> InternalParseResult override {
+        auto parse( std::string const&, TokenStream const &tokens ) const -> InternalParseResult override {
             auto validationResult = validate();
             if( !validationResult )
                 return InternalParseResult( validationResult );
@@ -6257,7 +6257,7 @@ namespace detail {
 
         using ParserBase::parse;
 
-        auto parse( std::string const& exeName, Lexer const &tokens ) const -> InternalParseResult override {
+        auto parse( std::string const& exeName, TokenStream const &tokens ) const -> InternalParseResult override {
 
             struct ParserInfo {
                 ParserBase const* parser = nullptr;

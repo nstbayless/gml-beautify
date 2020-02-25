@@ -3,7 +3,7 @@
 #include <typeinfo>
 #include <deque>
 
-#include "Lexer.h"
+#include "tokenstream.h"
 #include "beautify.h"
 #include "lbstring.h"
 #include "production.h"
@@ -62,7 +62,7 @@ private:
   //! read semicolon and/or line ending
   void read_statement_end();
   
-  LLKLexer ts;
+  LLKTokenStream ts;
 };
 
 #endif /*PARSER_H*/

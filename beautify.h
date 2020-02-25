@@ -3,7 +3,7 @@
 #include <typeinfo>
 #include <deque>
 
-#include "Lexer.h"
+#include "tokenstream.h"
 
 #ifndef BEAUTIFY_H
 #define BEAUTIFY_H

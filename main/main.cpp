@@ -3,7 +3,7 @@
 #include <cstring>
 #include <sstream>
 
-#include "Lexer.h"
+#include "tokenstream.h"
 #include "parser.h"
 #include "util.h"
 #include "test.h"
